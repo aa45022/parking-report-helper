@@ -2,7 +2,7 @@
 
 在人行道或斑馬線上看到違停的汽車，拍完照之後 1 分鐘內就能把檢舉準備好，最後由本人在官方網站送出。
 
-> 狀態：**私人測試中（v0.2）**。測試版說明見 [prototype/README.md](prototype/README.md)。
+> 狀態：**私人測試中（v0.3）**。測試版說明見 [prototype/README.md](prototype/README.md)。
 
 ## 文件
 

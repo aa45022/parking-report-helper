@@ -2,240 +2,365 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700;900&family=Overpass:wght@600;800&family=Overpass+Mono:wght@600;700&display=swap">
 <style>
-/* 版面：單欄手機工具。上方品牌列加斑馬線色帶，下面是固定在上方的分頁列；檢舉流程一步一個畫面 */
+/* 版面：單欄手機工具。三種外觀（路標、夜巡、小綠人）共用同一套結構，只換色彩、字體、形狀與細節。
+   每種外觀都刻意只有一種明暗：路標、小綠人是亮色，夜巡是深色；第一次使用會依手機的深色模式挑選。 */
 :root {
-  --bg: #eef1f5;
-  --surface: #ffffff;
-  --surface-2: #f5f7fa;
-  --ink: #15202b;
-  --muted: #5a6674;
-  --line: #d5dbe3;
-  --blue: #1d5bab;      /* 指示標誌藍：主要動作 */
-  --blue-soft: #e4edf8;
-  --blue-ink: #ffffff;
-  --red: #c4262e;       /* 禁制標誌紅：不能檢舉、刪除 */
-  --ok: #1d7a4e;
-  --ok-bg: #e3f3ea;
-  --warn: #9a5b00;
-  --warn-bg: #fbf0dc;
-  --no-bg: #fbe6e7;
-  --stripe: #15202b;
-  --plate-bg: #ffffff;
-  --plate-ink: #111111;
+  /* A 路標（預設） */
+  --bg: #F1F3F6; --surface: #FFFFFF; --surface-2: #E8ECF1; --ink: #0E1A2B; --muted: #5B6676; --line: #DCE1E8;
+  --accent: #0A58A8; --accent-ink: #FFFFFF; --accent-soft: #E2ECF7; --accent-text: #0A58A8;
+  --ok: #157A4A; --ok-soft: #E2F2E9; --warn: #8A5A00; --warn-soft: #FBEFD6; --no: #C4262E; --no-soft: #FBE6E7;
+  --plate-bg: #FFFFFF; --plate-ink: #111111; --stripe-a: #F7F8FA; --stripe-b: #1F242B;
+  --count-bg: transparent; --count-ink: var(--ink); --count-urgent: #C4262E;
   --font-body: "Noto Sans TC", "PingFang TC", "Heiti TC", "Microsoft JhengHei", system-ui, sans-serif;
-  --font-num: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --radius: 14px;
+  --font-display: "Noto Sans TC", "PingFang TC", "Heiti TC", system-ui, sans-serif;
+  --display-weight: 900;
+  --font-num: "Overpass", "Arial Narrow", system-ui, sans-serif;
+  --radius: 16px; --radius-lg: 22px; --btn-radius: 16px;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f151c; --surface: #17202a; --surface-2: #1d2833; --ink: #e7ecf1; --muted: #98a4b1; --line: #2b3744;
-    --blue: #6aa6ef; --blue-soft: #1a2b40; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
-    --stripe: #e7ecf1; --plate-bg: #f4f4f0; --plate-ink: #111111; color-scheme: dark;
-  }
+:root[data-skin="night"] {
+  --bg: #111418; --surface: #1A1F25; --surface-2: #232A31; --ink: #EEF1F4; --muted: #9AA4AF; --line: #2C343D;
+  --accent: #FFD23F; --accent-ink: #111418; --accent-soft: #2E2A16; --accent-text: #FFD23F;
+  --ok: #4FC58C; --ok-soft: #13301F; --warn: #FFB547; --warn-soft: #33270F; --no: #FF6B5E; --no-soft: #3A1618;
+  --plate-bg: #F4F5F6; --plate-ink: #111111; --stripe-a: rgba(255,255,255,0.08); --stripe-b: transparent;
+  --count-bg: transparent; --count-ink: #FFD23F; --count-urgent: #FF6B5E;
+  --font-num: "Overpass Mono", "Overpass", ui-monospace, monospace;
+  --radius: 18px; --radius-lg: 24px; --btn-radius: 16px;
+  color-scheme: dark;
 }
-:root[data-theme="dark"] {
-  --bg: #0f151c; --surface: #17202a; --surface-2: #1d2833; --ink: #e7ecf1; --muted: #98a4b1; --line: #2b3744;
-  --blue: #6aa6ef; --blue-soft: #1a2b40; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
-  --stripe: #e7ecf1; --plate-bg: #f4f4f0; --plate-ink: #111111; color-scheme: dark;
+:root[data-skin="green"] {
+  --bg: #F2F6F3; --surface: #FFFFFF; --surface-2: #E6EFE9; --ink: #10302A; --muted: #5A6E68; --line: #D5E2D9;
+  --accent: #16955A; --accent-ink: #FFFFFF; --accent-soft: #DDF0E5; --accent-text: #13804D;
+  --ok: #13804D; --ok-soft: #DDF0E5; --warn: #9A5F06; --warn-soft: #FBEFD6; --no: #C4262E; --no-soft: #FBE6E7;
+  --plate-bg: #FFFFFF; --plate-ink: #111111; --stripe-a: #FFFFFF; --stripe-b: #E7EFE9;
+  --count-bg: #1B1F1D; --count-ink: #3FD08A; --count-urgent: #F2A21B;
+  --font-display: "Huninn", "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
+  --display-weight: 400;
+  --radius: 20px; --radius-lg: 28px; --btn-radius: 999px;
+  color-scheme: light;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; display: flex; flex-direction: column; min-height: 100%; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
 button, input, select, textarea { font: inherit; color: inherit; }
-a { color: var(--blue); }
-:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-
-.wrap { width: 100%; max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.top { background: var(--surface); }
-.top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 12px 10px; }
-.top h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: 0.02em; }
-.badge { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
-.zebra { height: 8px; background: repeating-linear-gradient(90deg, var(--stripe) 0 22px, transparent 22px 40px); opacity: 0.85; }
-.tabbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--line); }
-.tabbar .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
-.tabbar button { border: 0; background: transparent; padding: 6px 2px 8px; min-height: 54px; display: grid; justify-items: center; font-size: 13px; color: var(--muted); cursor: pointer; }
-.tabbar button svg { width: 22px; height: 22px; }
-.tabbar button[aria-selected="true"] { color: var(--blue); font-weight: 700; box-shadow: inset 0 -3px 0 var(--blue); }
-
-main { padding-block: 16px calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; }
-h2.page { margin: 0; font-size: 22px; text-wrap: balance; }
-.lead { margin: 0; color: var(--muted); font-size: 15px; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; min-width: 0; }
-.card > h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.card h4 { margin: 0; font-size: 15px; }
+.wrap { width: 100%; max-width: 560px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.disp { font-family: var(--font-display); font-weight: var(--display-weight); }
+.num { font-family: var(--font-num); font-weight: 800; font-variant-numeric: tabular-nums; }
+:root[data-skin="night"] .num { font-weight: 700; }
 .hint { margin: 0; font-size: 14px; color: var(--muted); }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .row.between { justify-content: space-between; }
-.stack { display: grid; gap: 8px; min-width: 0; }
+.stack { display: grid; gap: 10px; min-width: 0; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 420px) { .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 380px) { .grid2 { grid-template-columns: 1fr; } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
-.btn { min-height: 46px; padding: 10px 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--ink); text-align: center; }
-.btn.primary { background: var(--blue); color: var(--blue-ink); border-color: var(--blue); font-weight: 700; }
-.btn.danger { color: var(--red); border-color: var(--red); background: transparent; }
-.btn.ghost { background: transparent; }
-.btn.small { min-height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
+/* 頂部：品牌與分頁 */
+.top { background: var(--surface); }
+.top .wrap { display: flex; align-items: center; gap: 12px; padding-block: 14px 12px; }
+.mark { width: 42px; height: 42px; flex: none; border-radius: 50%; background: var(--accent); display: grid; place-items: center; color: var(--accent-ink); }
+:root[data-skin="night"] .mark { border-radius: 9px; width: 32px; height: 32px; background: repeating-linear-gradient(135deg, #FFD23F 0 6px, #111418 6px 11px); }
+:root[data-skin="night"] .mark svg { display: none; }
+:root[data-skin="green"] .mark { border-radius: 14px; }
+.brand { display: grid; flex-grow: 1; min-width: 0; }
+.brand b { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 20px; letter-spacing: 0.02em; line-height: 1.3; }
+.brand span { font-size: 12px; color: var(--muted); }
+.zebra { height: 14px; border-top: 5px solid var(--stripe-b); border-bottom: 5px solid var(--stripe-b); background: repeating-linear-gradient(90deg, var(--stripe-a) 0 24px, var(--stripe-b) 24px 44px); }
+:root[data-skin="night"] .zebra { display: none; }
+:root[data-skin="green"] .zebra { height: 10px; border: 0; background-color: var(--stripe-b); background-image: linear-gradient(90deg, var(--stripe-a) 2px, transparent 2px); background-size: 22px 10px; }
+.tabbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabbar .wrap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding-block: 4px; }
+.tabbar button { border: 0; background: transparent; min-height: 52px; display: grid; justify-items: center; align-content: center; font-size: 12px; color: var(--muted); cursor: pointer; border-radius: 12px; }
+.tabbar button svg { width: 22px; height: 22px; }
+.tabbar button[aria-selected="true"] { color: var(--accent-text); font-weight: 700; box-shadow: inset 0 -3px 0 var(--accent); border-radius: 0; }
+:root[data-skin="night"] .tabbar { background: #15191E; }
+:root[data-skin="green"] .tabbar { background: var(--bg); border-bottom: 0; }
+:root[data-skin="green"] .tabbar .wrap { background: var(--surface); border-radius: 999px; padding: 6px; margin-block: 6px; }
+:root[data-skin="green"] .tabbar button { border-radius: 999px; min-height: 48px; }
+:root[data-skin="green"] .tabbar button[aria-selected="true"] { box-shadow: none; background: var(--accent-soft); border-radius: 999px; }
+
+main { padding-block: 18px calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; }
+.page-title { margin: 0; font-family: var(--font-display); font-weight: var(--display-weight); font-size: 24px; line-height: 1.3; text-wrap: balance; }
+.sec-title { margin: 0; font-family: var(--font-display); font-weight: var(--display-weight); font-size: 17px; }
+.card { background: var(--surface); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card.flat { background: transparent; padding: 0; }
+.card > h3 { margin: 0; font-family: var(--font-display); font-weight: var(--display-weight); font-size: 17px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card h4 { margin: 0; font-size: 15px; }
+
+/* 按鈕 */
+.btn { min-height: 48px; padding: 10px 18px; border-radius: var(--btn-radius); border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--ink); text-align: center; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.dark { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--accent-text); }
+.btn.danger { color: var(--no); border-color: var(--no); background: transparent; }
+.btn.small { min-height: 38px; padding: 6px 12px; font-size: 14px; border-radius: min(var(--btn-radius), 12px); }
+:root[data-skin="green"] .btn.small { border-radius: 999px; }
 .btn.block { width: 100%; }
-.btn.cta { width: 100%; min-height: 92px; font-size: 24px; border-radius: 18px; letter-spacing: 0.04em; }
-.btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.filebtn { position: relative; overflow: hidden; }
-.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
+.btn.big { min-height: 60px; font-size: 18px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.iconbtn { width: 44px; height: 44px; flex: none; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; cursor: pointer; color: var(--ink); }
+:root[data-skin="green"] .iconbtn { border-radius: 50%; border: 0; }
 
-.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
-.pill.ok { background: var(--ok-bg); color: var(--ok); }
-.pill.no { background: var(--no-bg); color: var(--red); }
-.pill.warn { background: var(--warn-bg); color: var(--warn); }
-.pill.info { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
-.pill.auto { background: var(--blue-soft); color: var(--blue); }
+/* 首頁主按鈕：三種外觀各自的形狀 */
+.cta { display: grid; gap: 12px; }
+.cta-hero { display: none; }
+.cta-btn { border: 0; cursor: pointer; text-align: left; font-family: inherit; border-radius: var(--radius-lg); background: var(--accent); color: var(--accent-ink); padding: 20px; display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; column-gap: 14px; align-items: center; }
+.cta-icon { grid-row: 1 / 3; width: 56px; height: 56px; border-radius: 50%; background: var(--accent-ink); color: var(--accent); display: grid; place-items: center; }
+.cta-title { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 30px; line-height: 1.2; letter-spacing: 0.04em; }
+.cta-sub { font-size: 14px; opacity: 0.85; }
+.cta-arrow { grid-row: 1 / 3; grid-column: 3; }
+.cta-alt { min-height: 52px; }
+:root[data-skin="night"] .cta { justify-items: center; padding-block: 10px; position: relative; }
+:root[data-skin="night"] .cta::before { content: ""; position: absolute; left: -16px; right: -16px; top: 40px; height: 150px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0 30px, transparent 30px 56px); }
+:root[data-skin="night"] .cta-btn { position: relative; background: transparent; color: var(--ink); grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 0; row-gap: 10px; }
+:root[data-skin="night"] .cta-icon { grid-row: auto; width: 164px; height: 164px; border: 6px solid var(--accent); background: var(--bg); padding: 10px; color: #111418; position: relative; }
+:root[data-skin="night"] .cta-icon::before { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: #F4F5F6; }
+:root[data-skin="night"] .cta-icon svg { position: relative; width: 52px; height: 52px; }
+:root[data-skin="night"] .cta-title { font-size: 24px; }
+:root[data-skin="night"] .cta-arrow { display: none; }
+:root[data-skin="night"] .cta-alt { position: relative; background: transparent; border: 0; color: var(--muted); font-weight: 500; min-height: 44px; }
+:root[data-skin="green"] .cta { background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; gap: 0; }
+:root[data-skin="green"] .cta-hero { display: grid; place-items: center; height: 120px; background-color: var(--stripe-b); background-image: linear-gradient(var(--stripe-a) 2px, transparent 2px), linear-gradient(90deg, var(--stripe-a) 2px, transparent 2px); background-size: 34px 34px; }
+:root[data-skin="green"] .cta-hero span { width: 80px; height: 80px; border-radius: 50%; background: var(--accent); color: #FFFFFF; display: grid; place-items: center; }
+:root[data-skin="green"] .cta-btn { margin: 18px 18px 8px; border-radius: 999px; grid-template-columns: auto auto; justify-content: center; padding: 16px 20px; column-gap: 10px; }
+:root[data-skin="green"] .cta-icon { width: auto; height: auto; background: transparent; color: #FFFFFF; grid-row: 1; }
+:root[data-skin="green"] .cta-title { font-size: 22px; }
+:root[data-skin="green"] .cta-sub, :root[data-skin="green"] .cta-arrow { display: none; }
+:root[data-skin="green"] .cta-alt { margin: 0 18px 14px; border: 0; background: transparent; color: var(--accent-text); font-weight: 500; }
 
-.note { border-radius: 12px; padding: 10px 12px; font-size: 14px; display: grid; gap: 4px; }
+/* 倒數 */
+.count { display: inline-flex; align-items: baseline; gap: 2px; color: var(--count-ink); }
+.count .n { font-family: var(--font-num); font-weight: 800; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.count .u { font-size: 13px; font-weight: 700; }
+.count.urgent { color: var(--count-urgent); }
+:root[data-skin="road"] .count, :root:not([data-skin]) .count { color: var(--ink); }
+:root[data-skin="road"] .count.urgent, :root:not([data-skin]) .count.urgent { color: var(--no); }
+:root[data-skin="green"] .count { flex-direction: column; align-items: center; justify-content: center; gap: 0; width: 58px; height: 58px; border-radius: 14px; background: var(--count-bg); }
+:root[data-skin="green"] .count .n { font-size: 26px; }
+:root[data-skin="green"] .count .u { font-size: 10px; font-weight: 500; }
+.daybar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.daybar span { height: 6px; border-radius: 3px; background: var(--surface-2); }
+.daybar span.on { background: var(--accent); }
+.daybar.urgent span.on { background: var(--no); }
+
+/* 卡片、清單 */
+.hscroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x mandatory; }
+.dcard { flex: none; width: 250px; scroll-snap-align: start; background: var(--surface); border-radius: var(--radius); padding: 14px; display: grid; gap: 10px; border: 0; text-align: left; cursor: pointer; color: var(--ink); font-family: inherit; }
+.dcard .place { font-size: 14px; color: var(--muted); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stat { background: var(--surface); border-radius: 14px; padding: 10px 4px; display: grid; justify-items: center; }
+.stat b { font-family: var(--font-num); font-weight: 800; font-size: 28px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.note { border-radius: 14px; padding: 12px 14px; font-size: 14px; display: grid; gap: 4px; background: var(--surface); }
 .note b { font-size: 15px; }
-.note.ok { background: var(--ok-bg); } .note.ok b { color: var(--ok); }
-.note.no { background: var(--no-bg); } .note.no b { color: var(--red); }
-.note.warn { background: var(--warn-bg); } .note.warn b { color: var(--warn); }
-.note.info { background: var(--surface-2); border: 1px dashed var(--line); }
+.note.ok { background: var(--ok-soft); } .note.ok b { color: var(--ok); }
+.note.no { background: var(--no-soft); } .note.no b { color: var(--no); }
+.note.warn { background: var(--warn-soft); } .note.warn b { color: var(--warn); }
+.note.info { background: var(--accent-soft); }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.no { background: var(--no-soft); color: var(--no); }
+.pill.warn { background: var(--warn-soft); color: var(--warn); }
+.pill.info { background: var(--surface-2); color: var(--muted); }
+.pill.accent { background: var(--accent-soft); color: var(--accent-text); }
+.plate { display: inline-flex; align-items: center; justify-content: center; padding: 1px 10px; background: var(--plate-bg); color: var(--plate-ink); border: 2.5px solid var(--plate-ink); border-radius: 6px; font-family: "Overpass", sans-serif; font-weight: 800; font-size: 20px; letter-spacing: 0.06em; line-height: 1.35; white-space: nowrap; }
+.plate.lg { font-size: 28px; border-width: 3px; padding: 2px 12px; }
+.plate.sm { font-size: 16px; padding: 0 7px; border-width: 2px; }
+.plate.empty { border-style: dashed; color: var(--muted); background: transparent; border-color: var(--line); font-family: var(--font-body); font-size: 15px; letter-spacing: 0; font-weight: 500; }
+.tip { display: flex; gap: 10px; align-items: center; padding: 12px 14px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; }
+.tip .ic { width: 30px; height: 30px; flex: none; border-radius: 8px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.setup { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; }
+.setup .dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; color: var(--accent-ink); }
+.setup .dot.on { background: var(--ok); border-color: var(--ok); color: #FFFFFF; }
 
-/* 進度 */
-.progress { display: grid; gap: 8px; }
-.progress .label { font-size: 14px; color: var(--muted); }
-.progress .label b { color: var(--ink); font-size: 17px; }
-.dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.dots button { height: 8px; border: 0; padding: 0; border-radius: 4px; background: var(--line); cursor: pointer; }
-.dots button.done { background: var(--ok); }
-.dots button.now { background: var(--blue); }
-.stepnav { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
-
-/* 第 1 步的大按鈕問題 */
-.bigq { display: grid; gap: 10px; }
-.bigq > .qtitle { font-size: 20px; font-weight: 700; }
-.bigq button.choice { min-height: 64px; font-size: 19px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; text-align: left; padding: 10px 16px; display: grid; gap: 2px; }
-.bigq button.choice small { font-size: 13px; color: var(--muted); font-weight: 400; }
-.answered { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
-.answered span { color: var(--muted); font-size: 14px; }
-
-/* 照片 */
-.checklist { display: grid; gap: 8px; }
-.checkitem { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; }
-.checkitem .box { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: 15px; font-weight: 700; color: var(--blue-ink); }
-.checkitem .box.on { background: var(--ok); border-color: var(--ok); }
-.checkitem small { display: block; color: var(--muted); font-size: 13px; }
-.photos { display: grid; gap: 10px; }
-.photo { display: grid; grid-template-columns: 76px 1fr auto; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
-.photo img, .photo .noimg { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; background: var(--line); display: grid; place-items: center; font-size: 12px; color: var(--muted); }
-.photo .meta { display: grid; gap: 4px; min-width: 0; font-size: 13px; }
-.photo select { font-size: 14px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); max-width: 100%; }
-.x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; padding: 4px 6px; min-width: 40px; min-height: 40px; }
-.timer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.timer .clock { font-family: var(--font-num); font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.timer .clock.done { color: var(--ok); }
-
-/* 表單 */
+/* 檢舉流程 */
+.flowhead { display: grid; gap: 10px; }
+.flowhead .top-line { display: flex; align-items: center; gap: 10px; }
+.flowhead .label { display: grid; flex-grow: 1; line-height: 1.3; }
+.flowhead .label small { font-size: 12px; color: var(--muted); }
+.flowhead .label b { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 18px; }
+.segs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.segs button { height: 6px; border: 0; padding: 0; border-radius: 3px; background: var(--line); cursor: pointer; }
+.segs button.done { background: var(--ok); }
+.segs button.now { background: var(--accent); }
+.qtitle { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 22px; margin: 0; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.tiles.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tile { min-height: 120px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--surface); cursor: pointer; display: grid; justify-items: center; align-content: center; gap: 8px; padding: 12px 8px; color: var(--ink); font-family: inherit; }
+.tile .pic { width: 56px; height: 56px; border-radius: 14px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+:root[data-skin="night"] .tile .pic { background: var(--surface-2); color: var(--accent); }
+:root[data-skin="green"] .tile .pic { border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); }
+.tile .pic.no { background: var(--no-soft); color: var(--no); }
+.tile b { font-size: 17px; }
+.tile small { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; }
+.answered { display: flex; flex-wrap: wrap; gap: 8px; }
+.answered button { border: 0; border-radius: 999px; background: var(--surface); padding: 6px 12px; font-size: 14px; cursor: pointer; color: var(--ink); }
+.answered button span { color: var(--muted); }
+.verdict { border-radius: var(--radius); padding: 16px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: start; }
+.verdict .vic { grid-row: 1 / 4; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #FFFFFF; }
+.verdict b { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 20px; }
+.verdict p { margin: 0; font-size: 14px; }
+.verdict.ok { background: var(--ok-soft); } .verdict.ok .vic { background: var(--ok); } .verdict.ok b { color: var(--ok); }
+.verdict.warn { background: var(--warn-soft); } .verdict.warn .vic { background: var(--warn); } .verdict.warn b { color: var(--warn); }
+.verdict.no { background: var(--no-soft); } .verdict.no .vic { background: var(--no); } .verdict.no b { color: var(--no); }
+.slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.slot { display: grid; gap: 6px; min-width: 0; }
+.slot .frame { position: relative; height: 150px; border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 2px dashed var(--line); display: grid; place-items: center; cursor: pointer; color: var(--muted); font-family: inherit; padding: 0; width: 100%; }
+.slot .frame.next { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-text); }
+.slot .frame.filled { border: 0; background: var(--surface-2); cursor: default; }
+.slot .frame img { width: 100%; height: 100%; object-fit: cover; }
+.slot .frame .inner { display: grid; justify-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+.slot .badge { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: var(--ok); color: #FFFFFF; display: grid; place-items: center; }
+.slot .rm { position: absolute; top: 6px; left: 6px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(0,0,0,0.55); color: #FFFFFF; display: grid; place-items: center; cursor: pointer; }
+.slot .cap { font-size: 15px; font-weight: 700; }
+.slot .cap small { font-weight: 400; font-size: 13px; color: var(--muted); }
+.ring { position: relative; width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center; }
+.ring .face { width: 84px; height: 84px; border-radius: 50%; background: var(--surface); display: grid; justify-items: center; align-content: center; }
+.ring .face b { font-family: var(--font-num); font-weight: 800; font-size: 24px; line-height: 1; color: var(--ink); }
+.ring .face small { font-size: 11px; color: var(--muted); }
+:root[data-skin="green"] .ring { border-radius: 16px; width: 100px; height: 80px; background: #1B1F1D !important; }
+:root[data-skin="green"] .ring .face { background: transparent; }
+:root[data-skin="green"] .ring .face b { color: #F2A21B; }
+:root[data-skin="green"] .ring .face small { color: #F2A21B; }
+.infolist { background: var(--surface); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
+.infolist .it { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.infolist .it svg { flex: none; margin-top: 2px; }
+.actionbar { position: sticky; bottom: 0; z-index: 5; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); display: flex; gap: 10px; }
+.actionbar .btn { flex: 1 1 0; min-height: 54px; white-space: nowrap; padding-inline: 14px; }
+.actionbar .btn.side { flex: 0 0 auto; }
+.actionbar .btn.primary { flex-grow: 2; }
+.ticket { background: var(--surface); border-radius: var(--radius-lg); overflow: hidden; display: grid; }
+.ticket .head { background: var(--accent); color: var(--accent-ink); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ticket .head b { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 17px; letter-spacing: 0.1em; }
+.ticket .head span { font-size: 13px; opacity: 0.85; }
+.ticket .body { padding: 16px; display: grid; gap: 12px; }
+.perf { height: 20px; position: relative; background: radial-gradient(circle at 0 50%, var(--bg) 10px, transparent 11px), radial-gradient(circle at 100% 50%, var(--bg) 10px, transparent 11px); }
+.perf::after { content: ""; position: absolute; left: 18px; right: 18px; top: 9px; border-top: 2px dashed var(--line); }
+.trow { display: grid; grid-template-columns: 44px minmax(0, 1fr) 40px; gap: 8px; align-items: start; }
+.trow > .k { font-size: 13px; color: var(--muted); padding-top: 3px; }
+.trow > .v { display: grid; min-width: 0; }
+.trow > .v b { font-size: 16px; word-break: break-word; }
+.trow > .v small { font-size: 12px; color: var(--ok); }
+.trow > .v small.need { color: var(--no); }
+.editbtn { width: 40px; height: 40px; border: 0; background: transparent; border-radius: 10px; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
+.editbtn[aria-expanded="true"] { background: var(--surface-2); color: var(--accent-text); }
+.editor { grid-column: 1 / -1; display: grid; gap: 12px; padding: 12px; border-radius: 14px; background: var(--bg); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 14px; cursor: pointer; text-align: left; color: var(--ink); }
+.chip small { color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.evchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.cands { display: flex; flex-wrap: wrap; gap: 10px; }
+.cand { border: 0; background: transparent; padding: 0; cursor: pointer; display: grid; gap: 2px; justify-items: center; font-size: 12px; color: var(--muted); }
+.cand[aria-pressed="true"] .plate { outline: 3px solid var(--accent); outline-offset: 2px; }
 .field { display: grid; gap: 4px; min-width: 0; }
-.field > label, .field > .lbl { font-size: 14px; font-weight: 500; }
-.field input, .field select, .field textarea { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 46px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.field > label, .field > .lbl { font-size: 14px; font-weight: 700; }
+.field input, .field select, .field textarea { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: 8px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
 .field input[type="date"], .field input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
 .field textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
 .field .sub { font-size: 13px; color: var(--muted); }
-.field .sub.bad { color: var(--red); }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 12px; font-size: 14px; cursor: pointer; text-align: left; }
-.chip small { color: var(--muted); }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
-.plate { display: inline-flex; align-items: center; justify-content: center; min-width: 120px; padding: 2px 12px; background: var(--plate-bg); color: var(--plate-ink); border: 2px solid var(--plate-ink); border-radius: 6px; font-family: var(--font-num); font-weight: 700; font-size: 24px; letter-spacing: 0.08em; line-height: 1.3; }
-.plate.sm { min-width: 0; font-size: 18px; padding: 0 8px; }
-.cands { display: flex; flex-wrap: wrap; gap: 10px; }
-.cand { border: 0; background: transparent; padding: 0; cursor: pointer; display: grid; gap: 2px; justify-items: center; font-size: 12px; color: var(--muted); }
-.cand[aria-pressed="true"] .plate { outline: 3px solid var(--blue); outline-offset: 2px; }
-.checks { display: grid; gap: 6px; }
+.field .sub.bad { color: var(--no); }
+.checks { display: grid; gap: 8px; }
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; cursor: pointer; }
 .check input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: var(--ok); }
 .check small { color: var(--muted); }
-.deadline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
-.deadline .big { font-family: var(--font-num); font-size: 32px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
-.deadline.urgent .big { color: var(--red); }
-dl.kv { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
-dl.kv dt { color: var(--muted); }
-dl.kv dd { margin: 0; min-width: 0; }
-
-/* 送出 */
-.copylist { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.copyrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); background: var(--surface); }
+.copylist { display: grid; border-radius: 14px; overflow: hidden; background: var(--surface); }
+.copyrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); }
 .copyrow:first-child { border-top: 0; }
 .copyrow > div { min-width: 0; display: grid; gap: 2px; }
 .copyrow .k { font-size: 13px; color: var(--muted); }
-.copyrow .v { font-size: 15px; font-weight: 500; word-break: break-all; }
-.copyrow .v.empty { color: var(--red); font-weight: 400; }
+.copyrow .v { font-size: 15px; font-weight: 700; word-break: break-all; }
+.copyrow .v.empty { color: var(--no); font-weight: 400; }
 .copyrow .n { font-size: 12px; color: var(--muted); }
-ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
-ol.steps li { padding-left: 4px; }
-ol.steps li > .row { margin-top: 6px; }
-details { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-details > summary { cursor: pointer; padding: 12px 14px; font-weight: 500; list-style-position: inside; }
-details > div { padding: 0 14px 14px; display: grid; gap: 10px; }
+.bigstep { display: grid; grid-template-columns: 36px 1fr; gap: 12px; align-items: start; }
+.bigstep .no { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--font-num); font-weight: 800; font-size: 18px; }
+.bigstep .c { display: grid; gap: 8px; min-width: 0; }
+.bigstep .c b { font-size: 16px; }
+details { border-radius: 14px; background: var(--surface); }
+details > summary { cursor: pointer; padding: 14px 16px; font-weight: 700; list-style-position: inside; }
+details > div { padding: 0 16px 16px; display: grid; gap: 10px; }
 .focusbox { display: grid; gap: 14px; }
-.focusbox .count { font-family: var(--font-num); font-size: 18px; color: var(--muted); }
-.focusbox .flabel { font-size: 18px; font-weight: 700; }
-.focusbox .fvalue { font-size: 26px; font-weight: 700; word-break: break-all; padding: 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); min-height: 64px; }
-.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
-.bar > span { display: block; height: 100%; background: var(--blue); }
-
-/* 首頁與紀錄 */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.stat { background: var(--surface-2); border-radius: 12px; padding: 10px 8px; display: grid; justify-items: center; gap: 0; }
-.stat b { font-family: var(--font-num); font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.stat span { font-size: 12px; color: var(--muted); }
-.todo { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
-.todo:first-of-type { border-top: 0; }
-.todo .t { display: grid; gap: 2px; min-width: 0; }
-.todo .place { font-size: 13px; color: var(--muted); }
-.setup { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; }
-.setup .dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: var(--blue-ink); }
-.setup .dot.on { background: var(--ok); border-color: var(--ok); }
-.menu { display: grid; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
-.menu button { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; text-align: left; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 14px 16px; cursor: pointer; min-height: 60px; }
+.focusbox .flabel { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 20px; }
+.focusbox .fvalue { font-size: 26px; font-weight: 700; word-break: break-all; padding: 16px; border-radius: 14px; background: var(--bg); min-height: 70px; }
+.bar { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); }
+.list { display: grid; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+.list > .li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--line); }
+.list > .li:first-child { border-top: 0; }
+.list .li .t { display: grid; gap: 4px; min-width: 0; }
+.list .li .place { font-size: 13px; color: var(--muted); }
+.menu { display: grid; background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+.menu button { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; text-align: left; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 12px 14px; cursor: pointer; min-height: 64px; color: var(--ink); font-family: inherit; }
 .menu button:first-child { border-top: 0; }
+.menu .mic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
+:root[data-skin="green"] .menu .mic { border-radius: 50%; }
 .menu button span small { display: block; font-size: 13px; color: var(--muted); }
-.menu button .arrow { color: var(--muted); font-size: 20px; }
-.case { display: grid; gap: 6px; }
-.case .place { font-size: 14px; color: var(--muted); }
-.bars { display: grid; gap: 8px; }
+.menu .arrow { color: var(--muted); font-size: 22px; }
+.skins { display: grid; gap: 12px; }
+.skin { border: 2px solid var(--line); border-radius: var(--radius); padding: 14px; display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; cursor: pointer; background: var(--surface); text-align: left; color: var(--ink); font-family: inherit; }
+.skin[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.skin .pv { height: 120px; border-radius: 14px; padding: 10px 8px; display: grid; gap: 6px; align-content: start; }
+.skin .pv i { display: block; border-radius: 6px; }
+.skin b { font-size: 17px; }
+.skin small { display: block; color: var(--muted); font-size: 13px; }
+.bars { display: grid; gap: 10px; }
 .barrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 14px; }
 .barrow .bar { grid-column: 1 / -1; }
-.answer { white-space: pre-wrap; font-size: 15px; background: var(--surface-2); border-radius: 12px; padding: 12px; }
+.answer { white-space: pre-wrap; font-size: 15px; background: var(--bg); border-radius: 14px; padding: 12px; }
 .tbl-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
 th { color: var(--muted); font-weight: 500; white-space: nowrap; }
-.guide { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; }
-.guide svg { width: 64px; height: 64px; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 8; max-width: calc(100% - 32px); }
-.banner { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 8px 12px; font-size: 14px; font-weight: 500; }
+.guide { display: grid; grid-template-columns: 56px 1fr; gap: 12px; align-items: start; }
+.guide .gi { width: 56px; height: 56px; border-radius: 14px; background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 14px; z-index: 8; max-width: calc(100% - 32px); }
+.banner { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 8px 12px; font-size: 14px; font-weight: 700; }
+.spin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--accent-soft); border-top-color: var(--accent); animation: spin 0.9s linear infinite; flex: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.extras { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.extras button { height: 72px; border-radius: 12px; overflow: hidden; border: 0; padding: 0; background: var(--surface-2); cursor: pointer; position: relative; color: var(--muted); font-size: 12px; }
+.extras img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.extras button span { position: absolute; left: 4px; bottom: 4px; background: rgba(0,0,0,0.6); color: #FFFFFF; border-radius: 6px; padding: 0 6px; font-size: 11px; }
+.preview { width: 100%; max-height: 360px; object-fit: contain; border-radius: 14px; background: var(--surface-2); display: block; }
+.list .li .acts { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.list .li .acts select { min-height: 38px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); padding: 4px 8px; font-size: 14px; max-width: 100%; }
+.slot .frame .cd { font-family: var(--font-num); font-weight: 800; font-size: 22px; color: var(--accent-text); }
+:root[data-skin="green"] .slot .frame .cd { color: #F2A21B; background: #1B1F1D; border-radius: 10px; padding: 2px 10px; }
+.toolrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+ol.steps li { padding-left: 4px; }
+ol.steps li .row { margin-top: 6px; }
 </style>
 
 <header class="top">
   <div class="wrap">
-    <h1>違停檢舉助手</h1>
-    <span class="badge">測試版 v0.2.1</span>
+    <div class="mark" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M12 7.5l-3 4.5 2.5 1L10 21"/><path d="M12 7.5l2.5 3.5 3 1"/><path d="M11.5 13l3 3 .5 5"/></svg></div>
+    <div class="brand"><b>違停檢舉助手</b><span>把人行道和斑馬線還給行人・測試版 v0.3</span></div>
+    <button class="iconbtn" id="lock-btn" type="button" hidden aria-label="立即上鎖個人資料"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></button>
   </div>
   <div class="zebra" aria-hidden="true"></div>
 </header>
 <nav class="tabbar" role="tablist" aria-label="主要功能">
   <div class="wrap">
-    <button role="tab" data-view="home" aria-selected="true" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>首頁</button>
-    <button role="tab" data-view="report" aria-selected="false" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></svg>檢舉</button>
-    <button role="tab" data-view="records" aria-selected="false" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>紀錄</button>
-    <button role="tab" data-view="me" aria-selected="false" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>我的</button>
+    <button role="tab" data-view="home" aria-selected="true" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>首頁</button>
+    <button role="tab" data-view="report" aria-selected="false" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/></svg>檢舉</button>
+    <button role="tab" data-view="records" aria-selected="false" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>紀錄</button>
+    <button role="tab" data-view="me" aria-selected="false" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>我的</button>
   </div>
 </nav>
 <main class="wrap" id="view"></main>
+<input type="file" id="cam-input" accept="image/*" capture="environment" class="sr" tabindex="-1" aria-hidden="true">
+<input type="file" id="lib-input" accept="image/*" multiple class="sr" tabindex="-1" aria-hidden="true">
 <div id="toast" class="toast" role="status" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/exifreader@4.46.0/dist/exif-reader.js"></script>
@@ -408,15 +533,17 @@ async function makeThumb(file) { try { return (await renderScaled(file, 200)).to
 async function makeAiJpeg(file) { const c = await renderScaled(file, 1600); return new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)); }
 
 /* ================= 狀態 ================= */
-const ROLES = { overview: '全景', plate: '車牌特寫', driver_seat: '駕駛座', interval: '隔 3 分鐘補拍', other: '其他' };
+const ROLES = { overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '3 分鐘後', other: '其他' };
 const ROLE_WHY = {
-  overview: '看得出車子停在人行道或斑馬線上，最好拍到路名牌或門牌',
-  plate: '車牌要清楚，警方才能查到車主',
-  driver_seat: '看得出車上有沒有人，才能判斷是「停車」還是「臨時停車」',
-  interval: '同一角度、隔 3 分鐘以上再拍，證明車子一直停著'
+  overview: '看得出停在人行道或斑馬線上',
+  plate: '靠近拍，車牌要清楚',
+  driver_seat: '看得出車上有沒有人',
+  interval: '同一個角度，隔 3 分鐘再拍',
+  other: '其他角度或補充'
 };
+const ROLE_ICON = { overview: 'crosswalk', plate: 'plate', driver_seat: 'seat', interval: 'clock', other: 'image' };
 const ROLE_ORDER = ['overview', 'plate', 'driver_seat', 'interval'];
-const STEP_NAMES = ['能不能檢舉', '拍照', 'Claude 判讀', '確認內容', '送出'];
+const STEP_NAMES = ['能不能檢舉', '拍照', '確認檢舉單', '送出'];
 const TIPS = [
   '拍駕駛座，警方才能判斷是「停車」還是「臨時停車」。',
   '違規當天算第 1 天，第 7 天 24:00 前要送出。',
@@ -425,6 +552,14 @@ const TIPS = [
   '全景照拍到路名牌或門牌，地點就不會填錯。',
   '同一地點常有違停？到「紀錄」產生陳情信，請里長或議員協助改善。'
 ];
+const SKINS = [
+  { id: 'road', name: '路標', desc: '藍白交通標誌風格，字大清楚，白天在戶外最好讀。', pv: { bg: '#F1F3F6', bar: '#0A58A8', card: '#FFFFFF', ink: '#0E1A2B', round: '6px' } },
+  { id: 'night', name: '夜巡', desc: '深色畫面配黃色重點，晚上不刺眼，也比較省電。', pv: { bg: '#111418', bar: '#FFD23F', card: '#1A1F25', ink: '#EEF1F4', round: '6px' } },
+  { id: 'green', name: '小綠人', desc: '行人號誌的綠色，圓潤親切，適合每天輕鬆用。', pv: { bg: '#F2F6F3', bar: '#16955A', card: '#FFFFFF', ink: '#10302A', round: '999px' } }
+];
+const LOCK_OPTIONS = [[5, '離開 App 5 分鐘後'], [30, '離開 App 30 分鐘後（建議）'], [0, '只有完全關掉 App 時']];
+const RETENTION = [['result', '記下處理結果後刪除（建議）'], ['60d', '拍攝 60 天後刪除'], ['keep', '一直保留，自己刪除']];
+const DEFAULT_SETTINGS = { autofillReady: false, gpsTest: null, storeId: true, skin: null, autoLockMin: 30, photoRetention: 'result' };
 const S = {
   view: 'home', sub: null, step: 1, focus: false,
   data: { jur: null, vio: null, fill: null, towns: null },
@@ -432,17 +567,18 @@ const S = {
   profile: null, lock: null, unlocked: true,
   cases: store.get(K.cases, []).map(migrate),
   places: store.get(K.places, []),
-  settings: { autofillReady: false, gpsTest: null, storeId: true, ...store.get(K.settings, {}) },
-  cur: null, files: {}, aiCtl: null,
+  settings: { ...DEFAULT_SETTINGS, ...store.get(K.settings, {}) },
+  cur: null, files: {}, aiCtl: null, aiMsg: '', aiErr: false,
   timer: { start: null, fired: false }, audio: null,
   rec: { filter: 'all', q: '' },
-  isSample: false, lastImportNoGps: false, autofillSrc: null
+  ui: { open: {}, photo: null, camRole: null, busy: '' },
+  photoDb: true, isSample: false, autofillSrc: null
 };
 function newCase() {
   return {
     id: uid(), status: 'draft', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     answers: { vehicle: null, place: null, driver: null },
-    photos: [], ai: null, geo: null,
+    photos: [], ai: null, aiSig: '', geo: null,
     form: { date: '', time: '', timeSource: '', county: '', town: '', districtLabel: '', road: '', detail: '', plate: '', vdesc: '', desc: '', autoTime: true, autoLoc: true, descEdited: false, locSource: '' },
     evidence: {}, submission: { caseNumber: '', queryPassword: '', submittedAt: '' }, result: '', focusIdx: 0
   };
@@ -460,6 +596,18 @@ function emptyProfile() { return { name: '', idNumber: '', phone: '', email: '',
 })();
 function isFilled(P) { return !!(P.name && P.phone && P.email && P.address && (S.settings.storeId === false || P.idNumber)); }
 const profileReady = () => S.lock ? !!(S.lock.blob && S.lock.blob.filled) : isFilled(S.profile);
+
+/* 外觀：沒有選過就跟著手機的深淺色（深色用夜巡，淺色用路標） */
+function autoSkin() {
+  const t = document.documentElement.dataset.theme;
+  if (t === 'dark') return 'night';
+  if (t === 'light') return 'road';
+  try { return matchMedia('(prefers-color-scheme: dark)').matches ? 'night' : 'road'; } catch (e) { return 'road'; }
+}
+function applySkin() { document.documentElement.dataset.skin = S.settings.skin || autoSkin(); }
+applySkin();
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!S.settings.skin) applySkin(); }); } catch (e) {}
+new MutationObserver(() => { if (!S.settings.skin) applySkin(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
 /* ================= 判斷規則 ================= */
 function verdict(c = S.cur) {
@@ -580,6 +728,146 @@ function persistCases() {
 const saveSettings = () => store.set(K.settings, S.settings);
 const savePlaces = () => store.set(K.places, S.places);
 
+/* ================= 照片存放：App 自己的資料庫（IndexedDB） =================
+ * 照片原檔只存在這支手機、這個 App 的資料庫，不會進手機相簿，也不會上傳。
+ * 存成 ArrayBuffer（比 Blob 相容性好）。資料庫打不開時（例如私密瀏覽），照片只留在記憶體。 */
+const PhotoDB = {
+  p: null,
+  open() {
+    if (this.p) return this.p;
+    this.p = new Promise(res => {
+      try {
+        if (!window.indexedDB) return res(null);
+        const r = indexedDB.open('prh-photos', 1);
+        r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains('photos')) r.result.createObjectStore('photos', { keyPath: 'id' }); };
+        r.onsuccess = () => res(r.result);
+        r.onerror = r.onblocked = () => res(null);
+      } catch (e) { res(null); }
+    });
+    return this.p;
+  },
+  async run(mode, fn) {
+    const db = await this.open(); if (!db) return null;
+    return new Promise(res => {
+      try {
+        const t = db.transaction('photos', mode), req = fn(t.objectStore('photos'));
+        t.oncomplete = () => res(req && 'result' in req ? (req.result === undefined ? true : req.result) : true);
+        t.onerror = t.onabort = () => res(null);
+      } catch (e) { res(null); }
+    });
+  },
+  put(rec) { return this.run('readwrite', s => s.put(rec)); },
+  get(id) { return this.run('readonly', s => s.get(id)); },
+  del(id) { return this.run('readwrite', s => s.delete(id)); },
+  keys() { return this.run('readonly', s => s.getAllKeys()); },
+  clear() { return this.run('readwrite', s => s.clear()); }
+};
+async function storePhoto(caseId, p, file) {
+  if (S.isSample) return false;
+  try {
+    const ok = await PhotoDB.put({ id: p.id, caseId, name: p.name, type: file.type || 'image/jpeg', data: await file.arrayBuffer(), savedAt: Date.now() });
+    if (!ok) { S.photoDb = false; return false; }
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    return true;
+  } catch (e) { return false; }
+}
+async function photoBlob(p) {
+  if (S.files[p.id]) return S.files[p.id];
+  if (!p.stored) return null;
+  const r = await PhotoDB.get(p.id);
+  if (!r || !r.data) return null;
+  return (S.files[p.id] = new Blob([r.data], { type: r.type || 'image/jpeg' }));
+}
+async function loadCaseFiles(c) {
+  let n = 0;
+  for (const p of c.photos) if (!S.files[p.id] && p.stored) { if (await photoBlob(p)) n++; else p.stored = false; }
+  return n;
+}
+function forgetPhotos(c) { for (const p of c.photos) { PhotoDB.del(p.id); delete S.files[p.id]; p.stored = false; } }
+function photosExpired(c) {
+  const r = S.settings.photoRetention;
+  return (r === 'result' && !!c.result) || (r === '60d' && Date.now() - Date.parse(c.createdAt) > 60 * 864e5);
+}
+/* 依「照片存放」設定刪掉到期的照片，並清掉沒有對應案件的照片 */
+async function photoHousekeeping() {
+  const keep = new Set(S.cur.photos.map(p => p.id)); let changed = false;
+  for (const c of S.cases) {
+    const exp = photosExpired(c);
+    for (const p of c.photos) {
+      if (!p.stored) continue;
+      if (exp) { await PhotoDB.del(p.id); p.stored = false; changed = true; } else keep.add(p.id);
+    }
+  }
+  const ids = await PhotoDB.keys();
+  if (Array.isArray(ids)) for (const id of ids) if (!keep.has(id)) await PhotoDB.del(id);
+  if (changed) persistCases();
+}
+/* 匯出用：JPEG、PNG 保留原檔（含拍攝時間）；其他格式（例如 HEIC）轉成 JPEG，官方網站才收 */
+async function exportable(p) {
+  const b = await photoBlob(p); if (!b) return null;
+  const t = (b.type || p.type || '').toLowerCase();
+  if (/jpe?g|png/.test(t)) return { blob: b, ext: /png/.test(t) ? 'png' : 'jpg' };
+  const c = await renderScaled(b, 4096);
+  return { blob: await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92)), ext: 'jpg' };
+}
+function photoFilename(c, p, i, ext) {
+  const stamp = (p.takenAt || '').slice(0, 16).replace(/[-:]/g, '').replace('T', '_') || todayTaipei().replace(/-/g, '');
+  return `${plateKey(c.form.plate) ? c.form.plate : 'PRH'}_${stamp}_${i + 1}.${ext}`;
+}
+/* 最簡單的 ZIP（不壓縮，照片本來就壓縮過），一次存好全部照片 */
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+async function makeZip(entries) {
+  const enc = new TextEncoder(), parts = [], central = [];
+  const d = new Date(), time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  let offset = 0;
+  for (const e of entries) {
+    const data = new Uint8Array(await e.blob.arrayBuffer()), name = enc.encode(e.name), crc = crc32(data);
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(10, time, true); h.setUint16(12, date, true);
+    h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, name.length, true);
+    parts.push(h, name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(12, time, true); ch.setUint16(14, date, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true); ch.setUint32(42, offset, true);
+    central.push(ch, name);
+    offset += 30 + name.length + data.length;
+  }
+  const size = central.reduce((a, x) => a + x.byteLength, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true); end.setUint32(12, size, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, end], { type: 'application/zip' });
+}
+async function savePhoto(c, p) {
+  try {
+    const x = await exportable(p);
+    if (!x) { toast('這張照片的原檔不在 App 裡'); return; }
+    await saveFile(photoFilename(c, p, c.photos.indexOf(p), x.ext), x.blob);
+  } catch (e) { toast('照片無法儲存'); }
+}
+async function savePhotosZip(cases, filename) {
+  const entries = [];
+  toast('整理照片中…');
+  try {
+    for (const c of cases) for (const [i, p] of c.photos.entries()) {
+      const x = await exportable(p); if (!x) continue;
+      const name = photoFilename(c, p, i, x.ext);
+      entries.push({ name: cases.length > 1 ? `${(c.form.date || c.createdAt.slice(0, 10)).replace(/-/g, '')}_${plateKey(c.form.plate) || c.id}/${name}` : name, blob: x.blob });
+    }
+    if (!entries.length) { toast('沒有可以存的照片'); return; }
+    await saveFile(filename, await makeZip(entries));
+  } catch (e) { toast('照片無法整理成壓縮檔'); }
+}
+async function saveFile(filename, data) {
+  if (!S.downloads) { toast('這個畫面不能存檔案'); return false; }
+  try { await S.downloads.save({ filename, data }); toast('已交給手機儲存'); return true; }
+  catch (e) {
+    const code = e && e.code;
+    if (code === 'rate_limited') toast('上一個儲存視窗還開著，請先完成');
+    else if (code !== 'declined') toast('無法儲存檔案');
+    return false;
+  }
+}
+
 /* ================= 隱私密碼：個人資料加密存放 =================
  * 用隱私密碼經 PBKDF2（60 萬次）產生金鑰，再用 AES-GCM 加密個人資料。
  * 手機裡只存加密後的內容；密碼和金鑰都不會儲存，只在解鎖期間留在記憶體。 */
@@ -618,9 +906,10 @@ async function setPin(pin) {
   return persistProfile();
 }
 async function removePin() { S.lock = null; S.unlocked = true; return persistProfile(); }
+function lockText() { const m = S.settings.autoLockMin; return m > 0 ? `離開 App 超過 ${m} 分鐘會自動再上鎖。` : '完全關掉 App 後會自動上鎖。'; }
 function unlockCard() {
   const pin = el('input', { id: 'unlock-pin', type: 'password', autocomplete: 'off', placeholder: '輸入隱私密碼' });
-  const msg = el('span', { class: 'sub', id: 'unlock-msg' });
+  const msg = el('span', { class: 'sub', id: 'unlock-msg', 'aria-live': 'polite' });
   const doUnlock = async () => {
     if (!pin.value) return;
     msg.className = 'sub'; msg.textContent = '解鎖中…';
@@ -628,16 +917,81 @@ function unlockCard() {
     catch (e) { msg.className = 'sub bad'; msg.textContent = '密碼不對，請再試一次。'; }
   };
   pin.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
-  return el('div', { class: 'card' }, el('h3', { text: '個人資料已上鎖' }),
-    el('p', { class: 'hint', text: '輸入隱私密碼才會顯示個人資料，並用在自動填表。離開 App 超過 5 分鐘會自動再上鎖。' }),
+  return el('div', { class: 'card' }, el('h3', {}, icon('lock', 20), '個人資料已上鎖'),
+    el('p', { class: 'hint', text: '輸入隱私密碼才會顯示個人資料，並用在自動填表。' + lockText() }),
     el('div', { class: 'field' }, el('label', { for: 'unlock-pin' }, '隱私密碼'), pin, msg),
     el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: doUnlock }, '解鎖'), el('button', { class: 'btn ghost', type: 'button', onclick: () => go('me', { sub: 'privacy' }) }, '忘記密碼？')));
 }
 let hiddenAt = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) { hiddenAt = Date.now(); return; }
-  if (S.lock && S.unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60 * 1000) { lockNow(); render(); toast('已自動上鎖'); }
+  const m = S.settings.autoLockMin;
+  if (S.lock && S.unlocked && m > 0 && hiddenAt && Date.now() - hiddenAt > m * 60000) { lockNow(); render(); toast('已自動上鎖'); }
 });
+/* Face ID／指紋支援檢查：只讀取瀏覽器回報的能力，不建立、也不儲存任何東西 */
+async function biometricCheck() {
+  const out = { api: !!window.PublicKeyCredential, platform: null, prf: null, frame: window.self !== window.top };
+  if (!out.api) return out;
+  try { out.platform = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch (e) { out.platform = false; }
+  try { if (PublicKeyCredential.getClientCapabilities) { const caps = await PublicKeyCredential.getClientCapabilities(); out.prf = !!caps['extension:prf']; } } catch (e) {}
+  try { const fp = document.permissionsPolicy || document.featurePolicy; if (fp && fp.allowsFeature) out.allowed = fp.allowsFeature('publickey-credentials-get'); } catch (e) {}
+  return out;
+}
+
+/* ================= 圖示 ================= */
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  camera: '<path d="M3 8h3l2-3h8l2 3h3v11H3z"/><circle cx="12" cy="13" r="4"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+  check: '<path d="M5 12l5 5 9-10"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  next: '<path d="M9 6l6 6-6 6"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  pencil: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  pin: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  spark: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>',
+  car: '<path d="M4 16v-4l2-5h12l2 5v4z"/><path d="M4 16v2.5M20 16v2.5M4 12h16"/><circle cx="7.5" cy="14" r="0.8"/><circle cx="16.5" cy="14" r="0.8"/>',
+  moto: '<circle cx="5.5" cy="16.5" r="3"/><circle cx="18.5" cy="16.5" r="3"/><path d="M5.5 16.5l4-6h5l4 6M14 6h3l1.5 4.5M9 10.5H6"/>',
+  sidewalk: '<path d="M3 21h18M3 16h18M7 16v5M12 16v5M17 16v5"/><circle cx="13" cy="4" r="1.8"/><path d="M12.5 6.5L10.5 10l2 1-1 3.5"/>',
+  crosswalk: '<path d="M6 3v18M10 3v18M14 3v18M18 3v18"/>',
+  arcade: '<path d="M3 21V9l9-6 9 6v12"/><path d="M6 21v-5a2 2 0 0 1 4 0v5M14 21v-5a2 2 0 0 1 4 0v5"/>',
+  roadside: '<path d="M4 3v18M8 3v18"/><path d="M12 15l2-5h5l2 5v3h-9z"/>',
+  seat: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M3.5 10.5h6M14.5 10.5h6M12 14.5v6"/>',
+  person: '<circle cx="12" cy="7" r="3.5"/><path d="M5 21c1-4.5 3.8-7 7-7s6 2.5 7 7"/>',
+  question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/>',
+  plate: '<rect x="2.5" y="7" width="19" height="10" rx="2"/><path d="M6 12h3M11 12h7"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  palette: '<path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.5 0-1.2-1-1.5-1-2.5s.9-1.5 2-1.5H17a4 4 0 0 0 4-4c0-4.7-4-8.5-9-8.5z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+  folder: '<path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  wand: '<path d="M4 20L16 8"/><path d="M14 6l4 4"/><path d="M18 2v3M20.5 3.5h-3M6 4v2M7 5H5"/>',
+  book: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/>',
+  download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
+  calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  alert: '<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/>',
+  phone: '<path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
+  walk: '<circle cx="13" cy="4" r="2"/><path d="M12 7.5l-3 4.5 2.5 1L10 21"/><path d="M12 7.5l2.5 3.5 3 1"/><path d="M11.5 13l3 3 .5 5"/>',
+  send: '<path d="M4 12l16-8-6 16-2-7z"/>',
+  list: '<path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/>',
+  face: '<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M9 9v1M15 9v1M12 9v4h-1M9 16c1.8 1.3 4.2 1.3 6 0"/>'
+};
+function icon(name, size = 22, sw = 2) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('width', size); s.setAttribute('height', size);
+  s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', sw);
+  s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true');
+  s.innerHTML = ICONS[name] || '';
+  return s;
+}
 
 /* ================= 共用元件 ================= */
 function copyRow(label, value, note, display) {
@@ -649,10 +1003,10 @@ function copyRow(label, value, note, display) {
 }
 function note(kind, title, ...lines) { return el('div', { class: 'note ' + kind }, title ? el('b', { text: title }) : null, ...lines.filter(Boolean).map(l => l instanceof Node ? l : el('span', { text: l }))); }
 function field(label, input, subId) { return el('div', { class: 'field' }, el('label', { for: input.id }, label), input, subId ? el('span', { class: 'sub', id: subId }) : null); }
-function plateChip(p) { return p ? el('span', { class: 'plate sm', text: p }) : el('span', { class: 'hint', text: '（未填車牌）' }); }
+function plateChip(p, size = 'sm') { return p ? el('span', { class: 'plate ' + size, text: p }) : el('span', { class: 'plate empty ' + size, text: '未填車牌' }); }
 function maskId(s) { return s && s.length >= 6 ? s.slice(0, 3) + '****' + s.slice(-3) : s; }
 function statusPill(c) {
-  const map = { draft: ['草稿', 'info'], submitted: ['已送出', 'ok'], cited: ['已舉發', 'ok'], not_cited: ['不舉發', 'no'], warned: ['勸導', 'warn'] };
+  const map = { draft: ['草稿', 'info'], submitted: ['已送出', 'accent'], cited: ['已舉發', 'ok'], not_cited: ['不舉發', 'no'], warned: ['勸導', 'warn'] };
   const k = c.status === 'submitted' && c.result ? c.result : c.status;
   const [t, kind] = map[k] || map.draft;
   return el('span', { class: 'pill ' + kind, text: t });
@@ -662,6 +1016,23 @@ function deadlinePill(c) {
   const left = daysLeft(c); if (left == null) return null;
   return el('span', { class: 'pill ' + (left < 0 ? 'no' : left <= 1 ? 'warn' : 'info'), text: left < 0 ? '已逾期' : left === 0 ? '今天到期' : `剩 ${left} 天` });
 }
+function countEl(left) {
+  return el('span', { class: 'count' + (left <= 1 ? ' urgent' : '') }, el('span', { class: 'n', text: left < 0 ? '!' : String(left) }), el('span', { class: 'u', text: left < 0 ? '逾期' : '天' }));
+}
+function daybar(left) {
+  const used = Math.min(7, Math.max(0, 7 - left));
+  return el('div', { class: 'daybar' + (left <= 1 ? ' urgent' : ''), 'aria-hidden': 'true' }, Array.from({ length: 7 }, (_, i) => el('span', { class: i < used ? 'on' : '' })));
+}
+function stat(n, label) { return el('div', { class: 'stat' }, el('b', { text: String(n) }), el('span', { text: label })); }
+function armed(btn, label, confirmLabel, fn) {
+  btn.addEventListener('click', () => {
+    if (!btn.dataset.armed) { btn.dataset.armed = '1'; btn.textContent = confirmLabel; setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = label; } }, 4000); return; }
+    fn();
+  });
+  return btn;
+}
+function actionbar(...btns) { return el('div', { class: 'actionbar' }, ...btns); }
+function setIf(sel, val) { const n = $(sel); if (n && document.activeElement !== n && n.value !== (val || '')) n.value = val || ''; }
 
 /* ================= 導覽 ================= */
 function go(view, opts = {}) {
@@ -674,55 +1045,68 @@ function go(view, opts = {}) {
 }
 function render() {
   for (const b of document.querySelectorAll('.tabbar button')) b.setAttribute('aria-selected', String(b.dataset.view === S.view));
+  const lb = $('#lock-btn'); if (lb) lb.hidden = !(S.lock && S.unlocked);
   const v = $('#view'); v.replaceChildren();
-  if (!S.data.vio) { v.append(el('p', { class: 'lead', text: '載入中…' })); return; }
+  if (!S.data.vio) { v.append(el('div', { class: 'row' }, el('span', { class: 'spin' }), el('span', { class: 'hint', text: '載入中…' }))); return; }
   ({ home: renderHome, report: renderReport, records: renderRecords, me: renderMe })[S.view](v);
 }
-function startNew() { S.cur = newCase(); S.files = {}; S.isSample = false; S.timer = { start: null, fired: false }; S.lastImportNoGps = false; go('report', { step: 1 }); }
-function openCase(id) {
+function toStep(n) { S.focus = false; S.step = n; S.ui.photo = null; render(); window.scrollTo(0, 0); }
+function startNew() {
+  S.cur = newCase(); S.files = {}; S.isSample = false; S.timer = { start: null, fired: false };
+  S.ui = { open: {}, photo: null, camRole: null, busy: '' }; S.aiMsg = ''; S.aiErr = false;
+  go('report', { step: 1 });
+}
+async function openCase(id) {
   const c = S.cases.find(x => x.id === id); if (!c) return;
   S.cur = migrate(JSON.parse(JSON.stringify(c))); S.files = {}; S.isSample = false; S.focus = false;
-  const step = c.status !== 'draft' ? 5 : !reportable(S.cur) ? 1 : c.form.plate || c.form.road ? 4 : c.photos.length ? 3 : 2;
+  S.ui = { open: {}, photo: null, camRole: null, busy: '' }; S.aiMsg = ''; S.aiErr = false; S.timer = { start: null, fired: false };
+  const step = c.status !== 'draft' ? 4 : !reportable(S.cur) ? 1 : c.form.plate || c.form.road ? 3 : 2;
   go('report', { step });
+  const typing = () => document.activeElement && /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if (await loadCaseFiles(S.cur) && S.view === 'report' && S.cur.id === id && !typing()) render();
 }
 
 /* ================= 首頁 ================= */
 function renderHome(v) {
-  const setupDone = profileReady() && S.settings.autofillReady && S.settings.gpsTest;
+  const setupDone = profileReady() && S.settings.autofillReady && (S.lock || !CRYPTO_OK);
   if (!setupDone) {
-    const item = (on, title, sub, btnText, fn) => el('div', { class: 'setup' }, el('span', { class: 'dot' + (on ? ' on' : ''), text: on ? '✓' : '' }), el('div', {}, el('div', { text: title }), el('div', { class: 'hint', text: sub })), on ? null : el('button', { class: 'btn small', type: 'button', onclick: fn }, btnText));
+    const item = (on, title, sub, btnText, fn) => el('div', { class: 'setup' }, el('span', { class: 'dot' + (on ? ' on' : '') }, on ? icon('check', 14, 3) : null), el('div', {}, el('div', { text: title }), el('div', { class: 'hint', text: sub })), on ? null : el('button', { class: 'btn small', type: 'button', onclick: fn }, btnText));
     v.append(el('div', { class: 'card' }, el('h3', { text: '開始前的準備' }),
       item(profileReady(), '個人資料', '只填一次，存在這支手機', '去填', () => go('me', { sub: 'profile' })),
-      item(!!S.settings.gpsTest, '照片定位測試', '確認你的手機選照片時能帶出地點', '去測試', () => go('me', { sub: 'test' })),
+      CRYPTO_OK ? item(!!S.lock, '隱私密碼', '把個人資料加密，別人拿到手機也看不到', '去設定', () => go('me', { sub: 'privacy' })) : null,
       item(S.settings.autofillReady, '自動填表書籤', '設定一次，之後在官方網站一鍵填好', '去設定', () => go('me', { sub: 'autofill' })),
-      CRYPTO_OK ? item(!!S.lock, '隱私密碼（建議）', '把個人資料加密存放，別人拿到手機也看不到', '去設定', () => go('me', { sub: 'privacy' })) : null));
+      el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: loadSample }, '先看範例怎麼用'))));
   }
-  v.append(el('button', { class: 'btn primary cta', type: 'button', onclick: startNew }, '我看到違停'));
+  v.append(el('div', { class: 'cta' },
+    el('div', { class: 'cta-hero', 'aria-hidden': 'true' }, el('span', {}, icon('walk', 46, 2))),
+    el('button', { class: 'cta-btn', type: 'button', onclick: () => { startNew(); openCamera('overview'); } },
+      el('span', { class: 'cta-icon' }, icon('camera', 28)),
+      el('span', { class: 'cta-title', text: '我看到違停' }),
+      el('span', { class: 'cta-sub', text: '打開相機，先拍全景' }),
+      el('span', { class: 'cta-arrow' }, icon('arrow', 26))),
+    el('button', { class: 'btn block cta-alt', type: 'button', onclick: () => { startNew(); openLibrary(); } }, icon('image', 20), '從相簿選照片')));
   if (hasContent(S.cur) && S.cur.status === 'draft' && !S.isSample) v.append(el('button', { class: 'btn block', type: 'button', onclick: () => go('report') }, `繼續剛剛那一件${S.cur.form.plate ? '（' + S.cur.form.plate + '）' : ''}`));
 
   const drafts = S.cases.filter(c => c.status === 'draft').sort((a, b) => (daysLeft(a) ?? 99) - (daysLeft(b) ?? 99));
-  const todo = el('div', { class: 'card' }, el('h3', { text: '待辦' }));
-  if (!drafts.length) todo.append(el('p', { class: 'hint', text: '沒有待送出的案件。' }));
-  for (const c of drafts.slice(0, 5)) {
-    todo.append(el('div', { class: 'todo' },
-      el('div', { class: 't' }, el('div', { class: 'row' }, plateChip(c.form.plate), deadlinePill(c)), el('span', { class: 'place', text: locText(c) || '（未填地點）' })),
-      el('button', { class: 'btn small', type: 'button', onclick: () => openCase(c.id) }, '繼續')));
+  if (drafts.length) {
+    v.append(el('div', { class: 'row between' }, el('h2', { class: 'sec-title', text: '還沒送出' }), drafts.length > 3 ? el('button', { class: 'btn small ghost', type: 'button', onclick: () => { S.rec.filter = 'draft'; go('records'); } }, `全部 ${drafts.length} 件`) : null),
+      el('div', { class: 'hscroll' }, drafts.slice(0, 8).map(c => {
+        const left = daysLeft(c);
+        return el('button', { class: 'dcard', type: 'button', onclick: () => openCase(c.id), 'aria-label': `繼續 ${c.form.plate || '未填車牌'} 的案件` },
+          el('div', { class: 'row between' }, plateChip(c.form.plate), left != null ? countEl(left) : el('span', { class: 'pill info', text: '沒有日期' })),
+          el('span', { class: 'place', text: [c.form.town, c.form.road].filter(Boolean).join(' ') || '（還沒有地點）' }),
+          left != null ? daybar(left) : null);
+      })));
   }
-  if (drafts.length > 5) todo.append(el('button', { class: 'btn small ghost', type: 'button', onclick: () => { S.rec.filter = 'draft'; go('records'); } }, `看全部 ${drafts.length} 件草稿`));
-  v.append(todo);
 
   const st = monthStats();
-  v.append(el('div', { class: 'card' }, el('h3', { text: '這個月' }),
-    el('div', { class: 'stats' }, stat(st.sent, '已送出'), stat(st.cited, '已舉發'), stat(st.warned, '勸導'), stat(st.notCited, '不舉發')),
-    st.rate != null ? el('p', { class: 'hint', text: `有結果的案件中，${st.rate}% 被舉發。` }) : el('p', { class: 'hint', text: '送出後記下處理結果，就能看到成案率。' })));
+  v.append(el('h2', { class: 'sec-title', text: '這個月' }),
+    el('div', { class: 'stats' }, stat(st.sent, '已送出'), stat(st.cited, '已舉發'), stat(st.warned, '勸導'), stat(st.rate != null ? st.rate + '%' : '—', '成案率')));
 
   const hot = hotspots().filter(h => h.count >= 3)[0];
   if (hot) v.append(note('warn', `${hot.label}：你已經檢舉 ${hot.count} 次`, '慣性違停的地點，可以請里長、議員或交通局設置阻車柱或加強取締。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('records') }, '寫陳情信'))));
-
-  const tip = TIPS[Number(todayTaipei().slice(-2)) % TIPS.length];
-  v.append(note('info', '小提醒', tip));
+  v.append(el('div', { class: 'tip' }, el('span', { class: 'ic' }, icon('spark', 18)), el('span', { text: TIPS[Number(todayTaipei().slice(-2)) % TIPS.length] })));
 }
-function stat(n, label) { return el('div', { class: 'stat' }, el('b', { text: String(n) }), el('span', { text: label })); }
 function monthStats() {
   const mk = todayTaipei().slice(0, 7);
   const sent = S.cases.filter(c => c.status === 'submitted' && (c.form.date || '').startsWith(mk));
@@ -745,116 +1129,215 @@ function hotspots() {
 /* ================= 檢舉流程 ================= */
 function renderReport(v) {
   const c = S.cur;
-  if (S.isSample) v.append(el('div', { class: 'banner', text: '這是範例資料，不是真實案件。按「新的一件」清除。' }));
-  const maxStep = reportable(c) ? 5 : 1;
+  if (S.isSample) v.append(el('div', { class: 'banner', text: '這是範例，不是真實案件。按「新的一件」開始。' }));
+  const maxStep = reportable(c) ? 4 : 1;
   if (S.step > maxStep) S.step = 1;
-  v.append(el('div', { class: 'progress' },
-    el('div', { class: 'row between' }, el('span', { class: 'label' }, `第 ${S.step} 步／共 5 步　`, el('b', { text: STEP_NAMES[S.step - 1] })),
-      el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: startNew }, '新的一件'), el('button', { class: 'btn small ghost', type: 'button', onclick: loadSample }, '看範例'))),
-    el('div', { class: 'dots' }, STEP_NAMES.map((n, i) => el('button', { type: 'button', 'aria-label': `第 ${i + 1} 步：${n}`, class: i + 1 === S.step ? 'now' : i + 1 < S.step ? 'done' : '', disabled: i + 1 > maxStep, onclick: () => { S.focus = false; S.step = i + 1; render(); window.scrollTo(0, 0); } })))));
-  [null, step1, step2, step3, step4, step5][S.step](v);
-}
-function stepNav(v, nextLabel, nextFn, opts = {}) {
-  v.append(el('div', { class: 'stepnav' },
-    S.step > 1 ? el('button', { class: 'btn', type: 'button', onclick: () => { S.step--; render(); window.scrollTo(0, 0); } }, '上一步') : el('span'),
-    nextLabel ? el('button', { class: 'btn primary', type: 'button', disabled: !!opts.disabled, onclick: nextFn || (() => { S.step++; render(); window.scrollTo(0, 0); }) }, nextLabel) : el('span')));
+  const n = ROLE_ORDER.filter(r => c.photos.some(p => p.role === r)).length;
+  v.append(el('div', { class: 'flowhead' },
+    el('div', { class: 'top-line' },
+      el('button', { class: 'iconbtn', type: 'button', 'aria-label': S.step > 1 ? '上一步' : '回首頁', onclick: () => S.step > 1 ? toStep(S.step - 1) : go('home') }, icon('back')),
+      el('div', { class: 'label' }, el('small', { text: `第 ${S.step} 步，共 4 步` }), el('b', { text: STEP_NAMES[S.step - 1] + (S.step === 2 ? `　${n}/4` : '') })),
+      el('button', { class: 'btn small ghost', type: 'button', onclick: startNew }, '新的一件')),
+    el('div', { class: 'segs' }, STEP_NAMES.map((name, i) => el('button', { type: 'button', 'aria-label': `第 ${i + 1} 步：${name}`, class: i + 1 === S.step ? 'now' : i + 1 < S.step ? 'done' : '', disabled: i + 1 > maxStep, onclick: () => toStep(i + 1) })))));
+  [null, step1, step2, step3, step4][S.step](v);
 }
 
-/* ---- 第 1 步 ---- */
+/* ---- 第 1 步：能不能檢舉 ---- */
 const QUESTIONS = [
-  { key: 'vehicle', title: '是汽車還是機車？', options: [['car', '汽車', '四輪以上，包括貨車、計程車'], ['motorcycle', '機車', '']] },
-  { key: 'place', title: '停在哪裡？', options: [['sidewalk', '人行道', '騎樓以外的人行道'], ['crosswalk', '斑馬線', '行人穿越道'], ['arcade', '騎樓', '房子一樓前的走廊'], ['roadside', '紅黃線、路邊', '包括路口、公車站附近']] },
-  { key: 'driver', title: '駕駛人在車上嗎？', options: [['absent', '沒人', ''], ['present', '有人', '駕駛在車上、正在上下客或貨'], ['unknown', '看不出來', '']] }
+  { key: 'vehicle', label: '車輛', title: '是汽車還是機車？', options: [['car', '汽車', '四輪以上，含貨車、計程車', 'car'], ['motorcycle', '機車', '目前不能由民眾檢舉', 'moto', true]] },
+  { key: 'place', label: '位置', title: '停在哪裡？', options: [['sidewalk', '人行道', '騎樓以外的人行道', 'sidewalk'], ['crosswalk', '斑馬線', '行人穿越道', 'crosswalk'], ['arcade', '騎樓', '房子一樓前的走廊', 'arcade', true], ['roadside', '紅黃線、路邊', '路口、公車站附近', 'roadside', true]] },
+  { key: 'driver', label: '駕駛', title: '駕駛座有人嗎？', options: [['absent', '沒人', '', 'seat'], ['present', '有人', '在上下客或貨', 'person'], ['unknown', '看不出來', '', 'question']] }
 ];
 function step1(v) {
   const c = S.cur, a = c.answers;
-  const card = el('div', { class: 'card' });
+  if (c.photos.length) {
+    v.append(note('ok', `已經拍好 ${c.photos.length} 張照片`, S.timer.start ? '3 分鐘計時已經開始。先回答下面 3 個問題，再回去拍其他照片。' : '先回答下面 3 個問題，再補拍其他照片。'),
+      el('div', { class: 'extras' }, c.photos.slice(0, 4).map(p => el('button', { type: 'button', 'aria-label': ROLES[p.role] + '照片', onclick: () => toStep(2) }, p.thumb ? el('img', { src: p.thumb, alt: '' }) : null, el('span', { text: ROLES[p.role] })))));
+  }
+  const done = [];
   let current = null;
   for (const q of QUESTIONS) {
-    if (a[q.key] && !current) {
-      const opt = q.options.find(o => o[0] === a[q.key]);
-      card.append(el('div', { class: 'answered' }, el('div', {}, el('span', { text: q.title + '　' }), el('b', { text: opt ? opt[1] : '' })),
-        el('button', { class: 'btn small ghost', type: 'button', onclick: () => { a[q.key] = null; QUESTIONS.slice(QUESTIONS.indexOf(q) + 1).forEach(n => { a[n.key] = null; }); render(); } }, '改')));
+    if (a[q.key]) {
+      done.push(q);
       if ((q.key === 'vehicle' && a.vehicle === 'motorcycle') || (q.key === 'place' && ['arcade', 'roadside'].includes(a.place))) break;
       continue;
     }
-    if (!current) {
-      current = q;
-      card.append(el('div', { class: 'bigq' }, el('div', { class: 'qtitle', text: q.title }),
-        q.options.map(([val, label, sub]) => el('button', { class: 'choice', type: 'button', onclick: () => { a[q.key] = val; save(); render(); } }, el('span', { text: label }), sub ? el('small', { text: sub }) : null))));
-    }
+    current = q; break;
   }
-  v.append(card);
+  if (done.length) v.append(el('div', { class: 'answered' }, done.map(q => {
+    const opt = q.options.find(o => o[0] === a[q.key]);
+    return el('button', { type: 'button', 'aria-label': `修改${q.label}：目前是${opt ? opt[1] : ''}`, onclick: () => { QUESTIONS.slice(QUESTIONS.indexOf(q)).forEach(n => { a[n.key] = null; }); save(); render(); } }, el('span', { text: q.label + '　' }), opt ? opt[1] : '', '　', icon('pencil', 14));
+  })));
+  if (current) {
+    v.append(el('h2', { class: 'qtitle', text: current.title }),
+      el('div', { class: 'tiles' + (current.options.length === 3 ? ' three' : '') }, current.options.map(([val, label, sub, ic, bad]) =>
+        el('button', { class: 'tile', type: 'button', onclick: () => { a[current.key] = val; save(); render(); } },
+          el('span', { class: 'pic' + (bad ? ' no' : '') }, icon(ic, 30)), el('b', { text: label }), sub ? el('small', { text: sub }) : null))));
+    return;
+  }
   const vd = verdict();
   if (vd.state === 'no') {
-    v.append(note('no', '這種情況不能由民眾檢舉', vd.text), el('div', { class: 'card' }, el('h3', { text: '可以打 110' }), el('p', { class: 'hint', text: '請警察到場處理。電話：110' }), el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => go('home') }, '回首頁'))));
-  } else if (vd.ruleId) {
-    const r = S.data.vio.rules[vd.ruleId];
-    v.append(note(vd.state === 'yes' ? 'ok' : 'warn', vd.state === 'yes' ? '可以檢舉' : '可以檢舉，但證據要求比較高', `${r.name}：${r.law}，罰鍰 ${r.fine}。`, r.warning, a.driver === 'unknown' ? '記得拍到駕駛座，讓警方看得出車上沒有人。' : null));
-    stepNav(v, '下一步：拍照');
+    v.append(el('div', { class: 'verdict no' }, el('span', { class: 'vic' }, icon('x', 26, 3)), el('b', { text: '這種情況不能由民眾檢舉' }), el('p', { text: vd.text })),
+      el('div', { class: 'card' }, el('h3', {}, icon('phone', 20), '可以打 110'), el('p', { class: 'hint', text: '請警察到場處理。看到危險的情況，也可以直接報案。' }),
+        el('div', { class: 'row' }, el('a', { class: 'btn primary', href: 'tel:110' }, '撥打 110'), el('button', { class: 'btn', type: 'button', onclick: () => go('home') }, '回首頁'))));
+    return;
   }
+  const r = S.data.vio.rules[vd.ruleId];
+  v.append(el('div', { class: 'verdict ' + (vd.state === 'yes' ? 'ok' : 'warn') }, el('span', { class: 'vic' }, icon(vd.state === 'yes' ? 'check' : 'alert', 26, 3)),
+    el('b', { text: vd.state === 'yes' ? '可以檢舉' : '可以檢舉，但證據要多一點' }),
+    el('p', { text: `${r.name}，罰鍰 ${r.fine}。` }), el('p', { text: r.warning || r.law })));
+  if (a.driver === 'unknown') v.append(note('info', '記得拍駕駛座', '讓警方看得出車上沒有人，才會用「停車」的規定舉發。'));
+  v.append(actionbar(el('button', { class: 'btn primary', type: 'button', onclick: () => toStep(2) }, '下一步：拍照', icon('arrow', 20))));
 }
 
-/* ---- 第 2 步 ---- */
-function step2(v) {
-  const c = S.cur;
+/* ---- 第 2 步：拍照 ---- */
+function byRole(c = S.cur) {
+  const slots = {}, extras = [];
+  for (const p of c.photos) { if (ROLE_ORDER.includes(p.role) && !slots[p.role]) slots[p.role] = p; else extras.push(p); }
+  return { slots, extras };
+}
+const timerLeft = () => S.timer.start ? Math.max(0, 180 - Math.floor((Date.now() - S.timer.start) / 1000)) : null;
+const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+function nextRole(c = S.cur) {
   const have = new Set(c.photos.map(p => p.role));
-  v.append(el('div', { class: 'card' }, el('h3', { text: '拍照清單' }),
-    el('div', { class: 'checklist' }, ROLE_ORDER.map(r => el('div', { class: 'checkitem' }, el('span', { class: 'box' + (have.has(r) ? ' on' : ''), text: have.has(r) ? '✓' : '' }), el('div', {}, ROLES[r], el('small', { text: ROLE_WHY[r] })))))));
+  for (const r of ['overview', 'plate', 'driver_seat']) if (!have.has(r)) return r;
+  if (have.has('interval')) return 'other';
+  const left = timerLeft();
+  return left ? 'other' : 'interval';
+}
+function step2(v) {
+  const c = S.cur, { slots, extras } = byRole(c), next = nextRole(c), left = timerLeft();
+  if (S.ui.busy) v.append(el('div', { class: 'row' }, el('span', { class: 'spin' }), el('span', { class: 'hint', text: S.ui.busy })));
+  v.append(el('div', { class: 'slots' }, ROLE_ORDER.map(r => {
+    const p = slots[r];
+    if (p) return el('div', { class: 'slot' },
+      el('button', { class: 'frame filled', type: 'button', 'aria-label': `查看${ROLES[r]}照片`, onclick: () => { S.ui.photo = S.ui.photo === p.id ? null : p.id; render(); } },
+        p.thumb ? el('img', { src: p.thumb, alt: '' }) : el('span', { text: '無法預覽' }), el('span', { class: 'badge' }, icon('check', 16, 3))),
+      el('div', { class: 'cap' }, ROLES[r], ' ', el('small', { text: p.takenAt ? p.takenAt.slice(11, 16) : '' })));
+    const waiting = r === 'interval' && left;
+    return el('div', { class: 'slot' },
+      el('button', { class: 'frame' + (r === next || (r === 'interval' && waiting) ? ' next' : ''), type: 'button', 'aria-label': `拍${ROLES[r]}`, onclick: () => openCamera(r) },
+        el('span', { class: 'inner' }, waiting ? el('span', { class: 'cd', id: 'slot-cd', text: mmss(left) }) : icon(r === 'interval' ? 'clock' : 'camera', 30), waiting ? '時間到再拍' : '拍' + ROLES[r])),
+      el('div', { class: 'cap' }, ROLES[r], ' ', el('small', { text: ROLE_WHY[r] })));
+  })));
+  if (extras.length) v.append(el('div', { class: 'stack' }, el('span', { class: 'hint', text: '其他照片（點一下可以改用途或刪除）' }),
+    el('div', { class: 'extras' }, extras.map(p => el('button', { type: 'button', 'aria-label': '查看照片', onclick: () => { S.ui.photo = S.ui.photo === p.id ? null : p.id; render(); } }, p.thumb ? el('img', { src: p.thumb, alt: '' }) : null, el('span', { text: ROLES[p.role] }))))));
+  const open = c.photos.find(p => p.id === S.ui.photo);
+  if (open) v.append(photoPanel(open));
   v.append(timerCard());
-  const add = el('div', { class: 'card' }, el('h3', { text: '加入照片' }),
-    el('label', { class: 'btn primary block filebtn' }, '從相簿選照片', el('input', { type: 'file', accept: 'image/*', multiple: true, onchange: e => { const fl = e.target.files; addPhotos(fl).finally(() => { e.target.value = ''; }); } })),
-    note(S.lastImportNoGps ? 'warn' : 'info', '讓照片帶著定位', '選照片時，畫面上方有「選項」，點開後把「位置」打開，系統才讀得到地點。'),
-    el('div', { id: 'photo-list', class: 'photos' }), el('p', { class: 'hint', id: 'photo-summary' }));
-  v.append(add);
-  renderPhotoList();
-  stepNav(v, c.photos.length ? '下一步：請 Claude 判讀' : '先跳過照片');
+
+  const g = photoGeo(c), first = c.photos.find(p => p.takenAt), onlyCam = c.photos.length && c.photos.every(p => p.source === 'camera');
+  const it = (ic, text, kind) => el('div', { class: 'it' }, el('span', { style: `color:var(--${kind || 'muted'})` }, icon(ic, 18)), el('span', { text }));
+  v.append(el('div', { class: 'infolist' },
+    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !c.photos.length ? '拍完照會自動帶出時間；地點在下一步確認。' : onlyCam ? '相機拍的照片不含定位，下一步可以選常用地點、讓 Claude 讀路名牌，或貼上地圖位置。' : '照片沒有定位。從相簿選照片時，點畫面上方「選項」把「位置」打開。', g ? 'ok' : null),
+    first ? it('clock', `違規時間：${fmtDate(first.takenAt.slice(0, 10))} ${first.takenAt.slice(11, 16)}${first.timeSource === 'file' ? '（檔案時間，請核對）' : ''}`, 'ok') : null,
+    c.photos.length ? it('folder', S.photoDb ? '照片存在 App 裡，不會出現在手機相簿。送出時可以一鍵存到「檔案」或雲端。' : '這個畫面不能儲存照片原檔，關掉 App 後要重新加入。', S.photoDb ? 'ok' : 'warn') : null,
+    S.sample && S.sampleImgMax ? it('spark', '下一步會請 Claude 看照片，讀車牌和路名牌。') : null));
+
+  const camLabel = next === 'interval' ? '拍 3 分鐘後' : next === 'other' ? (left ? '多拍一張' : '再拍一張') : '拍' + ROLES[next];
+  v.append(actionbar(
+    el('button', { class: 'btn side', type: 'button', onclick: openLibrary, 'aria-label': '從相簿選照片' }, icon('image', 20), '相簿'),
+    el('button', { class: 'btn primary', type: 'button', id: 'cam-main', onclick: () => openCamera(next) }, icon('camera', 20), camLabel),
+    el('button', { class: 'btn dark side', type: 'button', onclick: goStep3 }, c.photos.length ? '下一步' : '跳過', icon('arrow', 18))));
+}
+function goStep3() {
+  toStep(3);
+  if (needsAi()) runAi();
+}
+function photoPanel(p) {
+  const c = S.cur;
+  const img = el('img', { class: 'preview', alt: ROLES[p.role] + '照片', src: p.thumb || '' });
+  photoBlob(p).then(b => { if (b && img.isConnected) { const u = URL.createObjectURL(b); img.onload = () => URL.revokeObjectURL(u); img.src = u; } });
+  const sel = el('select', { id: 'ph-role', onchange: e => setRole(p, e.target.value) }, Object.entries(ROLES).map(([k, t]) => el('option', { value: k, selected: p.role === k }, t)));
+  const del = armed(el('button', { class: 'btn small danger', type: 'button' }, icon('trash', 16), '刪除'), '刪除', '再按一次刪除', () => {
+    c.photos = c.photos.filter(x => x !== p); delete S.files[p.id]; PhotoDB.del(p.id); S.ui.photo = null; save(); render();
+  });
+  return el('div', { class: 'card' }, img,
+    el('div', { class: 'row' }, p.takenAt ? el('span', { class: 'pill info', text: `${fmtDate(p.takenAt.slice(0, 10))} ${p.takenAt.slice(11, 16)}` }) : null,
+      el('span', { class: 'pill ' + (p.lat != null ? 'ok' : 'info'), text: p.lat != null ? '有定位' : '沒有定位' }),
+      el('span', { class: 'pill ' + (p.stored ? 'ok' : 'warn'), text: p.stored ? '已存在 App' : '只在記憶體' })),
+    field('這張照片是', sel),
+    el('div', { class: 'toolrow' },
+      el('button', { class: 'btn small', type: 'button', onclick: () => savePhoto(c, p) }, icon('download', 16), '存到檔案'),
+      el('button', { class: 'btn small', type: 'button', onclick: () => openCamera(p.role) }, icon('camera', 16), '重拍'), del,
+      el('button', { class: 'btn small ghost', type: 'button', onclick: () => { S.ui.photo = null; render(); } }, '收起')));
+}
+function setRole(p, role) {
+  const c = S.cur;
+  if (ROLE_ORDER.includes(role)) for (const x of c.photos) if (x !== p && x.role === role) { x.role = 'other'; x.roleManual = true; }
+  p.role = role; p.roleManual = true; save(); render();
 }
 function timerCard() {
   const box = el('div', { class: 'card', id: 'timer-card' });
-  fillTimer(box);
+  const left = timerLeft();
+  if (left == null) {
+    box.append(el('div', { class: 'row between', style: 'flex-wrap:nowrap' }, el('div', { class: 'stack', style: 'gap:2px' }, el('b', { text: '3 分鐘計時' }), el('span', { class: 'hint', text: '用 App 相機拍第一張時會自動開始。從相簿選的話，可以按右邊開始。' })),
+      el('button', { class: 'btn small', type: 'button', onclick: () => { ensureAudio(); startTimer(); render(); } }, '開始')));
+    return box;
+  }
+  const pct = Math.round((180 - left) / 180 * 100);
+  box.append(el('div', { class: 'row', style: 'flex-wrap:nowrap;gap:16px' },
+    el('div', { class: 'ring', id: 'timer-ring', style: `background:conic-gradient(var(--accent) ${pct}%, var(--surface-2) 0)` },
+      el('div', { class: 'face' }, el('b', { id: 'timer-clock', text: mmss(left) }), el('small', { text: left ? '補拍倒數' : '時間到' }))),
+    el('div', { class: 'stack', style: 'gap:4px' },
+      el('b', { text: left ? '時間到後，從同一角度再拍一張' : '可以拍「3 分鐘後」了' }),
+      el('span', { class: 'hint', text: left ? '時間到會響三聲。這段時間可以先拍車牌和駕駛座。' : '站回拍全景的位置，用同一個角度拍。' }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => { S.timer = { start: null, fired: false }; render(); } }, left ? '取消計時' : '重新計時')))));
   return box;
 }
-function fillTimer(box) {
-  box.replaceChildren(el('h3', { text: '3 分鐘計時' }));
-  const t = S.timer;
-  if (!t.start) {
-    box.append(el('p', { class: 'hint', text: '拍完第一張後按開始，時間到會發出提示音，提醒你從同一角度再拍一張。' }),
-      el('button', { class: 'btn block', type: 'button', onclick: () => { ensureAudio(); S.timer = { start: Date.now(), fired: false }; fillTimer(box); } }, '開始 3 分鐘計時'));
-    return;
-  }
-  const left = Math.max(0, 180 - Math.floor((Date.now() - t.start) / 1000));
-  const mm = String(Math.floor(left / 60)).padStart(2, '0'), ss = String(left % 60).padStart(2, '0');
-  box.append(el('div', { class: 'timer' }, el('span', { class: 'clock' + (left === 0 ? ' done' : ''), id: 'timer-clock', text: left === 0 ? '可以補拍了' : `${mm}:${ss}` }),
-    el('button', { class: 'btn small', type: 'button', onclick: () => { S.timer = { start: null, fired: false }; fillTimer(box); } }, left === 0 ? '重新計時' : '取消')));
-  if (left === 0) box.append(el('p', { class: 'hint', text: '請從同一角度再拍一張，加入照片時角色選「隔 3 分鐘補拍」。' }));
-}
+function startTimer() { S.timer = { start: Date.now(), fired: false }; }
 function ensureAudio() { try { S.audio = S.audio || new (window.AudioContext || window.webkitAudioContext)(); if (S.audio.state === 'suspended') S.audio.resume(); } catch (e) {} }
 function beep() {
   try { const a = S.audio; if (!a) return; [0, 0.35, 0.7].forEach(t => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = 0.2; o.connect(g); g.connect(a.destination); o.start(a.currentTime + t); o.stop(a.currentTime + t + 0.22); }); } catch (e) {}
+  try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
 }
 setInterval(() => {
-  const t = S.timer; if (!t.start) return;
-  const left = 180 - Math.floor((Date.now() - t.start) / 1000);
-  const clock = $('#timer-clock');
-  if (left > 0) { if (clock) clock.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`; return; }
-  if (!t.fired) { t.fired = true; beep(); toast('3 分鐘到了，可以補拍了'); const box = $('#timer-card'); if (box) fillTimer(box); }
+  const left = timerLeft(); if (left == null) return;
+  const clock = $('#timer-clock'), ring = $('#timer-ring'), cd = $('#slot-cd');
+  if (clock) clock.textContent = mmss(left);
+  if (ring) ring.style.background = `conic-gradient(var(--accent) ${Math.round((180 - left) / 180 * 100)}%, var(--surface-2) 0)`;
+  if (cd) cd.textContent = mmss(left);
+  if (left === 0 && !S.timer.fired) {
+    S.timer.fired = true; beep(); toast('3 分鐘到了，可以補拍了');
+    if (S.view === 'report' && S.step === 2) render();
+  }
 }, 1000);
-async function addPhotos(fileList) {
+
+/* 相機與相簿：相機拍的照片只存在 App 裡，不會存進手機相簿 */
+function openCamera(role) { ensureAudio(); S.ui.camRole = role || nextRole(); const i = $('#cam-input'); i.value = ''; i.click(); }
+function openLibrary() { const i = $('#lib-input'); i.value = ''; i.click(); }
+async function addFiles(fileList, source, role) {
   const files = [...fileList]; if (!files.length) return;
-  const sum = $('#photo-summary'); if (sum) sum.textContent = '讀取照片中…';
-  let noGps = false;
+  if (S.isSample) { S.cur = newCase(); S.isSample = false; }
+  if (S.view !== 'report') go('report', { step: reportable() ? 2 : 1 });
+  S.ui.busy = '讀取照片中…'; render();
+  const c = S.cur, fresh = [];
   for (const f of files) {
     const id = uid(); S.files[id] = f;
     const [meta, thumb] = await Promise.all([readMeta(f), makeThumb(f)]);
-    if (meta.lat == null) noGps = true;
-    const used = new Set(S.cur.photos.map(p => p.role));
-    S.cur.photos.push({ id, name: f.name, type: f.type || '', size: f.size, thumb, role: ROLE_ORDER.find(r => !used.has(r)) || 'other', roleManual: false, ...meta });
+    const p = { id, name: f.name || 'photo.jpg', type: f.type || '', size: f.size, thumb, role: 'other', roleManual: false, source, stored: false, ...meta };
+    if (role && files.length === 1) {
+      if (ROLE_ORDER.includes(role)) for (const x of c.photos) if (x.role === role) { x.role = 'other'; x.roleManual = true; }
+      p.role = role; p.roleManual = true;
+    } else fresh.push(p);
+    c.photos.push(p);
+    p.stored = await storePhoto(c.id, p, f);
   }
-  S.lastImportNoGps = noGps;
-  S.cur.photos.sort((a, b) => (a.takenAt || '').localeCompare(b.takenAt || ''));
+  c.photos.sort((a, b) => (a.takenAt || '').localeCompare(b.takenAt || ''));
+  autoRoles(c, fresh);
+  if (source === 'camera' && !S.timer.start) startTimer();
   await applyPhotoFacts();
-  save(); render();
+  S.ui.busy = ''; save(); render();
+}
+function autoRoles(c, fresh) {
+  if (!fresh.length) return;
+  const used = new Set(c.photos.filter(p => !fresh.includes(p)).map(p => p.role));
+  const first = c.photos.find(p => p.takenAt);
+  for (const p of fresh) {
+    if (!used.has('interval') && used.has('overview') && first && p !== first && p.takenAt && minutesBetween(first.takenAt, p.takenAt) >= 3) { p.role = 'interval'; used.add('interval'); continue; }
+    const r = ['overview', 'plate', 'driver_seat'].find(x => !used.has(x));
+    p.role = r || 'other'; if (r) used.add(r);
+  }
 }
 async function applyPhotoFacts() {
   const c = S.cur, f = c.form, first = c.photos.find(p => p.takenAt);
@@ -871,30 +1354,8 @@ async function applyPhotoFacts() {
     }
   }
 }
-function renderPhotoList() {
-  const list = $('#photo-list'), sum = $('#photo-summary'); if (!list) return;
-  list.replaceChildren();
-  for (const p of S.cur.photos) {
-    const sel = el('select', { 'aria-label': '這張照片拍的是', onchange: e => { p.role = e.target.value; p.roleManual = true; save(); render(); } },
-      Object.entries(ROLES).map(([k, t]) => el('option', { value: k, selected: p.role === k }, t)));
-    list.append(el('div', { class: 'photo' },
-      p.thumb ? el('img', { src: p.thumb, alt: ROLES[p.role] }) : el('div', { class: 'noimg' }, '無法預覽'),
-      el('div', { class: 'meta' }, sel,
-        el('div', {}, p.takenAt ? `${fmtDate(p.takenAt.slice(0, 10))} ${p.takenAt.slice(11, 16)}` : '沒有時間', p.timeSource === 'file' ? el('span', { class: 'pill warn', text: '檔案時間' }) : null),
-        el('div', { class: 'row' }, p.lat != null ? el('span', { class: 'pill ok', text: '有定位' }) : el('span', { class: 'pill no', text: '沒有定位' }), S.files[p.id] ? null : el('span', { class: 'pill info', text: '重新加入才能判讀' }))),
-      el('button', { class: 'x', type: 'button', 'aria-label': '移除這張照片', onclick: () => { S.cur.photos = S.cur.photos.filter(x => x !== p); delete S.files[p.id]; save(); render(); } }, '×')));
-  }
-  const n = S.cur.photos.length;
-  if (!n) { sum.textContent = '還沒有照片。'; return; }
-  const g = photoGeo(), iv = intervalMinutes();
-  const bits = [`共 ${n} 張`];
-  if (iv != null) bits.push(`第一張到最後一張相隔 ${iv} 分鐘`);
-  bits.push(g ? '已讀到定位' : '沒有讀到定位，可以重新選照片並打開「位置」，或在第 4 步選地點');
-  if (g && g.spread > 100) bits.push(`照片位置相差約 ${Math.round(g.spread)} 公尺，請確認是同一台車`);
-  sum.textContent = bits.join('；') + '。';
-}
 
-/* ---- 第 3 步 ---- */
+/* ---- 第 3 步：確認檢舉單 ---- */
 function aiPrompt(n) {
   return `你在協助台灣民眾檢舉「汽車違規停在人行道或行人穿越道（斑馬線）」。以下有 ${n} 張照片，依拍攝時間排序（照片1最早）。
 
@@ -922,69 +1383,30 @@ retake 請列出還在現場的話建議補拍什麼（每項一句，最多 3 �
 }
 plate_candidates 最多 3 個，依可能性排序；confidence 介於 0 到 1。`;
 }
-function step3(v) {
-  const c = S.cur;
-  const card = el('div', { class: 'card' }, el('h3', { text: '請 Claude 判讀照片' }),
-    el('p', { class: 'hint', text: 'Claude 會讀車牌、判斷每張照片拍的是什麼、讀路名牌和門牌，並告訴你證據還缺什麼。使用你自己的 Claude 帳號額度。照片傳送前，平台會先移除照片裡的位置資料；你的個人資料不會傳送。' }));
-  const usable = c.photos.some(p => S.files[p.id]);
-  const canImg = !!S.sample && S.sampleImgMax > 0;
-  if (!canImg) card.append(note('warn', '這個畫面不能傳照片給 Claude', '請直接到下一步自己填寫車牌和地點。'));
-  else if (!c.photos.length) card.append(note('info', '還沒有照片', '回上一步加入照片，或直接到下一步自己填寫。'));
-  else if (!usable) card.append(note('info', '照片要重新加入', '重新開啟的草稿不會保留原始照片，請回上一步重新加入，才能判讀。'));
-  const btn = el('button', { class: 'btn primary block', type: 'button', id: 'ai-go', disabled: !canImg || !usable || !!S.aiCtl, onclick: runAi }, S.aiCtl ? '判讀中…' : c.ai ? '重新判讀' : '開始判讀');
-  const stop = el('button', { class: 'btn block', type: 'button', id: 'ai-stop', hidden: !S.aiCtl, onclick: () => S.aiCtl && S.aiCtl.abort() }, '停止');
-  card.append(btn, stop, el('div', { class: 'hint', id: 'ai-status', 'aria-live': 'polite' }));
-  v.append(card);
-  if (c.ai) v.append(aiResultCard(c.ai));
-  stepNav(v, '下一步：確認內容');
-}
-function aiResultCard(r) {
-  const c = S.cur, a = c.answers;
-  const box = el('div', { class: 'card' }, el('h3', { text: '判讀結果' }));
-  const cands = Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate) : [];
-  if (cands.length) box.append(el('div', { class: 'hint', text: '車牌候選（點一下套用）' }), el('div', { class: 'cands' }, cands.slice(0, 3).map(x => {
-    const p = normPlate(String(x.plate));
-    return el('button', { class: 'cand', type: 'button', 'aria-pressed': String(c.form.plate === p), onclick: () => { c.form.plate = p; save(); render(); } }, el('span', { class: 'plate sm', text: p }), el('span', { text: `可信度 ${Math.round((Number(x.confidence) || 0) * 100)}%` }));
-  })));
-  else box.append(note('warn', 'Claude 沒有讀出車牌', '請到下一步自己輸入。'));
-  const tr = (m, k) => m[k] || '看不出來';
-  box.append(el('dl', { class: 'kv' },
-    el('dt', { text: '車輛' }), el('dd', { text: [tr({ car: '汽車', motorcycle: '機車' }, r.vehicle_class), r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('、') }),
-    el('dt', { text: '停放位置' }), el('dd', { text: tr({ sidewalk: '人行道', crosswalk: '斑馬線', arcade: '騎樓', roadside: '路邊' }, r.location_type) }),
-    el('dt', { text: '駕駛座' }), el('dd', { text: tr({ yes: '有人', no: '沒人' }, r.driver_present) }),
-    el('dt', { text: '路名牌' }), el('dd', { text: r.road_text || '沒看到' }),
-    el('dt', { text: '門牌' }), el('dd', { text: r.house_number_text || '沒看到' })));
-  if (Array.isArray(r.retake) && r.retake.length) box.append(note('warn', '建議補拍', ...r.retake.slice(0, 3).map(String)));
-  if (r.notes) box.append(el('p', { class: 'hint', text: String(r.notes) }));
-  if (r.vehicle_class === 'motorcycle' && a.vehicle === 'car') box.append(note('no', 'Claude 認為這是機車', '機車目前不能由民眾檢舉，請再確認。'));
-  if (['arcade', 'roadside'].includes(r.location_type) && ['sidewalk', 'crosswalk'].includes(a.place)) box.append(note('warn', '停放位置可能不符', '騎樓或路邊違停不能檢舉，請再確認照片。'));
-  if (r.driver_present === 'yes' && a.driver === 'absent') box.append(note('warn', 'Claude 認為駕駛座有人', '請再確認，有人的話屬於臨時停車。'));
-  return box;
-}
+const canAi = () => !!S.sample && S.sampleImgMax > 0;
+const usablePhotos = (c = S.cur) => c.photos.filter(p => S.files[p.id]).slice(0, Math.min(S.sampleImgMax || 4, 4));
+const aiSig = ps => ps.map(p => p.id).join(',');
+function needsAi(c = S.cur) { const ps = usablePhotos(c); return canAi() && !S.aiCtl && !S.isSample && ps.length > 0 && aiSig(ps) !== c.aiSig; }
 async function runAi() {
-  if (!S.sample) return;
-  const c = S.cur;
-  const ps = c.photos.filter(p => S.files[p.id]);
-  if (!ps.length) return;
-  const use = ps.slice(0, Math.min(S.sampleImgMax || 4, 4));
-  S.aiCtl = new AbortController();
-  render();
-  const st = () => $('#ai-status');
+  if (!canAi() || S.aiCtl) return;
+  const c = S.cur, use = usablePhotos(c);
+  if (!use.length) return;
+  S.aiCtl = new AbortController(); S.aiErr = false; S.aiMsg = '準備照片中…'; paintAi();
   try {
-    st().textContent = '準備照片中…';
     const blobs = [];
     for (const p of use) blobs.push(await makeAiJpeg(S.files[p.id]));
-    if (st()) st().textContent = 'Claude 判讀中，通常需要 10 到 60 秒…';
+    S.aiMsg = 'Claude 正在看照片，通常需要 10 到 60 秒…'; paintAi();
     const r = await S.sample.json(aiPrompt(use.length), { images: blobs, signal: S.aiCtl.signal });
     if (!r || typeof r !== 'object') throw { code: 'invalid_json' };
-    c.ai = r;
+    c.ai = r; c.aiSig = aiSig(use);
     applyAi(r, use);
-    S.aiCtl = null; save(); render();
-    if (st()) st().textContent = '判讀完成，請核對結果。';
+    S.aiCtl = null; S.aiMsg = ''; save();
   } catch (e) {
-    S.aiCtl = null; render();
-    const msg = { cancelled: '已停止。', not_granted: '你沒有允許這個頁面使用 Claude，請到下一步自己填寫。', sampling_disabled: '這個帳號目前不能使用 Claude 判讀。', images_unavailable: '這個畫面不能傳照片給 Claude。', image_rejected: '照片格式無法判讀，請換一張。', rate_limited: '使用太頻繁或已達額度上限，請稍後再試。', invalid_json: 'Claude 的回覆格式不對，請再按一次。', refused: 'Claude 沒有判讀這些照片，請自己填寫。', session_expired: '登入已過期，請重新登入 Claude。' }[e && e.code] || '判讀失敗，請稍後再試，或自己填寫。';
-    if (st()) st().textContent = msg;
+    S.aiCtl = null; S.aiErr = true;
+    S.aiMsg = { cancelled: '已停止判讀。', not_granted: '你沒有允許這個頁面使用 Claude，請直接核對下面的檢舉單。', sampling_disabled: '這個帳號目前不能使用 Claude 判讀。', images_unavailable: '這個畫面不能傳照片給 Claude。', image_rejected: '照片格式無法判讀，請換一張。', rate_limited: '使用太頻繁或已達額度上限，請稍後再試。', invalid_json: 'Claude 的回覆格式不對，請再試一次。', refused: 'Claude 沒有判讀這些照片，請自己填寫。', session_expired: '登入已過期，請重新登入 Claude。' }[e && e.code] || '判讀失敗，請稍後再試，或自己填寫。';
+  }
+  if (S.view === 'report' && S.step === 3 && S.cur === c) {
+    if (Object.values(S.ui.open).some(Boolean)) { paintAi(); refreshTicket(); } else render();
   }
 }
 function applyAi(r, used) {
@@ -1004,72 +1426,161 @@ function applyAi(r, used) {
   if (r.road_text && !f.road) { f.road = String(r.road_text); f.locSource = 'ai'; }
   if (r.house_number_text && !f.detail) f.detail = String(r.house_number_text).replace(/前$/, '') + '前';
 }
-
-/* ---- 第 4 步 ---- */
-function step4(v) {
-  const c = S.cur, f = c.form;
-  // 車輛
-  const plateIn = el('input', { id: 'f-plate', type: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', placeholder: 'ABC-1234', value: f.plate });
-  plateIn.addEventListener('input', e => { f.plate = e.target.value.toUpperCase(); refresh4(); save(); });
-  plateIn.addEventListener('change', e => { f.plate = normPlate(e.target.value); e.target.value = f.plate; refresh4(); save(); });
-  const vdescIn = el('input', { id: 'f-vdesc', type: 'text', placeholder: '例如：白色自用小客車', value: f.vdesc, oninput: e => { f.vdesc = e.target.value; refresh4(); save(); } });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '車輛' }), el('div', { class: 'grid2' }, field('車牌', plateIn, 'plate-check'), field('車輛描述', vdescIn)), el('div', { id: 'plate-hist', class: 'stack' })));
-
-  // 地點
-  const countySel = el('select', { id: 'f-county' }, el('option', { value: '' }, '請選擇'), COUNTIES.map(x => el('option', { value: x, selected: f.county === x }, x)));
-  countySel.addEventListener('change', e => { f.county = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refresh4(); save(); });
-  const townIn = el('input', { id: 'f-town', type: 'text', placeholder: '例如：大安區', value: f.town, oninput: e => { f.town = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refresh4(); save(); } });
-  const distSel = el('select', { id: 'f-district', onchange: e => { f.districtLabel = e.target.value; refresh4(); save(); } });
-  const roadIn = el('input', { id: 'f-road', type: 'text', placeholder: '例如：忠孝東路四段', value: f.road, oninput: e => { f.road = e.target.value; f.locSource = 'manual'; refresh4(); save(); } });
-  const detailIn = el('input', { id: 'f-detail', type: 'text', placeholder: '例如：100號前、與敦化南路口', value: f.detail, oninput: e => { f.detail = e.target.value; refresh4(); save(); } });
-  const pasteBox = el('textarea', { id: 'paste-loc', placeholder: '在 Apple 地圖點自己的位置 →「分享」→「拷貝」，再回來長按這裡貼上' });
-  const pasteWrap = el('div', { class: 'stack', hidden: true }, pasteBox, el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: () => applyPaste(pasteBox.value) }, '套用'), el('span', { class: 'hint', id: 'paste-status' })));
-  v.append(el('div', { class: 'card' }, el('h3', { text: '地點' }),
-    el('div', { id: 'loc-sugs', class: 'stack' }),
-    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; if (!pasteWrap.hidden) pasteBox.focus(); } }, '貼上地圖位置'), el('span', { id: 'map-links', class: 'row' })),
-    pasteWrap,
-    el('div', { class: 'grid2' }, el('div', { class: 'field' }, el('label', { for: 'f-county' }, '縣市'), countySel, el('span', { class: 'sub', id: 'loc-src' })), field('鄉鎮市區', townIn)),
-    el('div', { class: 'field', id: 'district-wrap', hidden: true }, el('label', { for: 'f-district' }, '官方選單上的「行政區」'), distSel, el('span', { class: 'sub', id: 'district-note' })),
-    field('路段', roadIn), field('門牌、路口或地點說明', detailIn),
-    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: savePlace }, '存成常用地點'))));
-
-  // 時間
-  const dateIn = el('input', { id: 'f-date', type: 'date', value: f.date, oninput: e => { f.date = e.target.value; f.autoTime = false; f.timeSource = 'manual'; refresh4(); save(); } });
-  const timeIn = el('input', { id: 'f-time', type: 'time', value: f.time, oninput: e => { f.time = e.target.value; f.autoTime = false; refresh4(); save(); } });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '時間與期限' }), el('div', { class: 'grid2' }, field('違規日期', dateIn, 'date-src'), field('違規時間', timeIn)), el('div', { id: 'deadline', class: 'stack' })));
-
-  // 違規事實與說明
-  const descIn = el('textarea', { id: 'f-desc', oninput: e => { f.desc = e.target.value; f.descEdited = true; refresh4(); save(); } });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '違規事實與說明' }), el('div', { id: 'violation', class: 'stack' }),
-    el('div', { class: 'field' }, el('label', { for: 'f-desc' }, '違規事實說明'), descIn, el('div', { class: 'row between' }, el('span', { class: 'sub', id: 'desc-count' }), el('button', { class: 'btn small', type: 'button', onclick: () => { f.descEdited = false; refresh4(); save(); } }, '重新產生')))));
-  v.append(el('div', { class: 'card' }, el('h3', { text: '證據檢查' }), el('div', { id: 'evidence', class: 'checks' })));
-  stepNav(v, '下一步：送出');
-  refresh4();
-}
-function refresh4() {
-  const c = S.cur, f = c.form, J = jurOf();
-  const setIf = (id, val) => { const n = $(id); if (n && document.activeElement !== n && n.value !== (val || '')) n.value = val || ''; };
-  setIf('#f-plate', f.plate); setIf('#f-vdesc', f.vdesc); setIf('#f-town', f.town); setIf('#f-road', f.road); setIf('#f-detail', f.detail); setIf('#f-date', f.date); setIf('#f-time', f.time);
-  const cs = $('#f-county'); if (cs && cs.value !== f.county) cs.value = f.county || '';
-  // 車牌
-  const pc = checkPlate(f.plate), pcs = $('#plate-check'); if (pcs) { pcs.textContent = pc.msg; pcs.className = 'sub' + (pc.ok === false ? ' bad' : ''); }
-  const hist = $('#plate-hist');
-  if (hist) {
-    hist.replaceChildren();
-    const dup = duplicateWarning();
-    if (dup) hist.append(note('no', '可能重複檢舉', dup));
-    const h = plateHistory();
-    if (h.length) hist.append(note('warn', `這台車你檢舉過 ${h.length} 次`, h.slice(0, 5).map(x => `${shortDate(x.form.date)} ${x.form.road || x.form.town || ''}`).join('、')));
+function paintAi() {
+  const box = $('#ai-box'); if (!box) return;
+  const c = S.cur, a = c.answers, r = c.ai, usable = usablePhotos(c).length;
+  box.replaceChildren();
+  if (S.aiCtl) {
+    box.append(el('div', { class: 'card' }, el('div', { class: 'row', style: 'flex-wrap:nowrap' }, el('span', { class: 'spin' }),
+      el('div', { class: 'stack', style: 'gap:2px;flex:1' }, el('b', { text: 'Claude 正在看照片' }), el('span', { class: 'hint', id: 'ai-status', 'aria-live': 'polite', text: S.aiMsg })),
+      el('button', { class: 'btn small', type: 'button', onclick: () => S.aiCtl && S.aiCtl.abort() }, '停止'))));
+    return;
   }
-  // 地點建議
+  const retry = canAi() && usable ? el('button', { class: 'btn small', type: 'button', onclick: runAi }, icon('refresh', 16), r ? '重新判讀' : '請 Claude 看照片') : null;
+  if (S.aiErr && S.aiMsg) box.append(note('warn', S.aiMsg, retry));
+  if (r) {
+    const bits = [];
+    const tr = (m, k) => m[k] || '';
+    const veh = [tr({ car: '汽車', motorcycle: '機車' }, r.vehicle_class), r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('、');
+    if (veh) bits.push(veh);
+    const loc = tr({ sidewalk: '停在人行道', crosswalk: '停在斑馬線', arcade: '停在騎樓', roadside: '停在路邊' }, r.location_type); if (loc) bits.push(loc);
+    const drv = tr({ yes: '駕駛座有人', no: '駕駛座沒人' }, r.driver_present); if (drv) bits.push(drv);
+    const card = el('div', { class: 'card' }, el('h3', {}, el('span', { style: 'color:var(--accent-text)' }, icon('spark', 20)), 'Claude 看過照片了'),
+      el('p', { class: 'hint', text: [bits.join('，'), r.notes].filter(Boolean).join('。') || '判讀完成，請核對下面的檢舉單。' }));
+    if (Array.isArray(r.retake) && r.retake.length) card.append(note('warn', '還在現場的話，建議補拍', ...r.retake.slice(0, 3).map(String)));
+    if (r.vehicle_class === 'motorcycle' && a.vehicle === 'car') card.append(note('no', 'Claude 認為這是機車', '機車目前不能由民眾檢舉，請再確認。'));
+    if (['arcade', 'roadside'].includes(r.location_type) && ['sidewalk', 'crosswalk'].includes(a.place)) card.append(note('warn', '停放位置可能不符', '騎樓或路邊違停不能檢舉，請再確認照片。'));
+    if (r.driver_present === 'yes' && a.driver === 'absent') card.append(note('warn', 'Claude 認為駕駛座有人', '有人的話屬於「臨時停車」，請回第 1 步確認。'));
+    if (!S.aiErr && retry && aiSig(usablePhotos(c)) !== c.aiSig) card.append(note('info', '照片有變動', retry));
+    else if (!S.aiErr && retry) card.append(el('div', { class: 'row' }, retry));
+    box.append(card);
+  } else if (!S.aiErr) {
+    if (!c.photos.length) box.append(note('info', '沒有照片', '可以直接填寫下面的檢舉單，或回上一步拍照。'));
+    else if (!canAi()) box.append(note('info', '這個畫面不能請 Claude 看照片', '請自己核對、填寫下面的檢舉單。'));
+    else if (!usable) box.append(note('info', '照片原檔不在 App 裡', '重新加入照片後，才能請 Claude 判讀。'));
+    else box.append(el('div', { class: 'card' }, el('p', { class: 'hint', text: 'Claude 可以讀車牌、路名牌和門牌，並告訴你證據還缺什麼。用的是你自己的 Claude 帳號；照片傳送前，平台會先移除照片裡的位置資料，個人資料不會傳送。' }), el('div', { class: 'row' }, retry)));
+  }
+}
+const ROWS = [['plate', '車牌'], ['vehicle', '車輛'], ['place', '地點'], ['time', '時間'], ['rule', '違規'], ['desc', '說明']];
+function step3(v) {
+  v.append(el('div', { id: 'ai-box', class: 'stack' }));
+  const J = jurOf(), c = S.cur;
+  v.append(el('div', { class: 'ticket' },
+    el('div', { class: 'head' }, el('b', { text: '檢舉單' }), el('span', { id: 't-agency', text: J ? J.agency : c.form.county ? `${c.form.county}警察局` : '依地點選警察局' })),
+    el('div', { class: 'body' }, el('div', { id: 't-warn', class: 'stack' }), ...ROWS.map(([k, label]) => trow(k, label))),
+    el('div', { class: 'perf', 'aria-hidden': 'true' }),
+    el('div', { class: 'body' }, el('b', { text: '證據' }), el('div', { id: 't-ev', class: 'evchips' }), el('div', { id: 't-deadline', class: 'stack' }))));
+  v.append(actionbar(
+    el('button', { class: 'btn', type: 'button', onclick: () => toStep(2) }, icon('back', 18), '拍照'),
+    el('button', { class: 'btn primary', type: 'button', onclick: () => toStep(4) }, '下一步：送出', icon('arrow', 18))));
+  paintAi();
+  refreshTicket();
+}
+function trow(key, label) {
+  const open = !!S.ui.open[key];
+  const row = el('div', { class: 'trow' }, el('span', { class: 'k', text: label }), el('div', { class: 'v', id: 'tv-' + key }),
+    el('button', { class: 'editbtn', type: 'button', 'aria-expanded': String(open), 'aria-label': (open ? '收起' : '修改') + label, onclick: () => { S.ui.open[key] = !open; render(); } }, icon(open ? 'check' : 'pencil', 20)));
+  if (open) row.append(el('div', { class: 'editor' }, ...EDITORS[key]()));
+  return row;
+}
+function rowValue(key) {
+  const c = S.cur, f = c.form, r = ruleOf(), J = jurOf();
+  const small = (t, need) => t ? el('small', { class: need ? 'need' : '', text: t }) : null;
+  switch (key) {
+    case 'plate': { const pc = checkPlate(f.plate); return [el('div', {}, plateChip(f.plate, '')), small(f.plate ? pc.msg : '請填車牌', !f.plate || pc.ok === false)]; }
+    case 'vehicle': return [el('b', { text: f.vdesc || '（可不填）' })];
+    case 'place': {
+      const src = { gps: '縣市、區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的地圖位置', ai: '路名取自 Claude 讀到的路名牌，請核對' }[f.locSource] || '';
+      const miss = !f.county ? '請選縣市' : !f.road ? '請填路段' : '';
+      return [el('b', { text: locText() || '還沒有地點' }), small(miss || src, !!miss)];
+    }
+    case 'time': return [el('b', { text: f.date ? `${fmtDate(f.date)} ${f.time || ''}` : '還沒有時間' }), small(!f.date || !f.time ? '請填日期和時間' : { exif: '取自照片拍攝時間', file: '取自檔案時間，請核對' }[f.timeSource] || '', !f.date || !f.time)];
+    case 'rule': {
+      if (!r) return [el('b', { text: '請先完成第 1 步' })];
+      const label = J && J.violation_labels ? J.violation_labels[verdict().ruleId] : null;
+      return [el('b', { text: r.name }), el('small', { style: 'color:var(--muted)', text: `${r.law}・罰鍰 ${r.fine}` }), label ? small(`官方選單選「${label}」`) : null];
+    }
+    case 'desc': { const max = (J || {}).description_max_length || 200, n = (f.desc || '').length; return [el('span', { style: 'font-size:15px', text: f.desc || '（會自動產生）' }), small(`${n} / ${max} 字`, n > max)]; }
+  }
+  return [];
+}
+const EDITORS = {
+  plate() {
+    const f = S.cur.form, r = S.cur.ai;
+    const inp = el('input', { id: 'f-plate', type: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', placeholder: 'ABC-1234', value: f.plate });
+    inp.addEventListener('input', e => { f.plate = e.target.value.toUpperCase(); refreshTicket(); save(); });
+    inp.addEventListener('change', e => { f.plate = normPlate(e.target.value); e.target.value = f.plate; refreshTicket(); save(); });
+    const cands = r && Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate).slice(0, 3) : [];
+    return [field('車牌號碼', inp),
+      cands.length ? el('div', { class: 'stack' }, el('span', { class: 'hint', text: 'Claude 讀到的車牌（點一下套用）' }), el('div', { class: 'cands' }, cands.map(x => {
+        const p = normPlate(String(x.plate));
+        return el('button', { class: 'cand', type: 'button', 'aria-pressed': String(f.plate === p), onclick: () => { f.plate = p; save(); render(); } }, el('span', { class: 'plate sm', text: p }), el('span', { text: `可信度 ${Math.round((Number(x.confidence) || 0) * 100)}%` }));
+      }))) : null];
+  },
+  vehicle() {
+    const f = S.cur.form;
+    return [field('車輛描述', el('input', { id: 'f-vdesc', type: 'text', placeholder: '例如：白色自用小客車', value: f.vdesc, oninput: e => { f.vdesc = e.target.value; refreshTicket(); save(); } }))];
+  },
+  place() {
+    const f = S.cur.form;
+    const countySel = el('select', { id: 'f-county' }, el('option', { value: '' }, '請選擇'), COUNTIES.map(x => el('option', { value: x, selected: f.county === x }, x)));
+    countySel.addEventListener('change', e => { f.county = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refreshTicket(); save(); });
+    const townIn = el('input', { id: 'f-town', type: 'text', placeholder: '例如：大安區', value: f.town, oninput: e => { f.town = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refreshTicket(); save(); } });
+    const distSel = el('select', { id: 'f-district', onchange: e => { f.districtLabel = e.target.value; refreshTicket(); save(); } });
+    const roadIn = el('input', { id: 'f-road', type: 'text', placeholder: '例如：忠孝東路四段', value: f.road, oninput: e => { f.road = e.target.value; f.locSource = 'manual'; refreshTicket(); save(); } });
+    const detailIn = el('input', { id: 'f-detail', type: 'text', placeholder: '例如：100號前、與敦化南路口', value: f.detail, oninput: e => { f.detail = e.target.value; refreshTicket(); save(); } });
+    const pasteBox = el('textarea', { id: 'paste-loc', style: 'min-height:80px', placeholder: '在 Apple 地圖點自己的位置 →「分享」→「拷貝」，再回來長按這裡貼上' });
+    const pasteWrap = el('div', { class: 'stack', hidden: true }, el('div', { class: 'field' }, pasteBox), el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: () => applyPaste(pasteBox.value) }, '套用'), el('span', { class: 'hint', id: 'paste-status' })));
+    return [el('div', { id: 'loc-sugs', class: 'stack' }),
+      el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; if (!pasteWrap.hidden) pasteBox.focus(); } }, '貼上地圖位置'), el('span', { id: 'map-links', class: 'toolrow' })),
+      pasteWrap,
+      el('div', { class: 'grid2' }, field('縣市', countySel), field('鄉鎮市區', townIn)),
+      el('div', { class: 'field', id: 'district-wrap', hidden: true }, el('label', { for: 'f-district' }, '官方選單上的「行政區」'), distSel, el('span', { class: 'sub', id: 'district-note' })),
+      field('路段', roadIn), field('門牌、路口或地點說明', detailIn),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: savePlace }, icon('star', 16), '存成常用地點'))];
+  },
+  time() {
+    const f = S.cur.form;
+    return [el('div', { class: 'grid2' },
+      field('違規日期', el('input', { id: 'f-date', type: 'date', value: f.date, oninput: e => { f.date = e.target.value; f.autoTime = false; f.timeSource = 'manual'; refreshTicket(); save(); } })),
+      field('違規時間', el('input', { id: 'f-time', type: 'time', value: f.time, oninput: e => { f.time = e.target.value; f.autoTime = false; f.timeSource = 'manual'; refreshTicket(); save(); } })))];
+  },
+  rule() {
+    return [el('p', { class: 'hint', text: '違規事實是依第 1 步的回答決定的（車種、位置、駕駛座有沒有人）。要改的話，回第 1 步重新回答。' }),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => toStep(1) }, '回第 1 步'))];
+  },
+  desc() {
+    const f = S.cur.form;
+    const ta = el('textarea', { id: 'f-desc', oninput: e => { f.desc = e.target.value; f.descEdited = true; refreshTicket(); save(); } });
+    ta.value = f.desc || '';
+    return [el('div', { class: 'field' }, el('label', { for: 'f-desc' }, '違規事實說明'), ta),
+      el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => { f.descEdited = false; refreshTicket(); setIfForce('#f-desc', f.desc); save(); } }, icon('refresh', 16), '重新產生'))];
+  }
+};
+function setIfForce(sel, val) { const n = $(sel); if (n) n.value = val || ''; }
+function refreshTicket() {
+  const c = S.cur, f = c.form, J = jurOf();
+  if (!f.descEdited) f.desc = buildDesc();
+  for (const [k] of ROWS) { const n = $('#tv-' + k); if (n) n.replaceChildren(...rowValue(k).filter(Boolean)); }
+  const ag = $('#t-agency'); if (ag) ag.textContent = J ? J.agency : f.county ? `${f.county}警察局` : '依地點選警察局';
+  setIf('#f-plate', f.plate); setIf('#f-vdesc', f.vdesc); setIf('#f-town', f.town); setIf('#f-road', f.road); setIf('#f-detail', f.detail); setIf('#f-date', f.date); setIf('#f-time', f.time); setIf('#f-desc', f.desc);
+  const cs = $('#f-county'); if (cs && cs.value !== f.county) cs.value = f.county || '';
+  // 提醒
+  const w = $('#t-warn');
+  if (w) {
+    w.replaceChildren();
+    const miss = [!f.plate && '車牌', !f.county && '縣市', !f.road && '路段', !f.date && '日期', !f.time && '時間'].filter(Boolean);
+    if (miss.length) w.append(note('warn', `還缺：${miss.join('、')}`, '點右邊的鉛筆補上。'));
+    const dup = duplicateWarning(); if (dup) w.append(note('no', '可能重複檢舉', dup));
+    const h = plateHistory(); if (h.length) w.append(note('warn', `這台車你檢舉過 ${h.length} 次`, h.slice(0, 5).map(x => `${shortDate(x.form.date)} ${x.form.road || x.form.town || ''}`).join('、')));
+  }
+  // 地點建議、地圖、行政區
   const sugBox = $('#loc-sugs');
   if (sugBox) {
     sugBox.replaceChildren();
     const sugs = locationSuggestions();
-    if (sugs.length) sugBox.append(el('div', { class: 'hint', text: '點一下套用地點' }), el('div', { class: 'chips' }, sugs.map(s => el('button', { class: 'chip', type: 'button', onclick: () => { applyLocation(s.apply, s.from.startsWith('Claude') ? 'ai' : s.from.startsWith('附近') ? 'history' : 'place'); refresh4(); save(); toast('已套用地點'); } }, s.label, el('br'), el('small', { text: s.from })))));
+    if (sugs.length) sugBox.append(el('span', { class: 'hint', text: '點一下套用地點' }), el('div', { class: 'chips' }, sugs.map(s => el('button', { class: 'chip', type: 'button', onclick: () => { applyLocation(s.apply, s.from.startsWith('Claude') ? 'ai' : s.from.startsWith('附近') ? 'history' : 'place'); refreshTicket(); save(); toast('已套用地點'); } }, s.label, el('br'), el('small', { text: s.from })))));
   }
-  const src = { gps: '縣市、鄉鎮市區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的地圖位置', ai: '路名取自 Claude 讀到的路名牌，請核對', manual: '' }[f.locSource] || '';
-  const ls = $('#loc-src'); if (ls) ls.textContent = src;
   const ml = $('#map-links');
   if (ml) {
     ml.replaceChildren();
@@ -1086,51 +1597,32 @@ function refresh4() {
       $('#district-note').textContent = !f.districtLabel && ['中正區', '文山區'].includes(f.town) ? J.district_split_note : '';
     } else dw.hidden = true;
   }
-  // 期限
-  const dl = $('#deadline');
-  if (dl) {
-    dl.replaceChildren();
-    const dsrc = $('#date-src'); if (dsrc) dsrc.textContent = f.date ? ({ exif: '取自照片拍攝時間', file: '取自檔案時間，請核對' }[f.timeSource] || '') : '';
-    if (f.date) {
-      const last = addDays(f.date, 6), left = dayDiff(todayTaipei(), last);
-      dl.append(el('div', { class: 'deadline' + (left <= 1 ? ' urgent' : '') }, el('span', { class: 'big', text: left < 0 ? '已逾期' : left === 0 ? '今天' : `剩 ${left} 天` }), el('span', { text: left < 0 ? `最晚要在 ${fmtDate(last)} 送出，現在送出會不予舉發。` : `最晚 ${fmtDate(last)} 24:00 前送出（違規當天算第 1 天）。` })));
-      if (left >= 0) {
-        const ymd = last.replace(/-/g, ''), next = addDays(last, 1).replace(/-/g, '');
-        const text = `違停檢舉期限：${f.plate || ''} ${f.road || ''}`.trim();
-        const details = `最晚 ${fmtDate(last)} 24:00 前送出。地點：${locText()}`;
-        dl.append(el('div', { class: 'row' },
-          el('a', { class: 'btn small', href: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(text)}&dates=${ymd}/${next}&details=${encodeURIComponent(details)}`, target: '_blank', rel: 'noopener' }, '加到 Google 日曆'),
-          el('button', { class: 'btn small', type: 'button', onclick: e => copyText(`${text}｜${details}`, e.currentTarget) }, '複製提醒文字')));
-      }
-    }
-  }
-  // 違規事實
-  const vb = $('#violation');
-  if (vb) {
-    vb.replaceChildren();
-    const r = ruleOf();
-    if (r) {
-      const label = J && J.violation_labels ? J.violation_labels[verdict().ruleId] : null;
-      vb.append(el('div', { text: `${r.name}（${r.law}）` }));
-      if (label) vb.append(el('div', { class: 'hint', text: `官方選單請選：「${label}」` }));
-      if (J && J.violation_labels_note) vb.append(el('div', { class: 'hint', text: J.violation_labels_note }));
-    } else vb.append(el('p', { class: 'hint', text: '請先完成第 1 步。' }));
-  }
-  if (!f.descEdited) f.desc = buildDesc();
-  setIf('#f-desc', f.desc);
-  const max = (J || {}).description_max_length || 200, cnt = $('#desc-count');
-  if (cnt) { cnt.textContent = `${(f.desc || '').length} / ${max} 字`; cnt.className = 'sub' + ((f.desc || '').length > max ? ' bad' : ''); }
   // 證據
-  const evb = $('#evidence');
-  if (evb) {
-    evb.replaceChildren();
-    const r = ruleOf();
+  const ev = $('#t-ev'), r = ruleOf();
+  if (ev) {
+    ev.replaceChildren();
     if (r) {
       const auto = evidenceAuto(), L = S.data.vio.evidence_labels;
       for (const [k, req] of [...r.evidence.map(x => [x, true]), ...r.recommended.map(x => [x, false])]) {
-        const m = c.evidence[k], on = m != null ? m : auto[k], id = 'ev-' + k;
-        evb.append(el('label', { class: 'check', for: id }, el('input', { type: 'checkbox', id, checked: on, onchange: e => { c.evidence[k] = e.target.checked; save(); } }),
-          el('span', {}, L[k], ' ', el('small', { text: req ? '（必要）' : '（建議）' }), m == null && auto[k] ? el('span', { class: 'pill auto', text: '自動' }) : null)));
+        const on = c.evidence[k] != null ? c.evidence[k] : auto[k];
+        ev.append(el('button', { class: 'chip', type: 'button', 'aria-pressed': String(!!on), onclick: () => { c.evidence[k] = !on; refreshTicket(); save(); } }, on ? '✓ ' : '', L[k], ' ', el('small', { text: req ? '必要' : '建議' })));
+      }
+    }
+  }
+  // 期限
+  const dl = $('#t-deadline');
+  if (dl) {
+    dl.replaceChildren();
+    if (f.date) {
+      const last = addDays(f.date, 6), left = dayDiff(todayTaipei(), last);
+      dl.append(el('div', { class: 'row', style: 'flex-wrap:nowrap;gap:14px;align-items:center' }, countEl(left),
+        el('div', { class: 'stack', style: 'gap:6px;flex:1' }, el('b', { text: left < 0 ? `已超過期限（${fmtDate(last)}），送出會不予舉發` : left === 0 ? '今天 24:00 前要送出' : `最晚 ${fmtDate(last)} 24:00 前送出` }), daybar(left), el('span', { class: 'hint', text: '違規當天算第 1 天，共 7 天。' }))));
+      if (left > 0) {
+        const ymd = last.replace(/-/g, ''), next = addDays(last, 1).replace(/-/g, '');
+        const text = `違停檢舉期限：${f.plate || ''} ${f.road || ''}`.trim(), details = `最晚 ${fmtDate(last)} 24:00 前送出。地點：${locText()}`;
+        dl.append(el('div', { class: 'toolrow' },
+          el('a', { class: 'btn small', href: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(text)}&dates=${ymd}/${next}&details=${encodeURIComponent(details)}`, target: '_blank', rel: 'noopener' }, icon('calendar', 16), '加到 Google 日曆'),
+          el('button', { class: 'btn small', type: 'button', onclick: e => copyText(`${text}｜${details}`, e.currentTarget) }, '複製提醒文字')));
       }
     }
   }
@@ -1152,7 +1644,7 @@ async function applyPaste(text) {
   if (r.number) f.detail = r.number + '前';
   f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'paste'; f.autoLoc = false;
   if (st) st.textContent = '已套用，請核對。';
-  save(); refresh4();
+  save(); refreshTicket();
 }
 function savePlace() {
   const f = S.cur.form;
@@ -1160,10 +1652,10 @@ function savePlace() {
   const g = curGeo();
   const p = { id: uid(), name: `${f.road}${f.detail || ''}`, county: f.county, town: f.town, districtLabel: f.districtLabel, road: f.road, detail: f.detail, lat: g ? g.lat : null, lng: g ? g.lng : null };
   S.places = [p, ...S.places.filter(x => x.name !== p.name)].slice(0, 30);
-  savePlaces(); toast('已存成常用地點'); refresh4();
+  savePlaces(); toast('已存成常用地點'); refreshTicket();
 }
 
-/* ---- 第 5 步 ---- */
+/* ---- 第 4 步：送出 ---- */
 function fieldValue(src) {
   const f = S.cur.form, P = S.profile, J = jurOf() || {}, v = verdict(), r = ruleOf();
   const [front, back] = splitPlate(f.plate);
@@ -1197,49 +1689,50 @@ function autofillPayload() {
   }).filter(o => o.value);
   return JSON.stringify({ app: 'prh', v: 1, site: f.county, fields });
 }
-function step5(v) {
+function step4(v) {
   const c = S.cur, f = c.form;
-  if (!reportable()) { v.append(note('no', '這件不能檢舉', '請回第 1 步確認。')); stepNav(v); return; }
-  if (!f.county) { v.append(note('warn', '還沒有填縣市', '請回上一步填寫地點，這裡會列出該縣市官方網站要填的每一欄。')); stepNav(v); return; }
-  if (S.lock && !S.unlocked) { v.append(unlockCard()); stepNav(v); return; }
+  const back = () => actionbar(el('button', { class: 'btn', type: 'button', onclick: () => toStep(3) }, icon('back', 18), '回檢舉單'));
+  if (!reportable()) { v.append(note('no', '這件不能檢舉', '請回第 1 步確認。')); return; }
+  if (!f.county) { v.append(note('warn', '還沒有填縣市', '請回檢舉單填寫地點，這裡才會列出該縣市官方網站要填的欄位。'), back()); return; }
+  if (S.lock && !S.unlocked) { v.append(unlockCard(), back()); return; }
   if (S.focus) { focusMode(v); return; }
-  const J = jurOf();
-  const url = J ? J.url : S.data.jur.others[f.county];
+  const J = jurOf(), url = J ? J.url : S.data.jur.others[f.county];
   if (!profileReady()) v.append(note('warn', '個人資料還沒填完整', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'profile' }) }, '去填個人資料'))));
   v.append(el('div', { class: 'card' }, el('h3', { text: J ? J.agency : `${f.county}警察局` }),
     J ? el('p', { class: 'hint', text: J.auth_summary }) : el('p', { class: 'hint', text: `${f.county}的欄位還沒整理，自動填表會依欄位名稱盡量比對。` }),
-    J && J.special_jurisdiction_note ? el('p', { class: 'hint', text: J.special_jurisdiction_note }) : null,
-    url ? el('div', { class: 'copylist' }, copyRow('官方網址', url, '請用 Safari 開啟：複製後貼到 Safari 網址列。書籤只能在 Safari 使用。')) : null));
+    J && J.special_jurisdiction_note ? el('p', { class: 'hint', text: J.special_jurisdiction_note }) : null));
 
-  const ready = S.settings.autofillReady;
-  v.append(el('div', { class: 'card' }, el('h3', {}, '方法一：自動填表', el('span', { class: 'pill auto', text: '建議' })),
-    el('ol', { class: 'steps' },
-      el('li', {}, '按這個按鈕，把資料複製起來', el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: e => copyText(autofillPayload(), e.currentTarget) }, '複製自動填表資料'))),
-      el('li', {}, '用 Safari 打開官方網址（上面那一列按「複製」，再到 Safari 網址列貼上）'),
-      el('li', {}, '在官方網頁點 Safari 的「書籤」→「違停自動填表」，畫面上方出現框框後，長按框框選「貼上」'),
-      el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片，再按送出'),
-      el('li', {}, '填完後回來按「清除剪貼簿」，把個人資料從剪貼簿清掉', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: async e => { if (await copyText(' ', e.currentTarget)) toast('剪貼簿已清除'); } }, '清除剪貼簿')))),
-    S.settings.storeId === false ? note('info', '你選擇不儲存身分證', '自動填表不會填身分證字號，請在官方網站自己輸入。') : null,
-    J && J.id === 'taipei' ? note('info', '臺北的小提醒', '第一次使用要先按「發送認證信」，到信箱點連結。到下一頁時，再點一次書籤就會繼續填。') : null,
-    J && J.id === 'taoyuan' ? note('info', '桃園的小提醒', '第一頁填好後要輸入驗證碼並收認證信，進到第二頁時再點一次書籤。第二頁的欄位還沒確認，沒填到的請自己填。') : null,
-    ready ? null : note('warn', '還沒設定書籤', '只要設定一次。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'autofill' }) }, '一步一步設定')))));
+  const photos = c.photos.filter(p => S.files[p.id] || p.stored);
+  const step = (no, title, ...body) => el('div', { class: 'bigstep' }, el('span', { class: 'no', text: String(no) }), el('div', { class: 'c' }, el('b', { text: title }), ...body));
+  let n = 0;
+  const steps = el('div', { class: 'card' }, el('h3', { text: '照著做，5 分鐘送出' }),
+    step(++n, '複製自動填表資料', el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: e => copyText(autofillPayload(), e.currentTarget) }, icon('copy', 18), '複製自動填表資料')),
+      S.settings.autofillReady ? null : note('warn', '還沒設定書籤', '只要設定一次。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'autofill' }) }, '一步一步設定')))),
+    photos.length ? step(++n, '把照片存到「檔案」',
+      el('span', { class: 'hint', text: '官方網站上傳照片時，從「檔案」選。手機會跳出分享選單，請選「儲存到檔案」，再選 iCloud 雲碟；用 Google 雲端硬碟的話，選 Google 雲端硬碟 App。' }),
+      el('div', { class: 'extras' }, photos.map(p => el('button', { type: 'button', 'aria-label': `存${ROLES[p.role]}照片`, onclick: () => savePhoto(c, p) }, p.thumb ? el('img', { src: p.thumb, alt: '' }) : null, el('span', { text: '存' + ROLES[p.role] })))),
+      el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', onclick: () => savePhotosZip([c], `${plateKey(f.plate) ? f.plate : 'PRH'}_${(f.date || todayTaipei()).replace(/-/g, '')}_photos.zip`) }, icon('archive', 16), '全部存成一個壓縮檔（備份用）'))) : null,
+    step(++n, '用 Safari 打開官方網站', url ? el('div', { class: 'copylist' }, copyRow('官方網址', url, '按「複製」，到 Safari 網址列貼上。書籤只能在 Safari 使用。')) : el('span', { class: 'hint', text: '這個縣市的網址還沒整理。' })),
+    step(++n, '點書籤「違停自動填表」，長按框框選「貼上」', el('span', { class: 'hint', text: '檢查綠色框的內容，自己輸入驗證碼、上傳照片，最後自己按送出。' }),
+      S.settings.storeId === false ? note('info', '你選擇不儲存身分證', '自動填表不會填身分證字號，請在官方網站自己輸入。') : null,
+      J && J.id === 'taipei' ? note('info', '臺北的小提醒', '第一次使用要先按「發送認證信」，到信箱點連結。到下一頁時，再點一次書籤就會繼續填。') : null,
+      J && J.id === 'taoyuan' ? note('info', '桃園的小提醒', '第一頁填好後要輸入驗證碼並收認證信，進到第二頁時再點一次書籤。第二頁的欄位還沒確認，沒填到的請自己填。') : null),
+    step(++n, '回來清除剪貼簿', el('span', { class: 'hint', text: '把個人資料從剪貼簿清掉。' }), el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: async e => { if (await copyText(' ', e.currentTarget)) toast('剪貼簿已清除'); } }, '清除剪貼簿'))));
+  v.append(steps);
 
-  v.append(el('div', { class: 'card' }, el('h3', { text: '方法二：一欄一欄複製' }),
+  v.append(el('div', { class: 'card' }, el('h3', { text: '自動填表沒填到？一欄一欄複製' }),
     el('p', { class: 'hint', text: '一次只顯示一欄，大字、一鍵複製。切到 Safari 貼上後回來，會停在下一欄。' }),
     el('button', { class: 'btn block', type: 'button', onclick: () => { S.focus = true; render(); window.scrollTo(0, 0); } }, c.focusIdx ? `繼續逐欄複製（第 ${c.focusIdx + 1} 欄）` : '開始逐欄複製')));
-
-  if (c.photos.length) v.append(el('div', { class: 'card' }, el('h3', { text: '要上傳的照片' }), el('p', { class: 'hint', text: '上傳時從「照片」選這幾張原始照片：' }),
-    el('ul', { class: 'stack', style: 'margin:0;padding-left:20px' }, c.photos.map((p, i) => el('li', { text: `照片${i + 1}：${ROLES[p.role]}，${p.takenAt ? fmtDate(p.takenAt.slice(0, 10)) + ' ' + p.takenAt.slice(11, 16) : ''}` })))));
 
   const sub = c.submission;
   const cn = el('input', { id: 's-case', type: 'text', value: sub.caseNumber, autocomplete: 'off', oninput: e => { sub.caseNumber = e.target.value.trim(); save(); } });
   const qp = el('input', { id: 's-pass', type: 'text', value: sub.queryPassword, autocomplete: 'off', oninput: e => { sub.queryPassword = e.target.value.trim(); save(); } });
   v.append(el('div', { class: 'card' }, el('h3', { text: '送出之後' }), el('p', { class: 'hint', text: (J && J.result_note) || '送出後請把案件編號和查詢密碼記在這裡。' }),
-    el('div', { class: 'grid2' }, field('案件編號', cn), field('查詢密碼', qp)),
-    el('button', { class: 'btn primary block', type: 'button', onclick: () => { c.status = 'submitted'; sub.submittedAt = new Date().toISOString(); save(true); toast('已記錄為已送出'); go('home'); } }, c.status === 'submitted' ? '更新紀錄' : '我已經送出了')));
-
+    el('div', { class: 'grid2' }, field('案件編號', cn), field('查詢密碼', qp))));
   v.append(el('details', {}, el('summary', {}, '全部欄位一覽'), el('div', {}, el('div', { class: 'copylist' }, submitFields().map(fd => fd.source === 'static' ? el('div', { class: 'copyrow' }, el('div', {}, el('span', { class: 'k', text: fd.label }), el('span', { class: 'n', text: fd.value }))) : copyRow(fd.label, fieldValue(fd.source), fd.note, fd.source === 'profile.idNumber' ? maskId(fieldValue(fd.source)) : null))))));
-  stepNav(v);
+  v.append(actionbar(
+    el('button', { class: 'btn', type: 'button', onclick: () => toStep(3) }, icon('back', 18), '檢舉單'),
+    el('button', { class: 'btn primary', type: 'button', onclick: () => { c.status = 'submitted'; sub.submittedAt = sub.submittedAt || new Date().toISOString(); save(true); toast('已記錄為已送出'); go('home'); } }, icon('send', 18), c.status === 'submitted' ? '更新紀錄' : '我已經送出了')));
 }
 function focusMode(v) {
   const c = S.cur, list = submitFields();
@@ -1248,25 +1741,32 @@ function focusMode(v) {
   const val = fd.source === 'static' ? '' : fieldValue(fd.source);
   const move = d => { c.focusIdx = Math.min(Math.max(0, c.focusIdx + d), list.length - 1); save(); render(); window.scrollTo(0, 0); };
   v.append(el('div', { class: 'card focusbox' },
-    el('div', { class: 'row between' }, el('span', { class: 'count', text: `${c.focusIdx + 1} / ${list.length}` }), el('span', { class: 'hint', text: fd.step })),
+    el('div', { class: 'row between' }, el('span', { class: 'pill accent', text: `${c.focusIdx + 1} / ${list.length}` }), el('span', { class: 'hint', text: fd.step })),
     el('div', { class: 'bar' }, el('span', { style: `width:${Math.round((c.focusIdx + 1) / list.length * 100)}%` })),
     el('div', { class: 'flabel', text: fd.label }),
     fd.source === 'static' ? el('p', { text: fd.value }) : el('div', { class: 'fvalue', text: val || '（尚未填寫）' }),
     fd.source === 'profile.idNumber' && S.settings.storeId === false ? el('p', { class: 'hint', text: '你選擇不儲存身分證，請在官方網站自己輸入。' }) : fd.note ? el('p', { class: 'hint', text: fd.note }) : null,
-    fd.source === 'static' ? null : el('button', { class: 'btn primary block', type: 'button', disabled: !val, onclick: e => copyText(val, e.currentTarget) }, '複製'),
+    fd.source === 'static' ? null : el('button', { class: 'btn primary block big', type: 'button', disabled: !val, onclick: e => copyText(val, e.currentTarget) }, '複製'),
     el('div', { class: 'grid2' }, el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === 0, onclick: () => move(-1) }, '上一欄'), el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === list.length - 1, onclick: () => move(1) }, '下一欄')),
     el('button', { class: 'btn ghost block', type: 'button', onclick: () => { S.focus = false; render(); } }, '結束逐欄複製')));
 }
 
 /* ================= 紀錄 ================= */
 function renderRecords(v) {
-  v.append(el('h2', { class: 'page', text: '紀錄' }));
+  v.append(el('h2', { class: 'page-title', text: '紀錄' }));
   const all = S.cases, sent = all.filter(c => c.status === 'submitted');
   const cited = sent.filter(c => c.result === 'cited').length, warned = sent.filter(c => c.result === 'warned').length, notC = sent.filter(c => c.result === 'not_cited').length;
   const decided = cited + warned + notC;
-  v.append(el('div', { class: 'card' }, el('h3', { text: '統計' }),
-    el('div', { class: 'stats' }, stat(all.length, '全部'), stat(sent.length, '已送出'), stat(cited, '已舉發'), stat(decided ? Math.round(cited / decided * 100) + '%' : '—', '成案率')),
-    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', disabled: !all.length, onclick: exportCsv }, '匯出 CSV 表格'))));
+  v.append(el('div', { class: 'stats' }, stat(all.length, '全部'), stat(sent.length, '已送出'), stat(cited, '已舉發'), stat(decided ? Math.round(cited / decided * 100) + '%' : '—', '成案率')));
+
+  const filters = [['all', '全部'], ['draft', '草稿'], ['submitted', '已送出'], ['done', '有結果']];
+  const q = el('input', { type: 'search', id: 'rec-q', placeholder: '搜尋車牌或路名', 'aria-label': '搜尋車牌或路名', value: S.rec.q });
+  const list = el('div', { class: 'list', id: 'rec-list' });
+  q.addEventListener('input', e => { S.rec.q = e.target.value; fillRecList(list); });
+  v.append(el('div', { class: 'chips' }, filters.map(([k, t]) => el('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.rec.filter === k), onclick: () => { S.rec.filter = k; render(); } }, t))),
+    el('div', { class: 'field' }, q), list);
+  fillRecList(list);
+  v.append(el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', disabled: !all.length, onclick: exportCsv }, icon('download', 16), '匯出 CSV 表格')));
 
   const hs = hotspots().slice(0, 5);
   if (hs.length) {
@@ -1277,23 +1777,14 @@ function renderRecords(v) {
       const sel = el('select', { id: 'letter-place' }, hot.map(h => el('option', { value: h.key }, `${h.label}（${h.count} 次）`)));
       const to = el('select', { id: 'letter-to' }, ['里長', '市議員', '交通局', '警察分局'].map(x => el('option', { value: x }, x)));
       const out = el('div', { class: 'stack', id: 'letter-out' });
-      card.append(el('h4', { text: '寫陳情信' }), el('p', { class: 'hint', text: '同一地點常有違停時，可以請里長、議員或交通局設置阻車柱、改善標線或加強取締。Claude 會依你的紀錄寫一封草稿（不會放入車牌和你的個人資料）。' }),
-        el('div', { class: 'grid2' }, el('div', { class: 'field' }, el('label', { for: 'letter-place' }, '地點'), sel), el('div', { class: 'field' }, el('label', { for: 'letter-to' }, '寄給誰'), to)),
+      card.append(el('h4', { text: '寫陳情信' }), el('p', { class: 'hint', text: '同一地點常有違停時，可以請里長、議員或交通局設置阻車柱、改善標線或加強取締。Claude 會依你的紀錄寫一封草稿（只送地點和日期，不送車牌和你的個人資料）。' }),
+        el('div', { class: 'grid2' }, field('地點', sel), field('寄給誰', to)),
         el('button', { class: 'btn', type: 'button', disabled: !S.sample, onclick: () => writeLetter(hot.find(h => h.key === sel.value), to.value, out) }, S.sample ? '請 Claude 寫陳情信' : '這個畫面不能使用 Claude'), out);
     }
     v.append(card);
   }
   const repeat = [...S.cases.reduce((m, c) => { const k = plateKey(c.form.plate); if (k.length >= 4) m.set(k, (m.get(k) || []).concat(c)); return m; }, new Map()).values()].filter(x => x.length >= 2).sort((a, b) => b.length - a.length);
   if (repeat.length) v.append(el('div', { class: 'card' }, el('h3', { text: '慣性違停的車' }), el('div', { class: 'stack' }, repeat.slice(0, 5).map(x => el('div', { class: 'row' }, plateChip(x[0].form.plate), el('span', { class: 'hint', text: `${x.length} 次：${x.map(c => shortDate(c.form.date)).join('、')}` }))))));
-
-  const filters = [['all', '全部'], ['draft', '草稿'], ['submitted', '已送出'], ['done', '有結果']];
-  const q = el('input', { type: 'search', id: 'rec-q', placeholder: '搜尋車牌或路名', value: S.rec.q });
-  const list = el('div', { class: 'stack', id: 'rec-list' });
-  q.addEventListener('input', e => { S.rec.q = e.target.value; fillRecList(list); });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '案件' }),
-    el('div', { class: 'chips' }, filters.map(([k, t]) => el('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.rec.filter === k), onclick: () => { S.rec.filter = k; render(); } }, t))),
-    el('div', { class: 'field' }, q), list));
-  fillRecList(list);
 }
 function fillRecList(list) {
   list.replaceChildren();
@@ -1302,29 +1793,32 @@ function fillRecList(list) {
     if (S.rec.filter === 'draft' && c.status !== 'draft') return false;
     if (S.rec.filter === 'submitted' && c.status !== 'submitted') return false;
     if (S.rec.filter === 'done' && !c.result) return false;
-    if (q && !(plateKey(c.form.plate).includes(plateKey(q)) && plateKey(q)) && !locText(c).toUpperCase().includes(q)) return false;
+    if (q && !(plateKey(q) && plateKey(c.form.plate).includes(plateKey(q))) && !locText(c).toUpperCase().includes(q)) return false;
     return true;
   });
-  if (!S.cases.length) { list.append(el('p', { class: 'hint', text: '還沒有案件。在「檢舉」加入照片或填車牌後，案件會自動存在這裡。' }), el('button', { class: 'btn primary', type: 'button', onclick: startNew }, '我看到違停')); return; }
-  if (!rows.length) { list.append(el('p', { class: 'hint', text: '沒有符合的案件。' })); return; }
+  if (!S.cases.length) { list.append(el('div', { class: 'li' }, el('div', { class: 't' }, el('b', { text: '還沒有案件' }), el('span', { class: 'place', text: '拍照或填車牌後，案件會自動存在這裡。' })), el('button', { class: 'btn small primary', type: 'button', onclick: () => { startNew(); openCamera('overview'); } }, '我看到違停'))); return; }
+  if (!rows.length) { list.append(el('div', { class: 'li' }, el('span', { class: 'hint', text: '沒有符合的案件。' }))); return; }
   for (const c of rows) {
-    const resultSel = c.status === 'submitted' ? el('select', { 'aria-label': '處理結果', onchange: e => { c.result = e.target.value; persistCases(); render(); } },
-      el('option', { value: '' }, '處理結果：等待中'), ...[['cited', '已舉發'], ['warned', '勸導'], ['not_cited', '不舉發']].map(([k, t]) => el('option', { value: k, selected: c.result === k }, t))) : null;
-    const del = el('button', { class: 'btn small danger', type: 'button' }, '刪除');
-    del.addEventListener('click', () => {
-      if (del.dataset.armed) { S.cases = S.cases.filter(x => x.id !== c.id); persistCases(); if (S.cur.id === c.id) S.cur = newCase(); render(); }
-      else { del.dataset.armed = '1'; del.textContent = '確定刪除？'; setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = '刪除'; } }, 3000); }
+    const resultSel = c.status === 'submitted' ? el('select', { 'aria-label': '處理結果', onchange: e => {
+      c.result = e.target.value; persistCases();
+      if (c.result && S.settings.photoRetention === 'result' && c.photos.some(p => p.stored)) { forgetPhotos(c); persistCases(); toast('已記錄，App 裡的照片已依設定刪除'); }
+      render();
+    } }, el('option', { value: '' }, '處理結果：等待中'), ...[['cited', '已舉發'], ['warned', '勸導'], ['not_cited', '不舉發']].map(([k, t]) => el('option', { value: k, selected: c.result === k }, t))) : null;
+    const del = armed(el('button', { class: 'btn small danger', type: 'button' }, '刪除'), '刪除', '確定刪除？', () => {
+      forgetPhotos(c); S.cases = S.cases.filter(x => x.id !== c.id); persistCases(); if (S.cur.id === c.id) S.cur = newCase(); render();
     });
-    list.append(el('div', { class: 'card case' },
-      el('div', { class: 'row' }, plateChip(c.form.plate), statusPill(c), deadlinePill(c)),
-      el('div', { class: 'place', text: [locText(c) || '（未填地點）', c.form.date ? `${fmtDate(c.form.date)} ${c.form.time}` : ''].filter(Boolean).join('｜') }),
-      c.submission.caseNumber ? el('div', { class: 'place', text: `案件編號 ${c.submission.caseNumber}${c.submission.queryPassword ? '｜查詢密碼 ' + c.submission.queryPassword : ''}` }) : null,
-      el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => openCase(c.id) }, '開啟'), resultSel, del)));
+    const stored = c.photos.filter(p => p.stored).length;
+    list.append(el('div', { class: 'li' },
+      el('div', { class: 't' }, el('div', { class: 'row' }, plateChip(c.form.plate), statusPill(c), deadlinePill(c)),
+        el('span', { class: 'place', text: [locText(c) || '（未填地點）', c.form.date ? `${fmtDate(c.form.date)} ${c.form.time}` : ''].filter(Boolean).join('｜') }),
+        c.submission.caseNumber ? el('span', { class: 'place', text: `案件編號 ${c.submission.caseNumber}${c.submission.queryPassword ? '｜查詢密碼 ' + c.submission.queryPassword : ''}` }) : null),
+      el('button', { class: 'btn small', type: 'button', onclick: () => openCase(c.id) }, '開啟'),
+      el('div', { class: 'acts' }, resultSel, stored ? el('button', { class: 'btn small', type: 'button', onclick: () => savePhotosZip([c], `${plateKey(c.form.plate) ? c.form.plate : 'PRH'}_${(c.form.date || c.createdAt.slice(0, 10)).replace(/-/g, '')}_photos.zip`) }, icon('archive', 16), `照片 ${stored} 張`) : null, del)));
   }
 }
 async function writeLetter(h, to, out) {
   if (!S.sample || !h) return;
-  out.replaceChildren(el('p', { class: 'hint', text: 'Claude 撰寫中，大約需要 10 到 40 秒…' }));
+  out.replaceChildren(el('div', { class: 'row' }, el('span', { class: 'spin' }), el('span', { class: 'hint', text: 'Claude 撰寫中，大約需要 10 到 40 秒…' })));
   const prompt = `請用繁體中文（台灣用語）寫一封給「${to}」的陳情信草稿，請求改善人行道或斑馬線長期被汽車違規停車的問題。
 
 地點：${h.county}${h.town}${h.road}
@@ -1354,51 +1848,78 @@ async function exportCsv() {
   const csv = '﻿' + [head, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
   await saveFile(`違停檢舉紀錄_${todayTaipei()}.csv`, csv);
 }
-async function saveFile(filename, data) {
-  if (!S.downloads) { toast('這個畫面不能下載檔案'); return; }
-  try { await S.downloads.save({ filename, data }); toast('已儲存'); }
-  catch (e) { if (!e || e.code !== 'declined') toast('無法儲存檔案'); }
-}
 
 /* ================= 我的 ================= */
 const ME_ITEMS = [
-  ['profile', '個人資料', '姓名、身分證、電話、Email、地址'],
-  ['places', '常用地點', '家附近、通勤路線，一鍵帶入'],
-  ['autofill', '自動填表設定', '在官方網站一鍵填好所有欄位'],
-  ['guide', '拍照教學', '怎麼拍最容易成案'],
-  ['ask', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
-  ['test', '照片定位測試', '確認手機選照片時能帶出地點'],
-  ['privacy', '隱私說明與保護', '資料存在哪裡、隱私密碼、不儲存身分證'],
-  ['backup', '備份與清除', '把資料存成檔案，或全部清除']
+  ['profile', 'person', '個人資料', '姓名、身分證、電話、Email、地址'],
+  ['skin', 'palette', '外觀風格', '路標、夜巡、小綠人，隨時切換'],
+  ['photos', 'folder', '照片存放', 'App 裡的照片、存到雲端、自動刪除'],
+  ['places', 'star', '常用地點', '家附近、通勤路線，一鍵帶入'],
+  ['autofill', 'wand', '自動填表設定', '在官方網站一鍵填好所有欄位'],
+  ['guide', 'book', '拍照教學', '怎麼拍最容易成案'],
+  ['ask', 'chat', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
+  ['test', 'target', '照片定位測試', '確認手機選照片時能帶出地點'],
+  ['privacy', 'shield', '隱私說明與保護', '隱私密碼、自動上鎖、資料存在哪裡'],
+  ['backup', 'archive', '備份與清除', '把資料存成檔案，或全部清除']
 ];
 function renderMe(v) {
   if (!S.sub) {
-    v.append(el('h2', { class: 'page', text: '我的' }), el('div', { class: 'menu' }, ME_ITEMS.map(([k, t, s]) => el('button', { type: 'button', onclick: () => go('me', { sub: k }) },
-      el('span', {}, t, el('small', { text: s })), el('span', { class: 'arrow', text: '›' })))));
+    v.append(el('h2', { class: 'page-title', text: '我的' }), el('div', { class: 'menu' }, ME_ITEMS.map(([k, ic, t, s]) => el('button', { type: 'button', onclick: () => go('me', { sub: k }) },
+      el('span', { class: 'mic' }, icon(ic, 20)), el('span', {}, t, el('small', { text: s })), el('span', { class: 'arrow' }, icon('next', 18))))));
     return;
   }
-  v.append(el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: null }) }, '‹ 返回「我的」')));
-  ({ profile: meProfile, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, privacy: mePrivacy, backup: meBackup })[S.sub](v);
+  const item = ME_ITEMS.find(x => x[0] === S.sub);
+  v.append(el('div', { class: 'flowhead' }, el('div', { class: 'top-line' },
+    el('button', { class: 'iconbtn', type: 'button', 'aria-label': '返回「我的」', onclick: () => go('me', { sub: null }) }, icon('back')),
+    el('div', { class: 'label' }, el('small', { text: '我的' }), el('b', { text: item ? item[2] : '' })))));
+  ({ profile: meProfile, skin: meSkin, photos: mePhotos, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, privacy: mePrivacy, backup: meBackup })[S.sub](v);
+}
+function meSkin(v) {
+  const auto = el('input', { type: 'checkbox', id: 'skin-auto', checked: !S.settings.skin });
+  auto.addEventListener('change', e => { S.settings.skin = e.target.checked ? null : document.documentElement.dataset.skin; saveSettings(); applySkin(); render(); });
+  v.append(el('p', { class: 'hint', text: '三種風格的功能完全一樣，只是顏色、字體和形狀不同。點一下就會換，隨時可以換回來。' }),
+    el('div', { class: 'skins' }, SKINS.map(s => {
+      const on = (S.settings.skin || autoSkin()) === s.id, p = s.pv;
+      return el('button', { class: 'skin', type: 'button', 'aria-pressed': String(on), onclick: () => { S.settings.skin = s.id; saveSettings(); applySkin(); render(); } },
+        el('span', { class: 'pv', style: `background:${p.bg}` },
+          el('i', { style: `height:14px;width:60%;background:${p.ink};opacity:.85` }),
+          el('i', { style: `height:34px;background:${p.bar};border-radius:${p.round === '999px' ? '999px' : '8px'}` }),
+          el('i', { style: `height:22px;background:${p.card}` }), el('i', { style: `height:22px;background:${p.card}` })),
+        el('span', {}, el('b', { text: s.name }), on ? el('span', { class: 'pill accent', style: 'margin-left:8px', text: '使用中' }) : null, el('small', { text: s.desc })));
+    })),
+    el('div', { class: 'card' }, el('label', { class: 'check', for: 'skin-auto' }, auto, el('span', {}, '跟著手機的深色模式自動切換', el('br'), el('small', { text: '手機是淺色時用「路標」，深色時用「夜巡」。' })))));
+}
+async function mePhotos(v) {
+  const sel = el('select', { id: 'ph-keep' }, RETENTION.map(([k, t]) => el('option', { value: k, selected: S.settings.photoRetention === k }, t)));
+  sel.addEventListener('change', async e => { S.settings.photoRetention = e.target.value; saveSettings(); await photoHousekeeping(); toast('已更新'); render(); });
+  const cases = S.cases.filter(c => c.photos.some(p => p.stored)), count = cases.reduce((a, c) => a + c.photos.filter(p => p.stored).length, 0);
+  const usage = el('span', { class: 'hint', id: 'ph-usage', text: '計算中…' });
+  const wipe = armed(el('button', { class: 'btn danger', type: 'button', disabled: !count }, '刪除 App 裡的全部照片'), '刪除 App 裡的全部照片', '再按一次確定刪除', async () => {
+    await PhotoDB.clear(); S.files = {}; for (const c of S.cases) c.photos.forEach(p => { p.stored = false; }); S.cur.photos.forEach(p => { p.stored = false; }); persistCases(); toast('已刪除'); render();
+  });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '照片存在哪裡' }),
+      el('p', { class: 'hint', text: '用 App 相機拍的照片，和從相簿選進來的照片，原檔都存在這個 App 自己的空間裡：不會出現在手機的「照片」App，也不會上傳到任何伺服器。' }),
+      el('div', { class: 'stats', style: 'grid-template-columns:repeat(2,minmax(0,1fr))' }, stat(count, '張照片'), stat(cases.length, '件案件')), usage,
+      S.photoDb ? null : note('warn', '這個畫面不能儲存照片', '可能是私密瀏覽模式。照片只會留到關掉 App 為止。')),
+    el('div', { class: 'card' }, el('h3', { text: '存到雲端（iCloud 或 Google 雲端硬碟）' }),
+      el('p', { class: 'hint', text: '按下面的按鈕，手機會跳出分享選單：選「儲存到檔案」再選 iCloud 雲碟，或選 Google 雲端硬碟 App。照片會存在你自己的帳號裡，這個系統看不到。' }),
+      el('button', { class: 'btn primary', type: 'button', disabled: !count, onclick: () => savePhotosZip(cases, `PRH_photos_${todayTaipei().replace(/-/g, '')}.zip`) }, icon('archive', 18), '全部照片存成一個壓縮檔'),
+      el('p', { class: 'hint', text: '壓縮檔裡每件案件一個資料夾。在「檔案」App 點一下壓縮檔就會解開。單件案件的照片，可以在「紀錄」或送出步驟裡存。' })),
+    el('div', { class: 'card' }, el('h3', { text: '自動刪除' }), field('App 裡的照片什麼時候刪除', sel),
+      el('p', { class: 'hint', text: '只會刪除 App 裡的照片；你已經存到「檔案」或雲端的不受影響。案件紀錄（車牌、地點、時間）會保留。' })),
+    el('div', { class: 'card' }, el('h3', { text: '全部刪除' }), el('div', { class: 'row' }, wipe)));
+  try { const e = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; usage.textContent = e && e.usage != null ? `這個 App 目前用了約 ${(e.usage / 1048576).toFixed(1)} MB 手機空間。` : ''; } catch (e) { usage.textContent = ''; }
 }
 function mePrivacy(v) {
   v.append(el('div', { class: 'card' }, el('h3', { text: '你的資料存在哪裡' }),
     el('div', { class: 'tbl-wrap' }, el('table', {},
       el('thead', {}, el('tr', {}, ['資料', '存在哪裡', '會不會傳出去'].map(h => el('th', { text: h })))),
       el('tbody', {}, [
-        ['個人資料（姓名、身分證、電話、Email、地址）', '只在這支手機', '不會傳給 Claude，也不會上傳任何伺服器。只有你按「複製」時放進剪貼簿，再由你自己貼到官方網站'],
-        ['照片', '只在手機記憶體，案件只留小縮圖', '你按「開始判讀」時，才會傳給你自己帳號的 Claude；傳送前平台會先移除照片裡的位置資料'],
+        ['個人資料（姓名、身分證、電話、Email、地址）', '只在這支手機，可加密', '不會傳給 Claude，也不會上傳任何伺服器。只有你按「複製」時放進剪貼簿，再由你自己貼到官方網站'],
+        ['照片', '這個 App 自己的空間（不在手機相簿），依設定自動刪除', '你按「存到檔案」時，才由你選擇存到哪裡（例如 iCloud 雲碟、Google 雲端硬碟）。請 Claude 判讀時，才會傳給你自己帳號的 Claude；傳送前平台會先移除照片裡的位置資料'],
         ['案件紀錄（車牌、地點、時間）', '只在這支手機', '不會上傳。寫陳情信時，只送地點和日期給 Claude，不送車牌'],
         ['法規小幫手的問題', '不保存', '會送給你自己帳號的 Claude，請不要在問題裡寫個人資料']
-      ].map(r => el('tr', {}, r.map(x => el('td', { text: x })))))))),
-    el('div', { class: 'card' }, el('h3', { text: '常見問題' }),
-      el('h4', { text: '我的個人資料會進到 Claude 的資料庫嗎？' }),
-      el('p', { class: 'hint', text: '不會。個人資料完全不會送到 Claude。程式碼放在你自己的私人 GitHub，可以檢查：送給 Claude 的只有照片、陳情信的地點日期、法規問題這三種。' }),
-      el('h4', { text: '照片和問題送到 Claude 之後呢？' }),
-      el('p', { class: 'hint', text: '是用你自己的 Claude 帳號處理。Claude 會不會用這些內容改進模型，依你帳號的隱私設定而定：請到 Claude 的「設定」裡找「隱私」，確認相關選項。' }),
-      el('h4', { text: '開發用的 Claude 對話看得到我填的資料嗎？' }),
-      el('p', { class: 'hint', text: '看不到。你在 App 裡填的資料只存在你的手機。請不要把身分證等個人資料貼到任何對話裡。' }),
-      el('h4', { text: '手機被別人拿到怎麼辦？' }),
-      el('p', { class: 'hint', text: '設定下面的隱私密碼，個人資料會加密存放，沒有密碼看不到。' })));
+      ].map(r => el('tr', {}, r.map(x => el('td', { text: x })))))))));
 
   // 隱私密碼
   const card = el('div', { class: 'card' }, el('h3', {}, '隱私密碼', S.lock ? el('span', { class: 'pill ok', text: '已啟用' }) : el('span', { class: 'pill warn', text: '未啟用' })));
@@ -1408,23 +1929,43 @@ function mePrivacy(v) {
   const readPair = (a, b) => { const p1 = $('#' + a).value, p2 = $('#' + b).value; if (p1.length < 6) { msg.className = 'sub bad'; msg.textContent = '密碼至少要 6 個字。'; return null; } if (p1 !== p2) { msg.className = 'sub bad'; msg.textContent = '兩次輸入的密碼不一樣。'; return null; } return p1; };
   if (!CRYPTO_OK) card.append(note('warn', '這個畫面不支援加密', '請改用最新版的 Safari 或 Claude App。'));
   else if (!S.lock) {
-    card.append(el('p', { class: 'hint', text: '設定後，個人資料會用這個密碼加密存放。每次要複製或自動填表時輸入一次，離開 App 超過 5 分鐘會自動上鎖。密碼不會儲存在任何地方，忘記了只能清除個人資料重新填寫。' }),
+    card.append(el('p', { class: 'hint', text: '設定後，個人資料會用這個密碼加密存放。要複製或自動填表時輸入一次。密碼不會儲存在任何地方，忘記了只能清除個人資料重新填寫。' }),
       ...pinPair('pin-a', 'pin-b'), msg,
       el('button', { class: 'btn primary', type: 'button', onclick: async () => { const p = readPair('pin-a', 'pin-b'); if (!p) return; msg.className = 'sub'; msg.textContent = '加密中…'; await setPin(p); toast('已啟用隱私密碼'); render(); } }, '啟用隱私密碼'));
   } else if (!S.unlocked) {
     card.append(el('p', { class: 'hint', text: '要變更或移除密碼，請先解鎖。' }), unlockCard(),
-      el('h4', { text: '忘記密碼' }), el('p', { class: 'hint', text: '密碼無法找回。可以清除加密的個人資料，再重新填寫（案件紀錄會保留）。' }),
-      (() => { const b = el('button', { class: 'btn danger', type: 'button' }, '清除個人資料重新填寫'); b.addEventListener('click', () => { if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '再按一次確定清除'; return; } store.del(K.profile); S.lock = null; S.unlocked = true; S.profile = emptyProfile(); toast('已清除個人資料'); go('me', { sub: 'profile' }); }); return b; })());
+      el('h4', { text: '忘記密碼' }), el('p', { class: 'hint', text: '密碼無法找回。可以清除加密的個人資料，再重新填寫（案件紀錄和照片會保留）。' }),
+      armed(el('button', { class: 'btn danger', type: 'button' }, '清除個人資料重新填寫'), '清除個人資料重新填寫', '再按一次確定清除', () => { store.del(K.profile); S.lock = null; S.unlocked = true; S.profile = emptyProfile(); toast('已清除個人資料'); go('me', { sub: 'profile' }); }));
   } else {
-    const rm = el('button', { class: 'btn danger', type: 'button' }, '移除隱私密碼');
-    rm.addEventListener('click', async () => { if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = '再按一次確定移除（資料會改成不加密）'; return; } await removePin(); toast('已移除隱私密碼'); render(); });
     card.append(el('p', { class: 'hint', text: '個人資料目前已加密，現在是解鎖狀態。' }),
-      el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => { lockNow(); toast('已上鎖'); render(); } }, '立即上鎖')),
+      el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => { lockNow(); toast('已上鎖'); render(); } }, icon('lock', 18), '立即上鎖')),
       el('h4', { text: '變更密碼' }), ...pinPair('pin-c', 'pin-d'), msg,
       el('button', { class: 'btn', type: 'button', onclick: async () => { const p = readPair('pin-c', 'pin-d'); if (!p) return; msg.className = 'sub'; msg.textContent = '加密中…'; await setPin(p); toast('已變更密碼'); render(); } }, '變更密碼'),
-      el('div', { class: 'row' }, rm));
+      el('div', { class: 'row' }, armed(el('button', { class: 'btn danger', type: 'button' }, '移除隱私密碼'), '移除隱私密碼', '再按一次確定移除（資料會改成不加密）', async () => { await removePin(); toast('已移除隱私密碼'); render(); })));
   }
   v.append(card);
+
+  // 自動上鎖
+  const lockSel = el('select', { id: 'lock-min' }, LOCK_OPTIONS.map(([m, t]) => el('option', { value: m, selected: S.settings.autoLockMin === m }, t)));
+  lockSel.addEventListener('change', e => { S.settings.autoLockMin = Number(e.target.value); saveSettings(); toast('已更新'); });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '自動上鎖' }), field('什麼時候自動上鎖', lockSel),
+    el('p', { class: 'hint', text: '建議 30 分鐘：到 Safari 填官方網站再回來，不用重新輸入密碼；手機放著太久就會自動鎖上。畫面右上角的鎖頭可以隨時立即上鎖。' }),
+    S.lock ? null : el('p', { class: 'hint', text: '要先啟用隱私密碼，這個設定才有作用。' })));
+
+  // Face ID 支援檢查
+  const bioOut = el('div', { class: 'stack', id: 'bio-out' });
+  v.append(el('div', { class: 'card' }, el('h3', {}, icon('face', 20), 'Face ID／指紋解鎖'),
+    el('p', { class: 'hint', text: 'Face ID 和指紋的資料只存在 iPhone 裡一塊獨立的加密晶片，網頁、App、Apple 和 Claude 都拿不到；網頁只會收到「是本人／不是本人」。嵌在 Claude App 裡的測試版通常不被允許使用，下一版做成私人網站後會加上。' }),
+    el('button', { class: 'btn', type: 'button', onclick: async () => {
+      bioOut.replaceChildren(el('span', { class: 'hint', text: '檢查中…' }));
+      const r = await biometricCheck();
+      const yes = r.api && r.platform && r.allowed !== false;
+      bioOut.replaceChildren(note(yes ? 'ok' : 'warn', yes ? '看起來可以用' : '這個畫面目前不能用',
+        `網頁驗證功能：${r.api ? '有' : '沒有'}`, `Face ID／指紋：${r.platform == null ? '不明' : r.platform ? '可用' : '不可用'}`, `用 Face ID 產生解鎖鑰匙（PRF）：${r.prf == null ? '不明' : r.prf ? '支援' : '不支援'}`,
+        `嵌入頁面權限：${r.allowed == null ? (r.frame ? '嵌入中，權限不明' : '不是嵌入頁面') : r.allowed ? '允許' : '不允許'}`,
+        '請把這個結果截圖告訴我，我會依結果決定怎麼做。'));
+    } }, '檢查這支手機能不能用'), bioOut,
+    el('p', { class: 'hint', text: '這個檢查只讀取手機回報的功能，不會建立或儲存任何東西。' })));
 
   // 不儲存身分證
   const chk = el('input', { type: 'checkbox', id: 'no-id', checked: S.settings.storeId === false });
@@ -1435,6 +1976,18 @@ function mePrivacy(v) {
   });
   v.append(el('div', { class: 'card' }, el('h3', { text: '身分證字號' }),
     el('label', { class: 'check', for: 'no-id' }, chk, el('span', {}, '不要把身分證字號存在手機', el('br'), el('small', { text: '勾選後會刪除已存的身分證字號。自動填表不會填這一欄，每次在官方網站自己輸入。' })))));
+
+  v.append(el('div', { class: 'card' }, el('h3', { text: '常見問題' }),
+    el('h4', { text: '我的個人資料會進到 Claude 的資料庫嗎？' }),
+    el('p', { class: 'hint', text: '不會。個人資料完全不會送到 Claude。程式碼放在你自己的私人 GitHub，可以檢查：送給 Claude 的只有照片、陳情信的地點日期、法規問題這三種。' }),
+    el('h4', { text: '照片和問題送到 Claude 之後呢？' }),
+    el('p', { class: 'hint', text: '是用你自己的 Claude 帳號處理。Claude 會不會用這些內容改進模型，依你帳號的隱私設定而定：請到 Claude 的「設定」裡找「隱私」，確認相關選項。' }),
+    el('h4', { text: '照片存到 iCloud 或 Google 雲端硬碟安全嗎？' }),
+    el('p', { class: 'hint', text: '照片是存進你自己的帳號，跟你平常存檔案一樣，這個系統看不到。建議你的 Apple 帳號和 Google 帳號都開啟「雙重認證」。' }),
+    el('h4', { text: '開發用的 Claude 對話看得到我填的資料嗎？' }),
+    el('p', { class: 'hint', text: '看不到。你在 App 裡填的資料只存在你的手機。請不要把身分證等個人資料貼到任何對話裡。' }),
+    el('h4', { text: '手機被別人拿到怎麼辦？' }),
+    el('p', { class: 'hint', text: '設定上面的隱私密碼和自動上鎖，個人資料會加密存放，沒有密碼看不到。' })));
 }
 function meProfile(v) {
   if (S.lock && !S.unlocked) { v.append(unlockCard()); return; }
@@ -1448,7 +2001,7 @@ function meProfile(v) {
   const hints = () => {
     const r = checkId(id.value), s = $('#p-id-check'); if (s) { s.textContent = r.msg; s.className = 'sub' + (r.ok === false ? ' bad' : ''); }
     const ph = phone.value.replace(/\D/g, ''), ps = $('#p-phone-check');
-    ps.textContent = !ph ? '' : /^09\d{8}$/.test(ph) ? '手機格式正確' : '桃園要求 9 到 10 碼手機號碼，請確認'; ps.className = 'sub' + (ph && !/^09\d{8}$/.test(ph) ? ' bad' : '');
+    if (ps) { ps.textContent = !ph ? '' : /^09\d{8}$/.test(ph) ? '手機格式正確' : '桃園要求 9 到 10 碼手機號碼，請確認'; ps.className = 'sub' + (ph && !/^09\d{8}$/.test(ph) ? ' bad' : ''); }
   };
   id.addEventListener('input', hints); phone.addEventListener('input', hints);
   v.append(el('div', { class: 'card' }, el('h3', {}, '個人資料', S.lock ? el('span', { class: 'pill ok', text: '已加密' }) : el('span', { class: 'pill warn', text: '未加密' })),
@@ -1466,18 +2019,19 @@ function meProfile(v) {
   hints();
 }
 function mePlaces(v) {
-  const card = el('div', { class: 'card' }, el('h3', { text: '常用地點' }), el('p', { class: 'hint', text: '在檢舉第 4 步按「存成常用地點」就會加到這裡。照片定位在附近時，會自動建議。' }));
-  if (!S.places.length) card.append(el('p', { class: 'hint', text: '還沒有常用地點。' }));
-  for (const p of S.places) card.append(el('div', { class: 'todo' }, el('div', { class: 't' }, el('b', { text: p.name }), el('span', { class: 'place', text: [p.county, p.town, p.lat != null ? '有座標' : '沒有座標'].filter(Boolean).join('｜') })),
+  v.append(el('p', { class: 'hint', text: '在檢舉單的「地點」按「存成常用地點」就會加到這裡。照片定位在附近時，會自動建議。' }));
+  const list = el('div', { class: 'list' });
+  if (!S.places.length) list.append(el('div', { class: 'li' }, el('span', { class: 'hint', text: '還沒有常用地點。' })));
+  for (const p of S.places) list.append(el('div', { class: 'li' }, el('div', { class: 't' }, el('b', { text: p.name }), el('span', { class: 'place', text: [p.county, p.town, p.lat != null ? '有座標' : '沒有座標'].filter(Boolean).join('｜') })),
     el('button', { class: 'btn small danger', type: 'button', onclick: () => { S.places = S.places.filter(x => x.id !== p.id); savePlaces(); render(); } }, '刪除')));
-  v.append(card);
+  v.append(list);
 }
 async function meAutofill(v) {
-  const box = el('div', { class: 'card' }, el('h3', { text: '自動填表設定' }),
+  const box = el('div', { class: 'card' },
     el('p', { class: 'hint', text: '設定一個 Safari 書籤。之後在官方檢舉網頁點這個書籤，再貼上資料，就會自動填好姓名、身分證、日期、地點、車牌、違規事實和說明。驗證碼、上傳照片、按送出還是由你自己做。' }));
   v.append(box);
   const code = el('textarea', { id: 'bm-code', readonly: true, style: 'width:100%;min-height:90px;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--surface-2)' });
-  const copyBtn = el('button', { class: 'btn primary block', type: 'button', disabled: true }, '載入中…');
+  const copyBtn = el('button', { class: 'btn primary', type: 'button', disabled: true }, '載入中…');
   box.append(el('h4', { text: '第一次設定（約 2 分鐘）' }),
     el('ol', { class: 'steps' },
       el('li', {}, '按下面的「複製書籤程式碼」', el('div', { class: 'row' }, copyBtn)),
@@ -1488,7 +2042,7 @@ async function meAutofill(v) {
     el('details', {}, el('summary', {}, '看程式碼'), el('div', {}, code)),
     el('h4', { text: '之後怎麼用' }),
     el('ol', { class: 'steps' },
-      el('li', {}, '在檢舉第 5 步按「複製自動填表資料」'),
+      el('li', {}, '在檢舉第 4 步按「複製自動填表資料」'),
       el('li', {}, '用 Safari 打開官方檢舉網站'),
       el('li', {}, '點「書籤」→「違停自動填表」，長按畫面上方的框框選「貼上」'),
       el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片、按送出')),
@@ -1502,23 +2056,22 @@ async function meAutofill(v) {
   } catch (e) { copyBtn.textContent = '程式碼載入失敗，請重新整理'; }
 }
 function meGuide(v) {
-  const svg = (inner) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 64 64'); s.innerHTML = inner; return s; };
   const items = [
-    ['全景', '退後幾步，讓畫面同時有車子和人行道或斑馬線。最好拍到路名牌、門牌或明顯的店家招牌。', '<rect x="2" y="44" width="60" height="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 48h8M24 48h8M40 48h8M8 56h8M24 56h8M40 56h8" stroke="currentColor" stroke-width="3"/><rect x="18" y="26" width="30" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>'],
-    ['車牌', '靠近拍，車牌要佔畫面三分之一以上，避開反光。前車牌或後車牌都可以。', '<rect x="8" y="22" width="48" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><text x="32" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ABC-1234</text>'],
-    ['駕駛座', '從車窗拍駕駛座，看得出有沒有人。這張決定是「停車」還是「臨時停車」。', '<path d="M10 40h44l-6-16H18z" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="26" cy="32" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 4l56 56" stroke="currentColor" stroke-width="2" opacity=".35"/>'],
-    ['隔 3 分鐘再拍', '同一個角度，隔 3 分鐘以上再拍一張，證明車子一直停著。可以用第 2 步的計時器。', '<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M32 18v14l9 6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>'],
-    ['不要做的事', '不要修圖、加濾鏡、裁切；不要用網路上別人的照片；不要拍到路人的臉特寫。', '<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M16 48L48 16" stroke="currentColor" stroke-width="3"/>']
+    ['crosswalk', '全景', '退後幾步，讓畫面同時有車子和人行道或斑馬線。最好拍到路名牌、門牌或明顯的店家招牌。'],
+    ['plate', '車牌', '靠近拍，車牌要佔畫面三分之一以上，避開反光。前車牌或後車牌都可以。'],
+    ['seat', '駕駛座', '從車窗拍駕駛座，看得出有沒有人。這張決定是「停車」還是「臨時停車」。'],
+    ['clock', '隔 3 分鐘再拍', '同一個角度，隔 3 分鐘以上再拍一張，證明車子一直停著。用 App 相機拍第一張時，計時會自動開始。'],
+    ['x', '不要做的事', '不要修圖、加濾鏡、裁切；不要用網路上別人的照片；不要拍到路人的臉特寫。']
   ];
-  v.append(el('div', { class: 'card' }, el('h3', { text: '拍照教學' }), ...items.map(([t, d, s]) => el('div', { class: 'guide' }, svg(s), el('div', {}, el('h4', { text: t }), el('p', { class: 'hint', text: d }))))));
+  v.append(el('div', { class: 'card' }, ...items.map(([ic, t, d]) => el('div', { class: 'guide' }, el('span', { class: 'gi' }, icon(ic, 30)), el('div', {}, el('h4', { text: t }), el('p', { class: 'hint', text: d }))))));
 }
 function meAsk(v) {
-  const q = el('textarea', { id: 'ask-q', placeholder: '例如：車子停在人行道上但打著雙黃燈，可以檢舉嗎？' });
+  const q = el('textarea', { id: 'ask-q', 'aria-label': '你的問題', placeholder: '例如：車子停在人行道上但打著雙黃燈，可以檢舉嗎？' });
   const out = el('div', { class: 'stack', id: 'ask-out' });
   const btn = el('button', { class: 'btn primary', type: 'button', disabled: !S.sample }, S.sample ? '問 Claude' : '這個畫面不能使用 Claude');
   btn.addEventListener('click', async () => {
     const question = q.value.trim(); if (!question) return;
-    btn.disabled = true; out.replaceChildren(el('p', { class: 'hint', text: 'Claude 思考中…' }));
+    btn.disabled = true; out.replaceChildren(el('div', { class: 'row' }, el('span', { class: 'spin' }), el('span', { class: 'hint', text: 'Claude 思考中…' })));
     const V = S.data.vio;
     const prompt = `你是協助台灣民眾檢舉交通違規的小幫手。請依下列規則資料回答使用者的問題，用繁體中文（台灣用語）、白話、200 字以內。不確定的地方要直接說不確定，並建議向當地警察局確認。不要提供任何繞過驗證或代為送出的方法。
 
@@ -1533,15 +2086,16 @@ ${JSON.stringify({ rules: V.rules, not_reportable: V.not_reportable, deadline: V
     } catch (e) { out.replaceChildren(el('p', { class: 'hint', text: e && e.code === 'not_granted' ? '你沒有允許這個頁面使用 Claude。' : '回答失敗，請稍後再試。' })); }
     btn.disabled = false;
   });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '法規小幫手' }), el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。問題會送給你自己帳號的 Claude，請不要寫姓名、身分證、車牌等資料。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
+  v.append(el('div', { class: 'card' }, el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。問題會送給你自己帳號的 Claude，請不要寫姓名、身分證、車牌等資料。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
 }
 let testLines = [];
 function meTest(v) {
   const out = el('div', { class: 'stack', id: 'test-out' });
   const copyBtn = el('button', { class: 'btn', type: 'button', hidden: true, onclick: e => copyText(testLines.join('\n'), e.currentTarget) }, '複製測試結果');
-  v.append(el('div', { class: 'card' }, el('h3', { text: '照片定位測試' }),
-    el('p', { class: 'hint', text: '請各試一次：先照平常方式選照片；再試一次在選照片畫面點「選項」，把「位置」打開。' }),
-    el('label', { class: 'btn primary block filebtn' }, '選照片測試', el('input', { type: 'file', accept: 'image/*', multiple: true, onchange: e => { const fl = [...e.target.files]; runTest(fl, out, copyBtn).finally(() => { e.target.value = ''; }); } })),
+  const inp = el('input', { type: 'file', accept: 'image/*', multiple: true, class: 'sr', id: 'test-input', tabindex: '-1', onchange: e => { const fl = [...e.target.files]; runTest(fl, out, copyBtn).finally(() => { e.target.value = ''; }); } });
+  v.append(el('div', { class: 'card' },
+    el('p', { class: 'hint', text: '請各試一次：先照平常方式選照片；再試一次在選照片畫面點「選項」，把「位置」打開。（App 相機拍的照片本來就沒有定位，不用測。）' }),
+    inp, el('button', { class: 'btn primary block', type: 'button', onclick: () => inp.click() }, icon('image', 20), '選照片測試'),
     out, el('div', { class: 'row' }, copyBtn), el('p', { class: 'hint', text: '複製的結果裡，座標只保留到小數點後 3 位（約 100 公尺）。' })));
 }
 async function runTest(files, out, copyBtn) {
@@ -1568,19 +2122,17 @@ async function runTest(files, out, copyBtn) {
 function meBackup(v) {
   const data = () => JSON.stringify({ app: 'parking-report-helper', version: 3, exportedAt: new Date().toISOString(),
     profile: S.lock ? null : S.profile, profileEnc: S.lock ? S.lock.blob : null,
-    places: S.places, settings: S.settings, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) });
-  const ta = el('textarea', { id: 'restore-text', placeholder: '貼上備份文字' });
-  const wipe = el('button', { class: 'btn danger', type: 'button' }, '清除這支手機上的所有資料');
-  wipe.addEventListener('click', () => {
-    if (!wipe.dataset.armed) { wipe.dataset.armed = '1'; wipe.textContent = '再按一次確定清除'; setTimeout(() => { if (wipe.isConnected) { delete wipe.dataset.armed; wipe.textContent = '清除這支手機上的所有資料'; } }, 4000); return; }
-    Object.values(K).forEach(k => store.del(k));
-    S.profile = emptyProfile(); S.lock = null; S.unlocked = true; S.cases = []; S.places = []; S.settings = { autofillReady: false, gpsTest: null, storeId: true }; S.cur = newCase(); S.files = {};
-    toast('已清除'); go('home');
+    places: S.places, settings: S.settings, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null, stored: false })) })) });
+  const ta = el('textarea', { id: 'restore-text', 'aria-label': '備份文字', placeholder: '貼上備份文字' });
+  const wipe = armed(el('button', { class: 'btn danger', type: 'button' }, '清除這支手機上的所有資料'), '清除這支手機上的所有資料', '再按一次確定清除', async () => {
+    Object.values(K).forEach(k => store.del(k)); await PhotoDB.clear();
+    S.profile = emptyProfile(); S.lock = null; S.unlocked = true; S.cases = []; S.places = []; S.settings = { ...DEFAULT_SETTINGS }; S.cur = newCase(); S.files = {};
+    applySkin(); toast('已清除'); go('home');
   });
   v.append(el('div', { class: 'card' }, el('h3', { text: '備份' }),
-    el('p', { class: 'hint', text: 'iPhone 有時會清掉網頁資料。建議定期備份。備份不含照片。' }),
+    el('p', { class: 'hint', text: 'iPhone 有時會清掉網頁資料，建議定期備份。備份檔不含照片；照片請到「照片存放」另外存到雲端。' }),
     S.lock ? note('ok', '備份裡的個人資料是加密的', '還原後要用同一個隱私密碼解鎖。') : note('warn', '備份裡的個人資料沒有加密', '請小心保存備份檔。設定隱私密碼後，備份裡的個人資料也會加密。'),
-    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => saveFile(`違停檢舉備份_${todayTaipei()}.json`, data()) }, '存成備份檔'), el('button', { class: 'btn', type: 'button', onclick: e => copyText(data(), e.currentTarget) }, '複製備份文字'))),
+    el('div', { class: 'toolrow' }, el('button', { class: 'btn primary', type: 'button', onclick: () => saveFile(`違停檢舉備份_${todayTaipei()}.json`, data()) }, '存成備份檔'), el('button', { class: 'btn', type: 'button', onclick: e => copyText(data(), e.currentTarget) }, '複製備份文字'))),
     el('div', { class: 'card' }, el('h3', { text: '從備份還原' }), el('div', { class: 'field' }, ta),
       el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => {
         const st = $('#restore-status');
@@ -1593,12 +2145,12 @@ function meBackup(v) {
             S.profile = { ...emptyProfile(), ...d.profile }; persistProfile();
           }
           if (Array.isArray(d.places)) { S.places = d.places; savePlaces(); }
-          if (d.settings) { S.settings = { ...S.settings, ...d.settings }; saveSettings(); }
+          if (d.settings) { S.settings = { ...DEFAULT_SETTINGS, ...S.settings, ...d.settings }; saveSettings(); applySkin(); }
           if (Array.isArray(d.cases)) { const ids = new Set(S.cases.map(c => c.id)); S.cases = [...S.cases, ...d.cases.filter(c => !ids.has(c.id)).map(migrate)]; persistCases(); }
           st.textContent = '已還原。';
         } catch (e) { st.textContent = '備份文字格式不對，請整段貼上。'; }
       } }, '還原'), el('span', { id: 'restore-status', class: 'hint', 'aria-live': 'polite' }))),
-    el('div', { class: 'card' }, el('h3', { text: '清除' }), el('p', { class: 'hint', text: '會刪除個人資料、案件、常用地點和設定。' }), el('div', { class: 'row' }, wipe)));
+    el('div', { class: 'card' }, el('h3', { text: '清除' }), el('p', { class: 'hint', text: '會刪除個人資料、案件、照片、常用地點和設定。' }), el('div', { class: 'row' }, wipe)));
 }
 
 /* ================= 範例 ================= */
@@ -1607,12 +2159,15 @@ function loadSample() {
   c.answers = { vehicle: 'car', place: 'crosswalk', driver: 'absent' };
   c.form = { ...c.form, date: now.date, time: now.time, county: '臺北市', town: '大安區', districtLabel: '大安區', road: '忠孝東路四段', detail: '與敦化南路一段口', plate: 'AAA-0001', vdesc: '白色自用小客車', autoTime: false, autoLoc: false, locSource: 'ai' };
   c.ai = { plate_candidates: [{ plate: 'AAA-0001', confidence: 0.93 }, { plate: 'AAA-0007', confidence: 0.04 }], vehicle_class: 'car', vehicle_desc: '自用小客車', color: '白色', location_type: 'crosswalk', driver_present: 'no', road_text: '忠孝東路四段', house_number_text: '', evidence: { plate_visible: true, violation_context_visible: true, driver_seat_visible: true, landmark_visible: true }, retake: ['隔 3 分鐘從同一角度再拍一張，證明車子一直停著'], notes: '範例：車身壓在斑馬線上，駕駛座無人。' };
-  S.cur = c; S.files = {}; S.isSample = true; S.focus = false;
+  S.cur = c; S.files = {}; S.isSample = true; S.focus = false; S.ui = { open: {}, photo: null, camRole: null, busy: '' }; S.aiMsg = ''; S.aiErr = false;
   go('report', { step: 3 });
 }
 
 /* ================= 事件與啟動 ================= */
 for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => go(b.dataset.view, b.dataset.view === 'me' ? { sub: null } : {}));
+$('#lock-btn').addEventListener('click', () => { lockNow(); toast('已上鎖'); render(); });
+$('#cam-input').addEventListener('change', e => { const fl = [...e.target.files]; e.target.value = ''; addFiles(fl, 'camera', S.ui.camRole); });
+$('#lib-input').addEventListener('change', e => { const fl = [...e.target.files]; e.target.value = ''; addFiles(fl, 'library', null); });
 (async function boot() {
   render();
   try {
@@ -1620,6 +2175,7 @@ for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener(
     S.data.jur = jur; S.data.vio = vio; S.data.fill = fill;
   } catch (e) { $('#view').replaceChildren(note('no', '資料載入失敗', '請重新整理頁面。')); return; }
   render();
+  photoHousekeeping().catch(() => {});
   try {
     const sample = window.claude && await window.claude.use('sample');
     if (sample) {
@@ -1629,6 +2185,6 @@ for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener(
     }
   } catch (e) {}
   try { S.downloads = window.claude ? await window.claude.use('downloads') : null; } catch (e) {}
-  if (S.view === 'report') render();
+  if (S.view === 'report' || S.view === 'records') render();
 })();
 </script>
