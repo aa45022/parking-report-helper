@@ -1,0 +1,11 @@
+{
+  "name": "parking-report-helper",
+  "private": true,
+  "description": "違停檢舉輔助系統",
+  "scripts": {
+    "test": "node prototype/tests/autofill.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}

@@ -4,15 +4,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
-/* 版面：單欄手機工具，上方斑馬線色帶，下方固定分頁列；步驟卡依序排列 */
+/* 版面：單欄手機工具。上方品牌列加斑馬線色帶，下面是固定在上方的分頁列；檢舉流程一步一個畫面 */
 :root {
   --bg: #eef1f5;
   --surface: #ffffff;
-  --surface-2: #f6f8fb;
+  --surface-2: #f5f7fa;
   --ink: #15202b;
   --muted: #5a6674;
   --line: #d5dbe3;
   --blue: #1d5bab;      /* 指示標誌藍：主要動作 */
+  --blue-soft: #e4edf8;
   --blue-ink: #ffffff;
   --red: #c4262e;       /* 禁制標誌紅：不能檢舉、刪除 */
   --ok: #1d7a4e;
@@ -25,18 +26,18 @@
   --plate-ink: #111111;
   --font-body: "Noto Sans TC", "PingFang TC", "Heiti TC", "Microsoft JhengHei", system-ui, sans-serif;
   --font-num: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --radius: 12px;
+  --radius: 14px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f151c; --surface: #17202a; --surface-2: #1d2833; --ink: #e7ecf1; --muted: #98a4b1; --line: #2b3744;
-    --blue: #6aa6ef; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
+    --blue: #6aa6ef; --blue-soft: #1a2b40; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
     --stripe: #e7ecf1; --plate-bg: #f4f4f0; --plate-ink: #111111; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0f151c; --surface: #17202a; --surface-2: #1d2833; --ink: #e7ecf1; --muted: #98a4b1; --line: #2b3744;
-  --blue: #6aa6ef; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
+  --blue: #6aa6ef; --blue-soft: #1a2b40; --blue-ink: #0b1826; --red: #f0646b; --ok: #4fc58c; --ok-bg: #12301f; --warn: #e2a640; --warn-bg: #33270f; --no-bg: #3a1618;
   --stripe: #e7ecf1; --plate-bg: #f4f4f0; --plate-ink: #111111; color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -48,327 +49,200 @@ a { color: var(--blue); }
 :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
-.wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.top { order: -2; background: var(--surface); }
+.wrap { width: 100%; max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { background: var(--surface); }
 .top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 12px 10px; }
-.top h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: 0.02em; text-wrap: balance; }
+.top h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: 0.02em; }
 .badge { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .zebra { height: 8px; background: repeating-linear-gradient(90deg, var(--stripe) 0 22px, transparent 22px 40px); opacity: 0.85; }
+.tabbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--line); }
+.tabbar .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
+.tabbar button { border: 0; background: transparent; padding: 6px 2px 8px; min-height: 54px; display: grid; justify-items: center; font-size: 13px; color: var(--muted); cursor: pointer; }
+.tabbar button svg { width: 22px; height: 22px; }
+.tabbar button[aria-selected="true"] { color: var(--blue); font-weight: 700; box-shadow: inset 0 -3px 0 var(--blue); }
 
-main { padding-block: 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
-.tab { display: grid; gap: 16px; }
+main { padding-block: 16px calc(40px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; }
+h2.page { margin: 0; font-size: 22px; text-wrap: balance; }
 .lead { margin: 0; color: var(--muted); font-size: 15px; }
-
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 14px; min-width: 0; }
-.card > h2 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 10px; text-wrap: balance; }
-.num { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: var(--blue-ink); display: grid; place-items: center; font-family: var(--font-num); font-size: 17px; font-weight: 700; }
-.card h3 { margin: 0; font-size: 15px; font-weight: 700; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card > h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card h4 { margin: 0; font-size: 15px; }
 .hint { margin: 0; font-size: 14px; color: var(--muted); }
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.stack { display: grid; gap: 8px; }
+.row.between { justify-content: space-between; }
+.stack { display: grid; gap: 8px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 420px) { .grid2 { grid-template-columns: 1fr; } }
 
-.q { display: grid; gap: 8px; }
-.q > span { font-weight: 500; font-size: 15px; }
-.seg { display: flex; flex-wrap: wrap; gap: 8px; }
-.seg button { min-height: 44px; padding: 8px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); font-weight: 700; }
-
-.verdict { border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
-.verdict b { font-size: 16px; }
-.verdict p { margin: 0; font-size: 14px; }
-.v-yes { background: var(--ok-bg); color: var(--ink); }
-.v-yes b { color: var(--ok); }
-.v-no { background: var(--no-bg); }
-.v-no b { color: var(--red); }
-.v-warn { background: var(--warn-bg); }
-.v-warn b { color: var(--warn); }
-.v-pending { background: var(--surface-2); color: var(--muted); }
-
-.btn { min-height: 46px; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--ink); }
+.btn { min-height: 46px; padding: 10px 18px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: var(--ink); text-align: center; }
 .btn.primary { background: var(--blue); color: var(--blue-ink); border-color: var(--blue); font-weight: 700; }
 .btn.danger { color: var(--red); border-color: var(--red); background: transparent; }
-.btn.small { min-height: 36px; padding: 6px 12px; font-size: 14px; }
+.btn.ghost { background: transparent; }
+.btn.small { min-height: 36px; padding: 6px 12px; font-size: 14px; border-radius: 10px; }
 .btn.block { width: 100%; }
+.btn.cta { width: 100%; min-height: 92px; font-size: 24px; border-radius: 18px; letter-spacing: 0.04em; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .filebtn { position: relative; overflow: hidden; }
-.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; font-size: 0; }
 
-.tip { background: var(--surface-2); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; display: grid; gap: 4px; }
-.tip b { font-weight: 700; }
-
-.photos { display: grid; gap: 10px; }
-.photo { display: grid; grid-template-columns: 76px 1fr auto; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); }
-.photo img, .photo .noimg { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; background: var(--line); display: grid; place-items: center; font-size: 12px; color: var(--muted); }
-.photo .meta { display: grid; gap: 4px; min-width: 0; font-size: 13px; }
-.photo select { font-size: 14px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); max-width: 100%; }
 .pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
 .pill.ok { background: var(--ok-bg); color: var(--ok); }
 .pill.no { background: var(--no-bg); color: var(--red); }
 .pill.warn { background: var(--warn-bg); color: var(--warn); }
 .pill.info { background: var(--surface-2); color: var(--muted); border: 1px solid var(--line); }
-.x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; padding: 4px 6px; min-width: 36px; min-height: 36px; }
+.pill.auto { background: var(--blue-soft); color: var(--blue); }
 
+.note { border-radius: 12px; padding: 10px 12px; font-size: 14px; display: grid; gap: 4px; }
+.note b { font-size: 15px; }
+.note.ok { background: var(--ok-bg); } .note.ok b { color: var(--ok); }
+.note.no { background: var(--no-bg); } .note.no b { color: var(--red); }
+.note.warn { background: var(--warn-bg); } .note.warn b { color: var(--warn); }
+.note.info { background: var(--surface-2); border: 1px dashed var(--line); }
+
+/* 進度 */
+.progress { display: grid; gap: 8px; }
+.progress .label { font-size: 14px; color: var(--muted); }
+.progress .label b { color: var(--ink); font-size: 17px; }
+.dots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.dots button { height: 8px; border: 0; padding: 0; border-radius: 4px; background: var(--line); cursor: pointer; }
+.dots button.done { background: var(--ok); }
+.dots button.now { background: var(--blue); }
+.stepnav { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+
+/* 第 1 步的大按鈕問題 */
+.bigq { display: grid; gap: 10px; }
+.bigq > .qtitle { font-size: 20px; font-weight: 700; }
+.bigq button.choice { min-height: 64px; font-size: 19px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); cursor: pointer; text-align: left; padding: 10px 16px; display: grid; gap: 2px; }
+.bigq button.choice small { font-size: 13px; color: var(--muted); font-weight: 400; }
+.answered { display: flex; gap: 8px; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.answered span { color: var(--muted); font-size: 14px; }
+
+/* 照片 */
+.checklist { display: grid; gap: 8px; }
+.checkitem { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; }
+.checkitem .box { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: 15px; font-weight: 700; color: var(--blue-ink); }
+.checkitem .box.on { background: var(--ok); border-color: var(--ok); }
+.checkitem small { display: block; color: var(--muted); font-size: 13px; }
+.photos { display: grid; gap: 10px; }
+.photo { display: grid; grid-template-columns: 76px 1fr auto; gap: 10px; align-items: start; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.photo img, .photo .noimg { width: 76px; height: 76px; object-fit: cover; border-radius: 8px; background: var(--line); display: grid; place-items: center; font-size: 12px; color: var(--muted); }
+.photo .meta { display: grid; gap: 4px; min-width: 0; font-size: 13px; }
+.photo select { font-size: 14px; padding: 4px 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); max-width: 100%; }
+.x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; padding: 4px 6px; min-width: 40px; min-height: 40px; }
+.timer { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.timer .clock { font-family: var(--font-num); font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.timer .clock.done { color: var(--ok); }
+
+/* 表單 */
 .field { display: grid; gap: 4px; min-width: 0; }
 .field > label, .field > .lbl { font-size: 14px; font-weight: 500; }
-.field input, .field select, .field textarea { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.field input, .field select, .field textarea { display: block; width: 100%; max-width: 100%; min-width: 0; min-height: 46px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
 .field input[type="date"], .field input[type="time"] { -webkit-appearance: none; appearance: none; text-align: left; }
 .field textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
 .field .sub { font-size: 13px; color: var(--muted); }
 .field .sub.bad { color: var(--red); }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 420px) { .grid2 { grid-template-columns: 1fr; } }
-.auto { font-size: 12px; color: var(--blue); font-weight: 500; }
-
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 6px 12px; font-size: 14px; cursor: pointer; text-align: left; }
+.chip small { color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
 .plate { display: inline-flex; align-items: center; justify-content: center; min-width: 120px; padding: 2px 12px; background: var(--plate-bg); color: var(--plate-ink); border: 2px solid var(--plate-ink); border-radius: 6px; font-family: var(--font-num); font-weight: 700; font-size: 24px; letter-spacing: 0.08em; line-height: 1.3; }
 .plate.sm { min-width: 0; font-size: 18px; padding: 0 8px; }
-.cands { display: flex; flex-wrap: wrap; gap: 8px; }
+.cands { display: flex; flex-wrap: wrap; gap: 10px; }
 .cand { border: 0; background: transparent; padding: 0; cursor: pointer; display: grid; gap: 2px; justify-items: center; font-size: 12px; color: var(--muted); }
 .cand[aria-pressed="true"] .plate { outline: 3px solid var(--blue); outline-offset: 2px; }
-
 .checks { display: grid; gap: 6px; }
 .check { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; cursor: pointer; }
 .check input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: var(--ok); }
 .check small { color: var(--muted); }
-
-.deadline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); }
-.deadline .big { font-family: var(--font-num); font-size: 30px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.deadline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+.deadline .big { font-family: var(--font-num); font-size: 32px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
 .deadline.urgent .big { color: var(--red); }
+dl.kv { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
+dl.kv dt { color: var(--muted); }
+dl.kv dd { margin: 0; min-width: 0; }
 
-.jur { display: grid; gap: 4px; }
-.jur .agency { font-weight: 700; font-size: 16px; }
-.steps { display: grid; gap: 14px; }
-.copylist { display: grid; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+/* 送出 */
+.copylist { display: grid; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .copyrow { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 12px; border-top: 1px solid var(--line); background: var(--surface); }
 .copyrow:first-child { border-top: 0; }
+.copyrow > div { min-width: 0; display: grid; gap: 2px; }
 .copyrow .k { font-size: 13px; color: var(--muted); }
-.copyrow .v { font-size: 15px; font-weight: 500; word-break: break-all; min-width: 0; }
+.copyrow .v { font-size: 15px; font-weight: 500; word-break: break-all; }
 .copyrow .v.empty { color: var(--red); font-weight: 400; }
 .copyrow .n { font-size: 12px; color: var(--muted); }
-.copyrow > div { min-width: 0; display: grid; gap: 2px; }
+ol.steps { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+ol.steps li { padding-left: 4px; }
+ol.steps li > .row { margin-top: 6px; }
+details { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+details > summary { cursor: pointer; padding: 12px 14px; font-weight: 500; list-style-position: inside; }
+details > div { padding: 0 14px 14px; display: grid; gap: 10px; }
+.focusbox { display: grid; gap: 14px; }
+.focusbox .count { font-family: var(--font-num); font-size: 18px; color: var(--muted); }
+.focusbox .flabel { font-size: 18px; font-weight: 700; }
+.focusbox .fvalue { font-size: 26px; font-weight: 700; word-break: break-all; padding: 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); min-height: 64px; }
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--blue); }
 
-.ai { display: grid; gap: 10px; }
-.ai dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 14px; }
-.ai dt { color: var(--muted); }
-.ai dd { margin: 0; min-width: 0; }
-.status { font-size: 14px; color: var(--muted); }
-.warnline { font-size: 14px; color: var(--warn); }
-.badline { font-size: 14px; color: var(--red); }
-
-.case { display: grid; gap: 8px; }
-.case .top-line { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+/* 首頁與紀錄 */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { background: var(--surface-2); border-radius: 12px; padding: 10px 8px; display: grid; justify-items: center; gap: 0; }
+.stat b { font-family: var(--font-num); font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.todo { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.todo:first-of-type { border-top: 0; }
+.todo .t { display: grid; gap: 2px; min-width: 0; }
+.todo .place { font-size: 13px; color: var(--muted); }
+.setup { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; }
+.setup .dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: var(--blue-ink); }
+.setup .dot.on { background: var(--ok); border-color: var(--ok); }
+.menu { display: grid; gap: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+.menu button { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; text-align: left; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 14px 16px; cursor: pointer; min-height: 60px; }
+.menu button:first-child { border-top: 0; }
+.menu button span small { display: block; font-size: 13px; color: var(--muted); }
+.menu button .arrow { color: var(--muted); font-size: 20px; }
+.case { display: grid; gap: 6px; }
 .case .place { font-size: 14px; color: var(--muted); }
-.empty-state { text-align: left; display: grid; gap: 10px; }
-
+.bars { display: grid; gap: 8px; }
+.barrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; font-size: 14px; }
+.barrow .bar { grid-column: 1 / -1; }
+.answer { white-space: pre-wrap; font-size: 15px; background: var(--surface-2); border-radius: 12px; padding: 12px; }
 .tbl-wrap { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 13px; }
 th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
 th { color: var(--muted); font-weight: 500; white-space: nowrap; }
-td { font-variant-numeric: tabular-nums; }
-
-.tabbar { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--line); }
-.tabbar .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
-.tabbar button { border: 0; background: transparent; padding: 8px 4px 10px; min-height: 56px; display: grid; justify-items: center; gap: 2px; font-size: 12px; color: var(--muted); cursor: pointer; }
-.tabbar button svg { width: 24px; height: 24px; }
-.tabbar button[aria-selected="true"] { color: var(--blue); font-weight: 700; box-shadow: inset 0 -3px 0 var(--blue); }
+.guide { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; }
+.guide svg { width: 64px; height: 64px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 8; max-width: calc(100% - 32px); }
-.sample-banner { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 500; }
+.banner { background: var(--warn-bg); color: var(--warn); border-radius: 12px; padding: 8px 12px; font-size: 14px; font-weight: 500; }
 </style>
 
 <header class="top">
   <div class="wrap">
     <h1>違停檢舉助手</h1>
-    <span class="badge">測試版 v0.1</span>
+    <span class="badge">測試版 v0.2</span>
   </div>
   <div class="zebra" aria-hidden="true"></div>
 </header>
-
-<main class="wrap">
-  <!-- 新增檢舉 -->
-  <section class="tab" id="tab-new" role="tabpanel" aria-labelledby="t-new">
-    <div class="row" style="justify-content: space-between;">
-      <p class="lead">人行道、斑馬線上的汽車違停，照步驟填完就能送出。</p>
-      <div class="row">
-        <button class="btn small" id="btn-reset" type="button">新的一件</button>
-        <button class="btn small" id="btn-sample" type="button">看範例</button>
-      </div>
-    </div>
-    <div id="sample-banner" class="sample-banner" hidden>這是範例資料，不是真實案件。按「新的一件」清除。</div>
-    <div id="setup-banner" class="sample-banner row" style="justify-content: space-between;" hidden><span>第一次使用？先設定個人資料，送出時才能一鍵複製。</span><button class="btn small" type="button" id="btn-go-profile">去設定個人資料</button></div>
-
-    <div class="card">
-      <h2><span class="num">1</span>先確認能不能檢舉</h2>
-      <div class="q">
-        <span>是汽車還是機車？</span>
-        <div class="seg" data-q="vehicle">
-          <button type="button" data-v="car" aria-pressed="false">汽車（四輪以上）</button>
-          <button type="button" data-v="motorcycle" aria-pressed="false">機車</button>
-        </div>
-      </div>
-      <div class="q">
-        <span>停在哪裡？</span>
-        <div class="seg" data-q="place">
-          <button type="button" data-v="sidewalk" aria-pressed="false">人行道</button>
-          <button type="button" data-v="crosswalk" aria-pressed="false">斑馬線</button>
-          <button type="button" data-v="arcade" aria-pressed="false">騎樓</button>
-          <button type="button" data-v="roadside" aria-pressed="false">紅黃線、路邊</button>
-        </div>
-      </div>
-      <div class="q">
-        <span>駕駛人在車上嗎？</span>
-        <div class="seg" data-q="driver">
-          <button type="button" data-v="absent" aria-pressed="false">沒人</button>
-          <button type="button" data-v="present" aria-pressed="false">有人</button>
-          <button type="button" data-v="unknown" aria-pressed="false">看不出來</button>
-        </div>
-      </div>
-      <div id="verdict" class="verdict v-pending" aria-live="polite"><b>回答上面的問題</b><p>系統會告訴你能不能檢舉、適用哪一條。</p></div>
-    </div>
-
-    <div class="card">
-      <h2><span class="num">2</span>加入照片</h2>
-      <div class="tip">
-        <b>建議拍這幾張</b>
-        <span>① 全景，看得出停在人行道或斑馬線上　② 車牌特寫　③ 駕駛座　④ 隔 3 分鐘再從同一角度拍一張</span>
-      </div>
-      <div class="tip">
-        <b>讓照片帶著定位</b>
-        <span>從相簿選照片時，畫面上方有「選項」，點開後把「位置」打開，系統才讀得到地點。</span>
-      </div>
-      <label class="btn primary block filebtn">從相簿選照片
-        <input id="photo-input" type="file" accept="image/*" multiple>
-      </label>
-      <div id="photo-list" class="photos"></div>
-      <div id="photo-summary" class="hint"></div>
-    </div>
-
-    <div class="card">
-      <h2><span class="num">3</span>請 Claude 判讀照片</h2>
-      <p class="hint">Claude 會讀車牌、車種、路名牌、門牌，並檢查證據夠不夠。使用你自己的 Claude 帳號額度。照片在傳送前，平台會先移除照片裡的位置資料；你的個人資料不會傳送。</p>
-      <div class="row">
-        <button class="btn primary" id="btn-ai" type="button" disabled>開始判讀</button>
-        <button class="btn" id="btn-ai-stop" type="button" hidden>停止</button>
-      </div>
-      <div id="ai-status" class="status" aria-live="polite"></div>
-      <div id="ai-result" class="ai" hidden></div>
-    </div>
-
-    <div class="card">
-      <h2><span class="num">4</span>確認內容</h2>
-      <div id="deadline" class="deadline" hidden></div>
-      <div class="grid2">
-        <div class="field"><label for="f-date">違規日期</label><input id="f-date" type="date"><span class="sub" id="f-date-src"></span></div>
-        <div class="field"><label for="f-time">違規時間</label><input id="f-time" type="time"></div>
-      </div>
-      <div class="grid2">
-        <div class="field"><label for="f-county">縣市</label><select id="f-county"></select><span class="sub" id="f-loc-src"></span></div>
-        <div class="field"><label for="f-town">鄉鎮市區</label><input id="f-town" type="text" placeholder="例如：大安區"></div>
-      </div>
-      <div class="field" id="f-district-wrap" hidden>
-        <label for="f-district">官方選單上的「行政區」</label>
-        <select id="f-district"></select>
-        <span class="sub" id="f-district-note"></span>
-      </div>
-      <div class="field">
-        <label for="f-road">路段</label>
-        <input id="f-road" type="text" placeholder="例如：忠孝東路四段">
-        <span class="sub" id="f-road-src"></span>
-        <div class="row" id="map-links"></div>
-      </div>
-      <div class="field">
-        <label for="f-detail">門牌、路口或地點說明</label>
-        <input id="f-detail" type="text" placeholder="例如：100號前、與敦化南路口">
-      </div>
-      <div class="grid2">
-        <div class="field">
-          <label for="f-plate">車牌</label>
-          <input id="f-plate" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="ABC-1234">
-          <span class="sub" id="f-plate-check"></span>
-        </div>
-        <div class="field"><label for="f-vdesc">車輛描述</label><input id="f-vdesc" type="text" placeholder="例如：白色自用小客車"></div>
-      </div>
-      <div class="field">
-        <span class="lbl">違規事實</span>
-        <div id="f-violation" class="hint"></div>
-      </div>
-      <div class="field">
-        <label for="f-desc">違規事實說明</label>
-        <textarea id="f-desc"></textarea>
-        <div class="row" style="justify-content: space-between;"><span class="sub" id="f-desc-count"></span><button class="btn small" type="button" id="btn-regen">重新產生說明</button></div>
-      </div>
-      <div class="stack">
-        <h3>證據檢查</h3>
-        <div id="evidence" class="checks"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2><span class="num">5</span>到官方網站送出</h2>
-      <div id="submit-panel" class="steps"></div>
-    </div>
-  </section>
-
-  <!-- 案件 -->
-  <section class="tab" id="tab-cases" role="tabpanel" aria-labelledby="t-cases" hidden>
-    <p class="lead">案件只存在這支手機的瀏覽器裡。草稿會自動儲存。</p>
-    <div id="case-list" class="stack"></div>
-  </section>
-
-  <!-- 個人資料 -->
-  <section class="tab" id="tab-profile" role="tabpanel" aria-labelledby="t-profile" hidden>
-    <div class="card">
-      <h2>檢舉人資料</h2>
-      <p class="hint">只填一次。資料只存在這支手機的瀏覽器，不會上傳，也不會傳給 Claude。送出時再由你自己複製貼上到官方網站。</p>
-      <div class="field"><label for="p-name">姓名（與身分證相同）</label><input id="p-name" type="text" autocomplete="name"></div>
-      <div class="field"><label for="p-id">身分證字號或居留證號</label><input id="p-id" type="text" autocapitalize="characters" autocomplete="off" spellcheck="false"><span class="sub" id="p-id-check"></span></div>
-      <div class="field"><label for="p-phone">手機號碼</label><input id="p-phone" type="tel" autocomplete="tel" placeholder="0912345678"><span class="sub" id="p-phone-check"></span></div>
-      <div class="field"><label for="p-email">電子信箱</label><input id="p-email" type="email" autocomplete="email"><span class="sub">桃園建議避免免費信箱；認證信可能在垃圾郵件匣。</span></div>
-      <div class="field"><label for="p-address">通訊地址</label><input id="p-address" type="text" autocomplete="street-address"></div>
-      <div class="row"><button class="btn primary" id="btn-save-profile" type="button">儲存</button><span id="profile-status" class="status" aria-live="polite"></span></div>
-    </div>
-    <div class="card">
-      <h2>備份與清除</h2>
-      <p class="hint">iPhone 有時會清掉網頁資料。可以把備份文字複製起來，存到備忘錄。備份不含照片。</p>
-      <div class="row"><button class="btn" id="btn-backup" type="button">複製備份文字</button></div>
-      <div class="field"><label for="restore-text">從備份還原</label><textarea id="restore-text" placeholder="貼上備份文字"></textarea></div>
-      <div class="row"><button class="btn" id="btn-restore" type="button">還原</button><span id="backup-status" class="status" aria-live="polite"></span></div>
-      <div class="row"><button class="btn danger" id="btn-wipe" type="button">清除這支手機上的所有資料</button></div>
-    </div>
-  </section>
-
-  <!-- 照片測試 -->
-  <section class="tab" id="tab-test" role="tabpanel" aria-labelledby="t-test" hidden>
-    <div class="card">
-      <h2>照片定位測試</h2>
-      <p class="hint">測試你的手機上傳照片時，系統能不能讀到拍攝時間和定位。請各試一次：先照平常方式選照片，再試一次在選照片畫面點「選項」並打開「位置」。</p>
-      <label class="btn primary block filebtn">選照片測試
-        <input id="test-input" type="file" accept="image/*" multiple>
-      </label>
-      <div id="test-out" class="stack"></div>
-      <div class="row"><button class="btn" id="btn-copy-test" type="button" hidden>複製測試結果</button></div>
-      <p class="hint">複製的結果裡，座標只保留到小數點後 3 位（約 100 公尺），可以放心貼給 Claude 看。</p>
-    </div>
-  </section>
-</main>
-
 <nav class="tabbar" role="tablist" aria-label="主要功能">
   <div class="wrap">
-    <button id="t-new" role="tab" aria-selected="true" aria-controls="tab-new" data-tab="new" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>新增檢舉</button>
-    <button id="t-cases" role="tab" aria-selected="false" aria-controls="tab-cases" data-tab="cases" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>案件</button>
-    <button id="t-profile" role="tab" aria-selected="false" aria-controls="tab-profile" data-tab="profile" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>個人資料</button>
-    <button id="t-test" role="tab" aria-selected="false" aria-controls="tab-test" data-tab="test" type="button">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>照片測試</button>
+    <button role="tab" data-view="home" aria-selected="true" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>首頁</button>
+    <button role="tab" data-view="report" aria-selected="false" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l2-3h4l2 3"/><circle cx="12" cy="13.5" r="3.5"/></svg>檢舉</button>
+    <button role="tab" data-view="records" aria-selected="false" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>紀錄</button>
+    <button role="tab" data-view="me" aria-selected="false" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>我的</button>
   </div>
 </nav>
+<main class="wrap" id="view"></main>
 <div id="toast" class="toast" role="status" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/exifreader@4.46.0/dist/exif-reader.js"></script>
 <script>
 'use strict';
 
-/* ---------- 小工具 ---------- */
+/* ================= 基本工具 ================= */
 const $ = (s, r = document) => r.querySelector(s);
 function el(tag, attrs, ...kids) {
   const n = document.createElement(tag);
@@ -391,56 +265,49 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
   del(k) { try { localStorage.removeItem(k); } catch (e) {} }
 };
-const K_PROFILE = 'prh.profile.v1', K_CASES = 'prh.cases.v1';
+const K = { profile: 'prh.profile.v1', cases: 'prh.cases.v1', places: 'prh.places.v1', settings: 'prh.settings.v1' };
 let toastTimer;
 function toast(msg) {
   const t = $('#toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 1800);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 2000);
 }
 async function copyText(text, btn) {
   try {
     await navigator.clipboard.writeText(text);
-    if (btn) { const o = btn.textContent; btn.textContent = '已複製'; setTimeout(() => { btn.textContent = o; }, 1400); }
+    if (btn) { const o = btn.textContent; btn.textContent = '已複製'; setTimeout(() => { if (btn.isConnected) btn.textContent = o; }, 1400); }
     else toast('已複製');
-  } catch (e) {
-    toast('無法自動複製，請長按文字複製');
-  }
+    return true;
+  } catch (e) { toast('無法自動複製，請長按文字自己複製'); return false; }
 }
 function todayTaipei() { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' }).format(new Date()); }
-function nowTaipeiParts() {
+function nowTaipei() {
   const s = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
   const m = s.match(/(\d{4})-(\d{2})-(\d{2}),?\s*(\d{2}):(\d{2})/);
   return m ? { date: `${m[1]}-${m[2]}-${m[3]}`, time: `${m[4] === '24' ? '00' : m[4]}:${m[5]}` } : { date: todayTaipei(), time: '' };
 }
-function addDays(ymd, n) {
-  const [y, m, d] = ymd.split('-').map(Number);
-  const t = new Date(Date.UTC(y, m - 1, d + n));
-  return t.toISOString().slice(0, 10);
-}
-function dayDiff(a, b) { // b - a，以日計
-  const pa = a.split('-').map(Number), pb = b.split('-').map(Number);
-  return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000);
-}
+function addDays(ymd, n) { const [y, m, d] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10); }
+function dayDiff(a, b) { const pa = a.split('-').map(Number), pb = b.split('-').map(Number); return Math.round((Date.UTC(pb[0], pb[1] - 1, pb[2]) - Date.UTC(pa[0], pa[1] - 1, pa[2])) / 86400000); }
 function fmtDate(ymd) { if (!ymd) return ''; const [y, m, d] = ymd.split('-'); return `${y}/${m}/${d}`; }
+function shortDate(ymd) { if (!ymd) return ''; const [, m, d] = ymd.split('-'); return `${Number(m)}/${Number(d)}`; }
 function minutesBetween(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 60000); }
+function daysLeft(c) { return c.form.date ? dayDiff(todayTaipei(), addDays(c.form.date, 6)) : null; }
 
-/* ---------- 台灣身分證、車牌 ---------- */
+/* ================= 身分證、車牌 ================= */
 const ID_LETTERS = { A: 10, B: 11, C: 12, D: 13, E: 14, F: 15, G: 16, H: 17, I: 34, J: 18, K: 19, L: 20, M: 21, N: 22, O: 35, P: 23, Q: 24, R: 25, S: 26, T: 27, U: 28, V: 29, W: 32, X: 30, Y: 31, Z: 33 };
 function checkId(raw) {
   const s = (raw || '').trim().toUpperCase();
   if (!s) return { ok: null, msg: '' };
   if (!/^[A-Z][1289]\d{8}$/.test(s)) return { ok: false, msg: '格式應為 1 個英文字母加 9 個數字' };
-  const n = ID_LETTERS[s[0]];
-  const w = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1];
+  const n = ID_LETTERS[s[0]], w = [1, 9, 8, 7, 6, 5, 4, 3, 2, 1, 1];
   const digits = [Math.floor(n / 10), n % 10, ...s.slice(1).split('').map(Number)];
-  const sum = digits.reduce((acc, d, i) => acc + d * w[i], 0);
-  return sum % 10 === 0 ? { ok: true, msg: '檢核碼正確' } : { ok: false, msg: '檢核碼不對，請再核對一次' };
+  return digits.reduce((a, d, i) => a + d * w[i], 0) % 10 === 0 ? { ok: true, msg: '檢核碼正確' } : { ok: false, msg: '檢核碼不對，請再核對一次' };
 }
 function normPlate(raw) {
   const s = (raw || '').toUpperCase().replace(/[^A-Z0-9-]/g, '');
   if (s.includes('-')) return s;
-  const pats = [[/^([A-Z]{3})(\d{4})$/], [/^([A-Z]{2})(\d{4})$/], [/^(\d{4})([A-Z]{2})$/], [/^([A-Z]{3})(\d{3})$/], [/^(\d{3})([A-Z]{3})$/], [/^(\d[A-Z])(\d{4})$/], [/^([A-Z]{2})(\d{2,3})$/]];
-  for (const [re] of pats) { const m = s.match(re); if (m) return `${m[1]}-${m[2]}`; }
+  for (const re of [/^([A-Z]{3})(\d{4})$/, /^([A-Z]{2})(\d{4})$/, /^(\d{4})([A-Z]{2})$/, /^([A-Z]{3})(\d{3})$/, /^(\d{3})([A-Z]{3})$/, /^(\d[A-Z])(\d{4})$/, /^([A-Z]{2})(\d{2,3})$/]) {
+    const m = s.match(re); if (m) return `${m[1]}-${m[2]}`;
+  }
   return s;
 }
 function checkPlate(p) {
@@ -450,9 +317,10 @@ function checkPlate(p) {
   if ([/^[A-Z]{2}\d{4}$/, /^\d{4}[A-Z]{2}$/, /^[A-Z]{3}\d{3}$/, /^\d{3}[A-Z]{3}$/, /^\d[A-Z]\d{4}$/, /^[A-Z]{2}\d{2,3}$/].some(r => r.test(s))) return { ok: true, msg: '舊式車牌格式' };
   return { ok: false, msg: '格式少見，請再核對照片' };
 }
+const plateKey = p => (p || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 function splitPlate(p) { const i = (p || '').indexOf('-'); return i < 0 ? [p || '', ''] : [p.slice(0, i), p.slice(i + 1)]; }
 
-/* ---------- 地理：點落在哪個鄉鎮市區 ---------- */
+/* ================= 地理 ================= */
 function inRing(pt, ring) {
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -462,6 +330,7 @@ function inRing(pt, ring) {
   return inside;
 }
 function inPolygon(pt, poly) { if (!inRing(pt, poly[0])) return false; for (let k = 1; k < poly.length; k++) if (inRing(pt, poly[k])) return false; return true; }
+async function loadTowns() { if (!S.data.towns) { try { S.data.towns = await (await fetch('data/taiwan_towns.geojson')).json(); } catch (e) {} } return S.data.towns; }
 function locateTown(lat, lng) {
   const fc = S.data.towns; if (!fc) return null;
   const pt = [lng, lat];
@@ -479,8 +348,18 @@ function distM(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 const COUNTIES = ['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '基隆市', '新竹市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', '雲林縣', '嘉義市', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '臺東縣', '澎湖縣', '金門縣', '連江縣'];
+function parsePasted(text) {
+  const out = {};
+  const t = String(text || '');
+  const m = t.match(/(-?\d{1,2}\.\d{3,})\s*[,，]\s*(-?\d{2,3}\.\d{3,})/);
+  if (m) { const a = +m[1], b = +m[2]; if (a > 21 && a < 27 && b > 118 && b < 123) { out.lat = a; out.lng = b; } }
+  const s = t.replace(/台(?=[北中南東])/g, '臺');
+  const am = s.match(/(臺北市|新北市|桃園市|臺中市|臺南市|高雄市|基隆市|新竹市|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義市|嘉義縣|屏東縣|宜蘭縣|花蓮縣|臺東縣|澎湖縣|金門縣|連江縣)?\s*([一-鿿]{1,3}[區鄉鎮市])?\s*([一-鿿]{1,10}?(?:路|街|大道)(?:[一二三四五六七八九十]段)?)((?:\d+巷)?(?:\d+弄)?\d+(?:之\d+)?號)?/);
+  if (am) { out.county = am[1] || ''; out.town = am[2] || ''; out.road = am[3] || ''; out.number = am[4] || ''; }
+  return out;
+}
 
-/* ---------- 照片：讀 EXIF、轉 JPEG ---------- */
+/* ================= 照片 ================= */
 async function readMeta(file) {
   const out = { takenAt: null, timeSource: null, offset: null, lat: null, lng: null, make: '', model: '', width: null, height: null, error: null };
   try {
@@ -495,8 +374,8 @@ async function readMeta(file) {
     if (typeof gps.Latitude === 'number' && typeof gps.Longitude === 'number' && !(gps.Latitude === 0 && gps.Longitude === 0)) { out.lat = gps.Latitude; out.lng = gps.Longitude; }
     out.make = (ex.Make || {}).description || '';
     out.model = (ex.Model || {}).description || '';
-    out.width = (ex.PixelXDimension || {}).value || (tags.file && tags.file['Image Width'] || {}).value || null;
-    out.height = (ex.PixelYDimension || {}).value || (tags.file && tags.file['Image Height'] || {}).value || null;
+    out.width = (ex.PixelXDimension || {}).value || null;
+    out.height = (ex.PixelYDimension || {}).value || null;
   } catch (e) { out.error = String(e && e.message || e); }
   if (!out.takenAt && file.lastModified) {
     const s = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Taipei', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(file.lastModified));
@@ -528,353 +407,173 @@ async function renderScaled(file, maxSide) {
 async function makeThumb(file) { try { return (await renderScaled(file, 200)).toDataURL('image/jpeg', 0.6); } catch (e) { return null; } }
 async function makeAiJpeg(file) { const c = await renderScaled(file, 1600); return new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)); }
 
-/* ---------- 狀態 ---------- */
-const ROLES = { overview: '全景（看得出人行道或斑馬線）', plate: '車牌特寫', driver_seat: '駕駛座', interval: '隔 3 分鐘後補拍', other: '其他' };
+/* ================= 狀態 ================= */
+const ROLES = { overview: '全景', plate: '車牌特寫', driver_seat: '駕駛座', interval: '隔 3 分鐘補拍', other: '其他' };
+const ROLE_WHY = {
+  overview: '看得出車子停在人行道或斑馬線上，最好拍到路名牌或門牌',
+  plate: '車牌要清楚，警方才能查到車主',
+  driver_seat: '看得出車上有沒有人，才能判斷是「停車」還是「臨時停車」',
+  interval: '同一角度、隔 3 分鐘以上再拍，證明車子一直停著'
+};
 const ROLE_ORDER = ['overview', 'plate', 'driver_seat', 'interval'];
+const STEP_NAMES = ['能不能檢舉', '拍照', 'Claude 判讀', '確認內容', '送出'];
+const TIPS = [
+  '拍駕駛座，警方才能判斷是「停車」還是「臨時停車」。',
+  '違規當天算第 1 天，第 7 天 24:00 前要送出。',
+  '機車和騎樓違停目前不能由民眾檢舉，可以打 110。',
+  '同一台車 6 分鐘內、沒經過路口的違規，只算一次。',
+  '全景照拍到路名牌或門牌，地點就不會填錯。',
+  '同一地點常有違停？到「紀錄」產生陳情信，請里長或議員協助改善。'
+];
 const S = {
-  data: { jur: null, vio: null, towns: null },
-  sample: null, sampleImgMax: 0,
-  profile: store.get(K_PROFILE, { name: '', idNumber: '', phone: '', email: '', address: '' }),
-  cases: store.get(K_CASES, []),
-  files: {},          // photoId -> File（只在記憶體）
-  cur: null,
-  aiCtl: null,
-  isSample: false
+  view: 'home', sub: null, step: 1, focus: false,
+  data: { jur: null, vio: null, fill: null, towns: null },
+  sample: null, sampleImgMax: 0, downloads: null,
+  profile: store.get(K.profile, { name: '', idNumber: '', phone: '', email: '', address: '' }),
+  cases: store.get(K.cases, []).map(migrate),
+  places: store.get(K.places, []),
+  settings: store.get(K.settings, { autofillReady: false, gpsTest: null }),
+  cur: null, files: {}, aiCtl: null,
+  timer: { start: null, fired: false }, audio: null,
+  rec: { filter: 'all', q: '' },
+  isSample: false, lastImportNoGps: false, autofillSrc: null
 };
 function newCase() {
   return {
     id: uid(), status: 'draft', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     answers: { vehicle: null, place: null, driver: null },
-    photos: [], ai: null, aiPick: 0,
-    form: { date: '', time: '', county: '', town: '', districtLabel: '', road: '', detail: '', plate: '', vdesc: '', desc: '', autoTime: true, autoLoc: true, descEdited: false, roadFrom: '' },
-    evidence: {}, submission: { caseNumber: '', queryPassword: '', submittedAt: '' }, result: ''
+    photos: [], ai: null, geo: null,
+    form: { date: '', time: '', timeSource: '', county: '', town: '', districtLabel: '', road: '', detail: '', plate: '', vdesc: '', desc: '', autoTime: true, autoLoc: true, descEdited: false, locSource: '' },
+    evidence: {}, submission: { caseNumber: '', queryPassword: '', submittedAt: '' }, result: '', focusIdx: 0
   };
 }
+function migrate(c) {
+  const n = newCase();
+  return { ...n, ...c, form: { ...n.form, ...(c.form || {}) }, answers: { ...n.answers, ...(c.answers || {}) }, submission: { ...n.submission, ...(c.submission || {}) }, evidence: c.evidence || {} };
+}
 S.cur = newCase();
+const profileReady = () => { const P = S.profile; return !!(P.name && P.idNumber && P.phone && P.email && P.address); };
 
-/* ---------- 判斷能不能檢舉 ---------- */
-function verdict() {
-  const a = S.cur.answers, V = S.data.vio;
+/* ================= 判斷規則 ================= */
+function verdict(c = S.cur) {
+  const a = c.answers, V = S.data.vio;
   if (!V) return { state: 'pending' };
   if (a.vehicle === 'motorcycle') return { state: 'no', text: V.not_reportable.motorcycle };
   if (a.place === 'arcade') return { state: 'no', text: V.not_reportable.arcade };
   if (a.place === 'roadside') return { state: 'no', text: V.not_reportable.roadside };
-  if (!a.vehicle || !a.place) return { state: 'pending' };
+  if (!a.vehicle || !a.place || !a.driver) return { state: 'pending' };
   const base = a.place === 'sidewalk' ? 'sidewalk' : 'crosswalk';
   if (a.driver === 'present') return { state: 'warn', ruleId: base + '_temp_stop' };
   return { state: 'yes', ruleId: base + '_parking' };
 }
-function renderVerdict() {
-  const v = verdict(), box = $('#verdict'), V = S.data.vio;
-  box.className = 'verdict v-' + v.state; box.replaceChildren();
-  if (v.state === 'pending') { box.append(el('b', { text: '回答上面的問題' }), el('p', { text: '系統會告訴你能不能檢舉、適用哪一條。' })); return; }
-  if (v.state === 'no') { box.append(el('b', { text: '不能檢舉' }), el('p', { text: v.text })); return; }
-  const r = V.rules[v.ruleId];
-  box.append(el('b', { text: v.state === 'yes' ? '可以檢舉' : '可以檢舉，但證據要求比較高' }),
-    el('p', { text: `${r.name}：${r.law}，罰鍰 ${r.fine}。` }));
-  if (r.warning) box.append(el('p', { text: r.warning }));
-  if (S.cur.answers.driver === 'unknown') box.append(el('p', { text: '記得拍到駕駛座，讓警方看得出車上沒有人。' }));
-}
+const ruleOf = (c = S.cur) => { const v = verdict(c); return v.ruleId ? S.data.vio.rules[v.ruleId] : null; };
+const jurOf = (c = S.cur) => S.data.jur && S.data.jur.jurisdictions[c.form.county];
+const reportable = (c = S.cur) => ['yes', 'warn'].includes(verdict(c).state);
 
-/* ---------- 照片 ---------- */
-async function addPhotos(fileList) {
-  const files = [...fileList]; if (!files.length) return;
-  $('#photo-summary').textContent = '讀取照片中…';
-  for (const f of files) {
-    const id = uid();
-    S.files[id] = f;
-    const [meta, thumb] = await Promise.all([readMeta(f), makeThumb(f)]);
-    const used = new Set(S.cur.photos.map(p => p.role));
-    const role = ROLE_ORDER.find(r => !used.has(r)) || 'other';
-    S.cur.photos.push({ id, name: f.name, type: f.type || '', size: f.size, thumb, role, ...meta });
-  }
-  S.cur.photos.sort((a, b) => (a.takenAt || '').localeCompare(b.takenAt || ''));
-  await applyPhotoFacts();
-  renderAll(); save();
-}
-function photoGeo() {
-  const ps = S.cur.photos.filter(p => p.lat != null);
+/* ================= 案件衍生資料 ================= */
+function locText(c = S.cur) { const f = c.form; return [f.county, f.town, f.road, f.detail].filter(Boolean).join(''); }
+function photoGeo(c = S.cur) {
+  const ps = c.photos.filter(p => p.lat != null);
   if (!ps.length) return null;
   const pref = ps.find(p => p.role === 'overview') || ps[0];
-  const spread = Math.max(0, ...ps.map(p => distM(pref, p)));
-  return { lat: pref.lat, lng: pref.lng, spread };
+  return { lat: pref.lat, lng: pref.lng, spread: Math.max(0, ...ps.map(p => distM(pref, p))), source: 'photo' };
 }
-function intervalMinutes() {
-  const ps = S.cur.photos.filter(p => p.takenAt); if (ps.length < 2) return null;
+const curGeo = (c = S.cur) => photoGeo(c) || c.geo;
+function intervalMinutes(c = S.cur) {
+  const ps = c.photos.filter(p => p.takenAt); if (ps.length < 2) return null;
   const iv = ps.find(p => p.role === 'interval');
-  if (iv) { const others = ps.filter(p => p !== iv); if (!others.length) return null; return minutesBetween(others[0].takenAt, iv.takenAt); }
+  if (iv) { const others = ps.filter(p => p !== iv); return others.length ? minutesBetween(others[0].takenAt, iv.takenAt) : null; }
   return minutesBetween(ps[0].takenAt, ps[ps.length - 1].takenAt);
 }
-async function applyPhotoFacts() {
-  const f = S.cur.form, first = S.cur.photos.find(p => p.takenAt);
-  if (first && f.autoTime) { f.date = first.takenAt.slice(0, 10); f.time = first.takenAt.slice(11, 16); f.timeSource = first.timeSource; }
-  const g = photoGeo();
-  if (g && f.autoLoc) {
-    try { if (!S.data.towns) S.data.towns = await (await fetch('data/taiwan_towns.geojson')).json(); } catch (e) {}
-    const hit = locateTown(g.lat, g.lng);
-    if (hit) { f.county = hit.county; f.town = hit.town; f.districtLabel = defaultDistrict(hit.county, hit.town); }
-  }
-}
-function renderPhotos() {
-  const list = $('#photo-list'); list.replaceChildren();
-  for (const p of S.cur.photos) {
-    const roleSel = el('select', { 'aria-label': '這張照片拍的是', onchange: e => { p.role = e.target.value; renderAll(); save(); } },
-      Object.entries(ROLES).map(([k, v]) => el('option', { value: k, selected: p.role === k }, v)));
-    const timeTxt = p.takenAt ? `${fmtDate(p.takenAt.slice(0, 10))} ${p.takenAt.slice(11, 16)}` : '沒有時間';
-    list.append(el('div', { class: 'photo' },
-      p.thumb ? el('img', { src: p.thumb, alt: ROLES[p.role] }) : el('div', { class: 'noimg' }, '無法預覽'),
-      el('div', { class: 'meta' },
-        roleSel,
-        el('div', {}, timeTxt, p.timeSource === 'file' ? el('span', { class: 'pill warn', text: ' 檔案時間，請核對' }) : null),
-        el('div', {}, p.lat != null ? el('span', { class: 'pill ok', text: '有定位' }) : el('span', { class: 'pill no', text: '沒有定位' }),
-          S.files[p.id] ? null : el('span', { class: 'pill info', text: ' 需重新加入才能判讀' }))),
-      el('button', { class: 'x', type: 'button', 'aria-label': '移除這張照片', onclick: () => { S.cur.photos = S.cur.photos.filter(x => x !== p); delete S.files[p.id]; renderAll(); save(); } }, '×')));
-  }
-  const sum = $('#photo-summary'), n = S.cur.photos.length;
-  if (!n) { sum.textContent = '還沒有照片。'; return; }
-  const g = photoGeo(), iv = intervalMinutes();
-  const bits = [`共 ${n} 張`];
-  if (iv != null) bits.push(`第一張到最後一張相隔 ${iv} 分鐘`);
-  bits.push(g ? '已讀到定位' : '沒有讀到定位：請重新選照片並打開「選項」裡的「位置」，或在下面自己填地點');
-  if (g && g.spread > 100) bits.push(`照片位置相差約 ${Math.round(g.spread)} 公尺，請確認是同一台車`);
-  sum.textContent = bits.join('；') + '。';
-}
-
-/* ---------- Claude 判讀 ---------- */
-function aiPrompt(n, roles) {
-  const lines = roles.map((r, i) => `照片${i + 1}：${ROLES[r]}`).join('\n');
-  return `你在協助台灣民眾檢舉「汽車違規停在人行道或行人穿越道（斑馬線）」。以下有 ${n} 張照片，依序是：
-${lines}
-
-請仔細看所有照片，判讀下列項目。看不清楚就填 "unknown"、空字串或 false，不要猜。
-
-台灣車牌格式提示：新式為 3 個英文字母加 4 個數字（例如 ABC-1234，英文不會出現 I 和 O）；舊式有 AB-1234、1234-AB、ABC-123、123-ABC 等。請用大寫並保留連字號。
-
-只回覆一個 JSON 物件，格式如下：
-{
-  "plate_candidates": [{"plate": "ABC-1234", "confidence": 0.9}],
-  "vehicle_class": "car | motorcycle | unknown",
-  "vehicle_desc": "例如：自用小客車、休旅車、小貨車、計程車",
-  "color": "例如：白色",
-  "location_type": "sidewalk | crosswalk | arcade | roadside | unknown",
-  "driver_present": "yes | no | unknown",
-  "road_text": "照片中路名牌上的路名，例如：忠孝東路四段；沒有就空字串",
-  "house_number_text": "照片中看得到的門牌號碼，例如：100號；沒有就空字串",
-  "evidence": {"plate_visible": true, "violation_context_visible": true, "driver_seat_visible": false, "landmark_visible": false},
-  "notes": "一到兩句繁體中文說明，例如證據還缺什麼"
-}
-plate_candidates 最多 3 個，依可能性排序；confidence 介於 0 到 1。`;
-}
-async function runAi() {
-  if (!S.sample) return;
-  const ps = S.cur.photos.filter(p => S.files[p.id]);
-  if (!ps.length) { $('#ai-status').textContent = '請先加入照片（重新開啟的草稿要重新加入照片才能判讀）。'; return; }
-  const max = Math.min(S.sampleImgMax || 4, 4);
-  const pick = [...ps].sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role)).filter(p => p.role !== 'other').slice(0, max);
-  const use = pick.length ? pick : ps.slice(0, max);
-  const btn = $('#btn-ai'), stop = $('#btn-ai-stop'), st = $('#ai-status');
-  btn.disabled = true; stop.hidden = false; st.textContent = '準備照片中…';
-  S.aiCtl = new AbortController();
-  try {
-    const blobs = [];
-    for (const p of use) blobs.push(await makeAiJpeg(S.files[p.id]));
-    st.textContent = 'Claude 判讀中，通常需要 10 到 60 秒…';
-    const r = await S.sample.json(aiPrompt(use.length, use.map(p => p.role)), { images: blobs, signal: S.aiCtl.signal });
-    if (!r || typeof r !== 'object') throw { code: 'invalid_json' };
-    S.cur.ai = r; S.cur.aiPick = 0;
-    applyAi(r);
-    st.textContent = '判讀完成，請核對下面的結果。';
-  } catch (e) {
-    const code = e && e.code;
-    const msg = {
-      cancelled: '已停止。',
-      not_granted: '你沒有允許這個頁面使用 Claude，請自己填寫車牌和地點。',
-      sampling_disabled: '這個帳號目前不能使用 Claude 判讀。',
-      images_unavailable: '這個畫面不能傳照片給 Claude，請自己填寫。',
-      image_rejected: '照片格式無法判讀，請換一張照片。',
-      rate_limited: '使用太頻繁或已達額度上限，請稍後再試。',
-      invalid_json: 'Claude 的回覆格式不對，請再按一次「開始判讀」。',
-      refused: 'Claude 沒有判讀這些照片，請自己填寫。',
-      session_expired: '登入已過期，請重新登入 Claude。'
-    }[code] || '判讀失敗，請稍後再試，或自己填寫。';
-    st.textContent = msg;
-  } finally {
-    btn.disabled = !S.cur.photos.length; stop.hidden = true; S.aiCtl = null;
-    renderAll(); save();
-  }
-}
-function applyAi(r) {
-  const f = S.cur.form;
-  const c = Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate) : [];
-  if (c.length && !f.plate) f.plate = normPlate(String(c[0].plate));
-  const desc = [r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('');
-  if (desc && !f.vdesc) f.vdesc = desc;
-  if (r.road_text && !f.road) { f.road = String(r.road_text); f.roadFrom = 'ai'; }
-  if (r.house_number_text && !f.detail) f.detail = String(r.house_number_text).replace(/前$/, '') + '前';
-  if (r.driver_present === 'no' && !S.cur.answers.driver) S.cur.answers.driver = 'absent';
-  if (r.driver_present === 'yes' && !S.cur.answers.driver) S.cur.answers.driver = 'present';
-}
-function renderAi() {
-  const box = $('#ai-result'), r = S.cur.ai; box.replaceChildren();
-  $('#btn-ai').disabled = !S.sample || !S.cur.photos.some(p => S.files[p.id]) || !!S.aiCtl;
-  if (!r) { box.hidden = true; return; }
-  box.hidden = false;
-  const c = Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate) : [];
-  if (c.length) {
-    box.append(el('div', { class: 'hint', text: '車牌候選（點一下套用）' }),
-      el('div', { class: 'cands' }, c.slice(0, 3).map(x => {
-        const p = normPlate(String(x.plate));
-        return el('button', { class: 'cand', type: 'button', 'aria-pressed': String(S.cur.form.plate === p), onclick: () => { S.cur.form.plate = p; renderAll(); save(); } },
-          el('span', { class: 'plate sm', text: p }), el('span', { text: `可信度 ${Math.round((Number(x.confidence) || 0) * 100)}%` }));
-      })));
-  } else box.append(el('div', { class: 'warnline', text: 'Claude 沒有讀出車牌，請自己輸入。' }));
-  const vc = { car: '汽車', motorcycle: '機車', unknown: '看不出來' }[r.vehicle_class] || '看不出來';
-  const lt = { sidewalk: '人行道', crosswalk: '斑馬線', arcade: '騎樓', roadside: '路邊', unknown: '看不出來' }[r.location_type] || '看不出來';
-  const dp = { yes: '有人', no: '沒人', unknown: '看不出來' }[r.driver_present] || '看不出來';
-  box.append(el('dl', {},
-    el('dt', { text: '車種' }), el('dd', { text: [vc, r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('、') }),
-    el('dt', { text: '停放位置' }), el('dd', { text: lt }),
-    el('dt', { text: '駕駛座' }), el('dd', { text: dp }),
-    el('dt', { text: '路名牌' }), el('dd', { text: r.road_text || '沒看到' }),
-    el('dt', { text: '門牌' }), el('dd', { text: r.house_number_text || '沒看到' })));
-  if (r.notes) box.append(el('p', { class: 'hint', text: String(r.notes) }));
-  const a = S.cur.answers;
-  if (r.vehicle_class === 'motorcycle' && a.vehicle === 'car') box.append(el('div', { class: 'badline', text: 'Claude 認為這是機車。機車目前不能檢舉，請再確認。' }));
-  if ((r.location_type === 'arcade' || r.location_type === 'roadside') && (a.place === 'sidewalk' || a.place === 'crosswalk')) box.append(el('div', { class: 'warnline', text: `Claude 認為車子停在「${lt}」，這種情況不能檢舉，請再確認。` }));
-  if (r.driver_present === 'yes' && a.driver === 'absent') box.append(el('div', { class: 'warnline', text: 'Claude 認為駕駛座有人，請再確認。' }));
-}
-
-/* ---------- 表單 ---------- */
 function defaultDistrict(county, town) {
   const J = S.data.jur && S.data.jur.jurisdictions[county];
-  if (!J || !J.district_options) return '';
-  if (J.district_options.includes(town)) return town;
-  return ''; // 中正區、文山區要自己選一區或二區
+  return J && J.district_options && J.district_options.includes(town) ? town : '';
 }
-function locText() {
-  const f = S.cur.form;
-  return [f.county, f.town, f.road, f.detail].filter(Boolean).join('');
-}
-function currentRule() { const v = verdict(); return v.ruleId ? S.data.vio.rules[v.ruleId] : null; }
-function buildDesc() {
-  const f = S.cur.form, r = currentRule(), a = S.cur.answers;
+function buildDesc(c = S.cur) {
+  const f = c.form, r = ruleOf(c), a = c.answers;
   if (!r) return '';
-  const temp = verdict().state === 'warn';
-  const who = f.vdesc || '車輛';
-  const plate = f.plate || '（車牌）';
-  const where = locText() || '（地點）';
+  const temp = verdict(c).state === 'warn';
   const driver = a.driver === 'absent' ? '駕駛座無人，' : a.driver === 'present' ? '駕駛人在車上，' : '';
-  let s = `${who} ${plate} ${temp ? '臨時停車' : '停放'}於${where}之${r.place_word}上，${driver}占用${r.place_word}妨礙行人通行。`;
-  const ps = S.cur.photos;
-  if (ps.length) {
-    const iv = intervalMinutes();
-    const parts = ps.map((p, i) => {
-      if (p.role === 'interval' && iv != null) return `照片${i + 1}為${iv}分鐘後同一位置`;
-      const name = { overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '補拍', other: '現場' }[p.role];
-      return `照片${i + 1}為${name}`;
-    });
-    s += parts.join('、') + '。';
+  let s = `${f.vdesc || '車輛'} ${f.plate || '（車牌）'} ${temp ? '臨時停車' : '停放'}於${locText(c) || '（地點）'}之${r.place_word}上，${driver}占用${r.place_word}妨礙行人通行。`;
+  if (c.photos.length) {
+    const iv = intervalMinutes(c);
+    s += c.photos.map((p, i) => p.role === 'interval' && iv != null ? `照片${i + 1}為${iv}分鐘後同一位置` : `照片${i + 1}為${{ overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '補拍', other: '現場' }[p.role]}`).join('、') + '。';
   }
-  const max = (jurOf() || {}).description_max_length || 200;
+  const max = (jurOf(c) || {}).description_max_length || 200;
   return s.length > max ? s.slice(0, max) : s;
 }
-function jurOf() { return S.data.jur && S.data.jur.jurisdictions[S.cur.form.county]; }
-function syncFormInputs() {
-  const f = S.cur.form;
-  const set = (id, v) => { const n = $(id); if (document.activeElement !== n && n.value !== (v || '')) n.value = v || ''; };
-  set('#f-date', f.date); set('#f-time', f.time); set('#f-town', f.town); set('#f-road', f.road);
-  set('#f-detail', f.detail); set('#f-plate', f.plate); set('#f-vdesc', f.vdesc);
-  if (!f.descEdited) f.desc = buildDesc();
-  set('#f-desc', f.desc);
-  const cs = $('#f-county');
-  if (!cs.options.length) { cs.append(el('option', { value: '' }, '請選擇'), ...COUNTIES.map(c => el('option', { value: c }, c))); }
-  if (cs.value !== f.county) cs.value = f.county || '';
-  $('#f-date-src').textContent = f.date ? (f.timeSource === 'exif' && f.autoTime ? '取自照片拍攝時間' : f.timeSource === 'file' && f.autoTime ? '取自檔案時間，請核對' : '') : '';
-  $('#f-loc-src').textContent = f.county && f.autoLoc && photoGeo() ? '依照片定位判斷' : '';
-  $('#f-road-src').textContent = f.roadFrom === 'ai' ? '取自 Claude 讀到的路名牌，請核對' : '';
-  // 臺北的官方行政區選單
-  const J = jurOf(), dw = $('#f-district-wrap');
-  if (J && J.district_options) {
-    dw.hidden = false;
-    const ds = $('#f-district');
-    if (ds.dataset.for !== f.county) { ds.replaceChildren(el('option', { value: '' }, '請選擇'), ...J.district_options.map(o => el('option', { value: o }, o))); ds.dataset.for = f.county; }
-    ds.value = f.districtLabel || '';
-    $('#f-district-note').textContent = !f.districtLabel && (f.town === '中正區' || f.town === '文山區') ? J.district_split_note : '';
-  } else dw.hidden = true;
-  // 車牌檢查
-  const pc = checkPlate(f.plate), pcs = $('#f-plate-check');
-  pcs.textContent = pc.msg; pcs.className = 'sub' + (pc.ok === false ? ' bad' : '');
-  // 違規事實
-  const r = currentRule(), vbox = $('#f-violation');
-  vbox.replaceChildren();
-  if (r) {
-    const label = J && J.violation_labels ? J.violation_labels[verdict().ruleId] : null;
-    vbox.append(el('div', { text: `${r.name}（${r.law}）` }));
-    if (label) vbox.append(el('div', { text: `官方選單請選：「${label}」` }));
-    if (J && J.violation_labels_note) vbox.append(el('div', { class: 'warnline', text: J.violation_labels_note }));
-  } else vbox.textContent = '請先完成第 1 步。';
-  const max = (J || {}).description_max_length || 200;
-  const cnt = $('#f-desc-count'); cnt.textContent = `${(f.desc || '').length} / ${max} 字`;
-  cnt.className = 'sub' + ((f.desc || '').length > max ? ' bad' : '');
-  // 地圖連結
-  const ml = $('#map-links'); ml.replaceChildren();
-  const g = photoGeo();
-  if (g) {
-    const ll = `${g.lat.toFixed(6)},${g.lng.toFixed(6)}`;
-    ml.append(el('a', { class: 'btn small', href: `https://maps.apple.com/?ll=${ll}&q=${encodeURIComponent('違規地點')}`, target: '_blank', rel: 'noopener' }, '在 Apple 地圖看路名'),
-      el('a', { class: 'btn small', href: `https://www.google.com/maps/search/?api=1&query=${ll}`, target: '_blank', rel: 'noopener' }, '在 Google 地圖看'));
-  }
-}
-function renderDeadline() {
-  const box = $('#deadline'), f = S.cur.form;
-  if (!f.date) { box.hidden = true; return; }
-  const last = addDays(f.date, 6), left = dayDiff(todayTaipei(), last);
-  box.hidden = false; box.className = 'deadline' + (left <= 1 ? ' urgent' : ''); box.replaceChildren();
-  if (left < 0) box.append(el('span', { class: 'big', text: '已逾期' }), el('span', { text: `最晚要在 ${fmtDate(last)} 送出，現在送出會不予舉發。` }));
-  else if (left === 0) box.append(el('span', { class: 'big', text: '今天' }), el('span', { text: `是最後一天（${fmtDate(last)} 24:00 前）。` }));
-  else box.append(el('span', { class: 'big', text: `剩 ${left} 天` }), el('span', { text: `最晚 ${fmtDate(last)} 24:00 前送出（違規當天算第 1 天）。` }));
-}
-function evidenceAuto() {
-  const r = S.cur.ai, ev = (r && r.evidence) || {}, ps = S.cur.photos, iv = intervalMinutes();
+function evidenceAuto(c = S.cur) {
+  const ev = (c.ai && c.ai.evidence) || {}, iv = intervalMinutes(c);
   return {
-    plate: !!ev.plate_visible || ps.some(p => p.role === 'plate'),
+    plate: !!ev.plate_visible || c.photos.some(p => p.role === 'plate'),
     context: !!ev.violation_context_visible,
-    driver_seat: !!ev.driver_seat_visible,
+    driver_seat: !!ev.driver_seat_visible || c.photos.some(p => p.role === 'driver_seat'),
     interval: iv != null && iv >= 3,
     landmark: !!ev.landmark_visible,
     stop_and_leave: false
   };
 }
-function renderEvidence() {
-  const box = $('#evidence'); box.replaceChildren();
-  const r = currentRule(); if (!r) { box.append(el('p', { class: 'hint', text: '完成第 1 步後顯示。' })); return; }
-  const auto = evidenceAuto(), L = S.data.vio.evidence_labels;
-  const items = [...r.evidence.map(k => [k, true]), ...r.recommended.map(k => [k, false])];
-  for (const [k, required] of items) {
-    const manual = S.cur.evidence[k];
-    const on = manual != null ? manual : auto[k];
-    const id = 'ev-' + k;
-    box.append(el('label', { class: 'check', for: id },
-      el('input', { type: 'checkbox', id, checked: on, onchange: e => { S.cur.evidence[k] = e.target.checked; save(); } }),
-      el('span', {}, L[k], ' ', el('small', { text: required ? '（必要）' : '（建議）' }),
-        manual == null && auto[k] ? el('span', { class: 'auto', text: ' 自動判斷' }) : null)));
+function plateHistory(c = S.cur) {
+  const k = plateKey(c.form.plate); if (k.length < 4) return [];
+  return S.cases.filter(x => x.id !== c.id && plateKey(x.form.plate) === k);
+}
+function duplicateWarning(c = S.cur) {
+  const f = c.form; if (!f.date || !f.time) return null;
+  const here = Date.parse(`${f.date}T${f.time}:00`);
+  for (const x of plateHistory(c)) {
+    if (!x.form.date || !x.form.time) continue;
+    const diff = Math.abs(Date.parse(`${x.form.date}T${x.form.time}:00`) - here) / 60000;
+    if (diff < 6) return `你 ${shortDate(x.form.date)} ${x.form.time} 已經檢舉過這台車。6 分鐘內、沒經過路口的違規只算一次，重複檢舉會不予舉發。`;
+    if (x.form.date === f.date && x.form.road && x.form.road === f.road) return `你今天已經在${x.form.road}檢舉過這台車。如果是同一次違規，重複檢舉會不予舉發。`;
   }
+  return null;
+}
+function locationSuggestions(c = S.cur) {
+  const g = curGeo(c), out = [], seen = new Set();
+  const push = (label, from, apply, d) => { const key = (apply.road || '') + '|' + (apply.detail || ''); if (!apply.road || seen.has(key)) return; seen.add(key); out.push({ label, from, apply, d }); };
+  if (g) {
+    for (const x of S.cases) {
+      if (x.id === c.id || !x.geo || !x.form.road) continue;
+      const d = distM(g, x.geo);
+      if (d <= 60) push(`${x.form.road}${x.form.detail}`, `附近舊案件（約 ${Math.round(d)} 公尺）`, { county: x.form.county, town: x.form.town, districtLabel: x.form.districtLabel, road: x.form.road, detail: x.form.detail }, d);
+    }
+    for (const p of S.places) if (p.lat != null) { const d = distM(g, p); if (d <= 80) push(p.name, `常用地點（約 ${Math.round(d)} 公尺）`, p, d); }
+  }
+  out.sort((a, b) => a.d - b.d);
+  if (c.ai && c.ai.road_text) push(`${c.ai.road_text}${c.ai.house_number_text ? c.ai.house_number_text + '前' : ''}`, 'Claude 讀到的路名牌', { road: String(c.ai.road_text), detail: c.ai.house_number_text ? String(c.ai.house_number_text).replace(/前$/, '') + '前' : '' }, 9e9);
+  for (const p of S.places.slice(0, 6)) push(p.name, '常用地點', p, 9e9);
+  return out.slice(0, 8);
+}
+function applyLocation(a, source) {
+  const f = S.cur.form;
+  if (a.county) f.county = a.county;
+  if (a.town) f.town = a.town;
+  f.districtLabel = a.districtLabel || defaultDistrict(f.county, f.town);
+  if (a.road != null) f.road = a.road;
+  if (a.detail != null) f.detail = a.detail;
+  f.autoLoc = false; f.locSource = source;
 }
 
-/* ---------- 送出面板 ---------- */
-function maskId(s) { return s && s.length >= 6 ? s.slice(0, 3) + '****' + s.slice(-3) : s; }
-function fieldValue(src) {
-  const f = S.cur.form, P = S.profile, J = jurOf() || {};
-  const [front, back] = splitPlate(f.plate);
-  const v = verdict();
-  const map = {
-    'profile.name': P.name, 'profile.idNumber': P.idNumber, 'profile.phone': P.phone, 'profile.email': P.email, 'profile.address': P.address,
-    'case.date': fmtDate(f.date), 'case.time': f.time, 'case.districtLabel': f.districtLabel || f.town, 'case.road': f.road, 'case.locationDetail': f.detail,
-    'case.vehicleTypeLabel': J.vehicle_type_label || '', 'case.plateFront': front, 'case.plateBack': back, 'case.plate': f.plate,
-    'case.violationLabel': J.violation_labels && v.ruleId ? J.violation_labels[v.ruleId] : '', 'case.description': f.desc, 'case.fullLocation': locText()
-  };
-  return map[src] || '';
+/* ================= 儲存 ================= */
+function hasContent(c) { return c.photos.length || c.form.plate || c.form.road || c.answers.vehicle; }
+function save(force) {
+  if (S.isSample) return;
+  const c = S.cur; if (!force && !hasContent(c)) return;
+  c.updatedAt = new Date().toISOString();
+  const copy = JSON.parse(JSON.stringify(c));
+  const i = S.cases.findIndex(x => x.id === c.id);
+  if (i >= 0) S.cases[i] = copy; else S.cases.unshift(copy);
+  persistCases();
 }
+function persistCases() {
+  if (store.set(K.cases, S.cases)) return;
+  S.cases.forEach((x, j) => { if (j > 4) x.photos.forEach(p => { p.thumb = null; }); });
+  if (!store.set(K.cases, S.cases)) toast('手機空間不足，案件無法儲存');
+}
+const saveSettings = () => store.set(K.settings, S.settings);
+const savePlaces = () => store.set(K.places, S.places);
+
+/* ================= 共用元件 ================= */
 function copyRow(label, value, note, display) {
   const btn = el('button', { class: 'btn small', type: 'button', disabled: !value }, '複製');
   btn.addEventListener('click', () => copyText(value, btn));
@@ -882,252 +581,915 @@ function copyRow(label, value, note, display) {
     el('div', {}, el('span', { class: 'k', text: label }), el('span', { class: 'v' + (value ? '' : ' empty'), text: value ? (display || value) : '尚未填寫' }), note ? el('span', { class: 'n', text: note }) : null),
     btn);
 }
-function renderSubmit() {
-  const box = $('#submit-panel'); box.replaceChildren();
-  const f = S.cur.form, v = verdict();
-  if (v.state === 'no') { box.append(el('p', { class: 'hint', text: '這種情況不能由民眾檢舉，可以打 110 請警察到場處理。' })); return; }
-  if (!f.county) { box.append(el('p', { class: 'hint', text: '填好縣市後，這裡會列出該縣市官方網站要填的每一欄。' })); return; }
-  const P = S.profile;
-  if (!P.name || !P.idNumber || !P.phone || !P.email || !P.address) {
-    box.append(el('div', { class: 'warnline' }, '個人資料還沒填完整。', el('button', { class: 'btn small', type: 'button', onclick: () => showTab('profile') }, '去填個人資料')));
-  }
-  const J = jurOf();
-  if (J) {
-    box.append(el('div', { class: 'jur' }, el('span', { class: 'agency', text: J.agency }), el('span', { class: 'hint', text: J.auth_summary }),
-      J.special_jurisdiction_note ? el('span', { class: 'hint', text: J.special_jurisdiction_note }) : null));
-    box.append(el('a', { class: 'btn primary block', href: J.url, target: '_blank', rel: 'noopener' }, `開啟${f.county}檢舉網站`));
-    box.append(el('div', { class: 'copylist' }, copyRow('官方網址', J.url, '上面的按鈕打不開時，按「複製」，再到 Safari 網址列貼上')));
-    for (const step of J.steps) {
-      box.append(el('div', { class: 'stack' }, el('h3', { text: step.title }),
-        el('div', { class: 'copylist' }, step.fields.map(fd => {
-          if (fd.source === 'static') return el('div', { class: 'copyrow' }, el('div', {}, el('span', { class: 'k', text: fd.label }), el('span', { class: 'n', text: fd.value })));
-          const val = fieldValue(fd.source);
-          return copyRow(fd.label, val, fd.note, fd.source === 'profile.idNumber' ? maskId(val) : null);
-        }))));
-    }
-    box.append(el('p', { class: 'hint', text: `規格查證日期：${J.last_verified}。官方網站如果改版，請以現場畫面為準。` }));
-  } else {
-    const url = S.data.jur && S.data.jur.others[f.county];
-    box.append(el('p', { class: 'hint', text: `${f.county}的欄位還沒整理，下面是通用資料，請依官方網站的欄位填寫。` }));
-    if (url) box.append(el('a', { class: 'btn primary block', href: url, target: '_blank', rel: 'noopener' }, `開啟${f.county}檢舉網站`), el('div', { class: 'copylist' }, copyRow('官方網址', url, '上面的按鈕打不開時，按「複製」，再到 Safari 網址列貼上')));
-    box.append(el('div', { class: 'copylist' },
-      copyRow('姓名', P.name), copyRow('身分證字號', P.idNumber, null, maskId(P.idNumber)), copyRow('電話', P.phone), copyRow('電子信箱', P.email), copyRow('地址', P.address),
-      copyRow('違規日期', fmtDate(f.date)), copyRow('違規時間', f.time), copyRow('違規地點', locText()), copyRow('車牌', f.plate), copyRow('違規事實', currentRule() ? `${currentRule().name}（${currentRule().law}）` : ''), copyRow('說明', f.desc)));
-  }
-  // 送出後記錄
-  const sub = S.cur.submission;
-  const cn = el('input', { id: 's-case', type: 'text', value: sub.caseNumber, autocomplete: 'off' });
-  const qp = el('input', { id: 's-pass', type: 'text', value: sub.queryPassword, autocomplete: 'off' });
-  cn.addEventListener('input', e => { sub.caseNumber = e.target.value.trim(); save(); });
-  qp.addEventListener('input', e => { sub.queryPassword = e.target.value.trim(); save(); });
-  box.append(el('div', { class: 'stack' }, el('h3', { text: '送出之後' }),
-    el('p', { class: 'hint', text: (J && J.result_note) || '送出後請把案件編號和查詢密碼記在這裡。' }),
-    el('div', { class: 'grid2' }, el('div', { class: 'field' }, el('label', { for: 's-case' }, '案件編號'), cn), el('div', { class: 'field' }, el('label', { for: 's-pass' }, '查詢密碼'), qp)),
-    el('button', { class: 'btn primary', type: 'button', onclick: () => {
-      S.cur.status = 'submitted'; sub.submittedAt = new Date().toISOString(); save(true); toast('已標記為已送出'); renderAll();
-    } }, S.cur.status === 'submitted' ? '已送出（再按一次更新）' : '我已經送出了')));
+function note(kind, title, ...lines) { return el('div', { class: 'note ' + kind }, title ? el('b', { text: title }) : null, ...lines.filter(Boolean).map(l => l instanceof Node ? l : el('span', { text: l }))); }
+function field(label, input, subId) { return el('div', { class: 'field' }, el('label', { for: input.id }, label), input, subId ? el('span', { class: 'sub', id: subId }) : null); }
+function plateChip(p) { return p ? el('span', { class: 'plate sm', text: p }) : el('span', { class: 'hint', text: '（未填車牌）' }); }
+function maskId(s) { return s && s.length >= 6 ? s.slice(0, 3) + '****' + s.slice(-3) : s; }
+function statusPill(c) {
+  const map = { draft: ['草稿', 'info'], submitted: ['已送出', 'ok'], cited: ['已舉發', 'ok'], not_cited: ['不舉發', 'no'], warned: ['勸導', 'warn'] };
+  const k = c.status === 'submitted' && c.result ? c.result : c.status;
+  const [t, kind] = map[k] || map.draft;
+  return el('span', { class: 'pill ' + kind, text: t });
+}
+function deadlinePill(c) {
+  if (c.status !== 'draft') return null;
+  const left = daysLeft(c); if (left == null) return null;
+  return el('span', { class: 'pill ' + (left < 0 ? 'no' : left <= 1 ? 'warn' : 'info'), text: left < 0 ? '已逾期' : left === 0 ? '今天到期' : `剩 ${left} 天` });
 }
 
-/* ---------- 儲存、案件列表 ---------- */
-function hasContent(c) { return c.photos.length || c.form.plate || c.form.road || c.answers.vehicle; }
-function save(force) {
-  if (S.isSample) return;
-  const c = S.cur; if (!force && !hasContent(c)) return;
-  c.updatedAt = new Date().toISOString();
-  const i = S.cases.findIndex(x => x.id === c.id);
-  const copy = JSON.parse(JSON.stringify(c));
-  if (i >= 0) S.cases[i] = copy; else S.cases.unshift(copy);
-  if (!store.set(K_CASES, S.cases)) {
-    S.cases.forEach((x, j) => { if (j > 4) x.photos.forEach(p => { p.thumb = null; }); });
-    if (!store.set(K_CASES, S.cases)) toast('手機空間不足，案件無法儲存');
+/* ================= 導覽 ================= */
+function go(view, opts = {}) {
+  S.view = view;
+  if ('sub' in opts) S.sub = opts.sub; else if (view !== 'me') S.sub = null;
+  if (opts.step) S.step = opts.step;
+  if (view !== 'report') S.focus = false;
+  render();
+  window.scrollTo(0, 0);
+}
+function render() {
+  for (const b of document.querySelectorAll('.tabbar button')) b.setAttribute('aria-selected', String(b.dataset.view === S.view));
+  const v = $('#view'); v.replaceChildren();
+  if (!S.data.vio) { v.append(el('p', { class: 'lead', text: '載入中…' })); return; }
+  ({ home: renderHome, report: renderReport, records: renderRecords, me: renderMe })[S.view](v);
+}
+function startNew() { S.cur = newCase(); S.files = {}; S.isSample = false; S.timer = { start: null, fired: false }; S.lastImportNoGps = false; go('report', { step: 1 }); }
+function openCase(id) {
+  const c = S.cases.find(x => x.id === id); if (!c) return;
+  S.cur = migrate(JSON.parse(JSON.stringify(c))); S.files = {}; S.isSample = false; S.focus = false;
+  const step = c.status !== 'draft' ? 5 : !reportable(S.cur) ? 1 : c.form.plate || c.form.road ? 4 : c.photos.length ? 3 : 2;
+  go('report', { step });
+}
+
+/* ================= 首頁 ================= */
+function renderHome(v) {
+  const setupDone = profileReady() && S.settings.autofillReady && S.settings.gpsTest;
+  if (!setupDone) {
+    const item = (on, title, sub, btnText, fn) => el('div', { class: 'setup' }, el('span', { class: 'dot' + (on ? ' on' : ''), text: on ? '✓' : '' }), el('div', {}, el('div', { text: title }), el('div', { class: 'hint', text: sub })), on ? null : el('button', { class: 'btn small', type: 'button', onclick: fn }, btnText));
+    v.append(el('div', { class: 'card' }, el('h3', { text: '開始前的準備' }),
+      item(profileReady(), '個人資料', '只填一次，存在這支手機', '去填', () => go('me', { sub: 'profile' })),
+      item(!!S.settings.gpsTest, '照片定位測試', '確認你的手機選照片時能帶出地點', '去測試', () => go('me', { sub: 'test' })),
+      item(S.settings.autofillReady, '自動填表書籤', '設定一次，之後在官方網站一鍵填好', '去設定', () => go('me', { sub: 'autofill' }))));
+  }
+  v.append(el('button', { class: 'btn primary cta', type: 'button', onclick: startNew }, '我看到違停'));
+  if (hasContent(S.cur) && S.cur.status === 'draft' && !S.isSample) v.append(el('button', { class: 'btn block', type: 'button', onclick: () => go('report') }, `繼續剛剛那一件${S.cur.form.plate ? '（' + S.cur.form.plate + '）' : ''}`));
+
+  const drafts = S.cases.filter(c => c.status === 'draft').sort((a, b) => (daysLeft(a) ?? 99) - (daysLeft(b) ?? 99));
+  const todo = el('div', { class: 'card' }, el('h3', { text: '待辦' }));
+  if (!drafts.length) todo.append(el('p', { class: 'hint', text: '沒有待送出的案件。' }));
+  for (const c of drafts.slice(0, 5)) {
+    todo.append(el('div', { class: 'todo' },
+      el('div', { class: 't' }, el('div', { class: 'row' }, plateChip(c.form.plate), deadlinePill(c)), el('span', { class: 'place', text: locText(c) || '（未填地點）' })),
+      el('button', { class: 'btn small', type: 'button', onclick: () => openCase(c.id) }, '繼續')));
+  }
+  if (drafts.length > 5) todo.append(el('button', { class: 'btn small ghost', type: 'button', onclick: () => { S.rec.filter = 'draft'; go('records'); } }, `看全部 ${drafts.length} 件草稿`));
+  v.append(todo);
+
+  const st = monthStats();
+  v.append(el('div', { class: 'card' }, el('h3', { text: '這個月' }),
+    el('div', { class: 'stats' }, stat(st.sent, '已送出'), stat(st.cited, '已舉發'), stat(st.warned, '勸導'), stat(st.notCited, '不舉發')),
+    st.rate != null ? el('p', { class: 'hint', text: `有結果的案件中，${st.rate}% 被舉發。` }) : el('p', { class: 'hint', text: '送出後記下處理結果，就能看到成案率。' })));
+
+  const hot = hotspots().filter(h => h.count >= 3)[0];
+  if (hot) v.append(note('warn', `${hot.label}：你已經檢舉 ${hot.count} 次`, '慣性違停的地點，可以請里長、議員或交通局設置阻車柱或加強取締。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('records') }, '寫陳情信'))));
+
+  const tip = TIPS[Number(todayTaipei().slice(-2)) % TIPS.length];
+  v.append(note('info', '小提醒', tip));
+}
+function stat(n, label) { return el('div', { class: 'stat' }, el('b', { text: String(n) }), el('span', { text: label })); }
+function monthStats() {
+  const mk = todayTaipei().slice(0, 7);
+  const sent = S.cases.filter(c => c.status === 'submitted' && (c.form.date || '').startsWith(mk));
+  const cited = sent.filter(c => c.result === 'cited').length, warned = sent.filter(c => c.result === 'warned').length, notCited = sent.filter(c => c.result === 'not_cited').length;
+  const decided = cited + warned + notCited;
+  return { sent: sent.length, cited, warned, notCited, rate: decided ? Math.round(cited / decided * 100) : null };
+}
+function hotspots() {
+  const m = new Map();
+  for (const c of S.cases) {
+    if (!c.form.road) continue;
+    const key = `${c.form.county}${c.form.town}${c.form.road}`;
+    const h = m.get(key) || { label: `${c.form.town}${c.form.road}`, key, county: c.form.county, town: c.form.town, road: c.form.road, count: 0, dates: [] };
+    h.count++; if (c.form.date) h.dates.push(`${c.form.date} ${c.form.time || ''}`.trim());
+    m.set(key, h);
+  }
+  return [...m.values()].sort((a, b) => b.count - a.count);
+}
+
+/* ================= 檢舉流程 ================= */
+function renderReport(v) {
+  const c = S.cur;
+  if (S.isSample) v.append(el('div', { class: 'banner', text: '這是範例資料，不是真實案件。按「新的一件」清除。' }));
+  const maxStep = reportable(c) ? 5 : 1;
+  if (S.step > maxStep) S.step = 1;
+  v.append(el('div', { class: 'progress' },
+    el('div', { class: 'row between' }, el('span', { class: 'label' }, `第 ${S.step} 步／共 5 步　`, el('b', { text: STEP_NAMES[S.step - 1] })),
+      el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: startNew }, '新的一件'), el('button', { class: 'btn small ghost', type: 'button', onclick: loadSample }, '看範例'))),
+    el('div', { class: 'dots' }, STEP_NAMES.map((n, i) => el('button', { type: 'button', 'aria-label': `第 ${i + 1} 步：${n}`, class: i + 1 === S.step ? 'now' : i + 1 < S.step ? 'done' : '', disabled: i + 1 > maxStep, onclick: () => { S.focus = false; S.step = i + 1; render(); window.scrollTo(0, 0); } })))));
+  [null, step1, step2, step3, step4, step5][S.step](v);
+}
+function stepNav(v, nextLabel, nextFn, opts = {}) {
+  v.append(el('div', { class: 'stepnav' },
+    S.step > 1 ? el('button', { class: 'btn', type: 'button', onclick: () => { S.step--; render(); window.scrollTo(0, 0); } }, '上一步') : el('span'),
+    nextLabel ? el('button', { class: 'btn primary', type: 'button', disabled: !!opts.disabled, onclick: nextFn || (() => { S.step++; render(); window.scrollTo(0, 0); }) }, nextLabel) : el('span')));
+}
+
+/* ---- 第 1 步 ---- */
+const QUESTIONS = [
+  { key: 'vehicle', title: '是汽車還是機車？', options: [['car', '汽車', '四輪以上，包括貨車、計程車'], ['motorcycle', '機車', '']] },
+  { key: 'place', title: '停在哪裡？', options: [['sidewalk', '人行道', '騎樓以外的人行道'], ['crosswalk', '斑馬線', '行人穿越道'], ['arcade', '騎樓', '房子一樓前的走廊'], ['roadside', '紅黃線、路邊', '包括路口、公車站附近']] },
+  { key: 'driver', title: '駕駛人在車上嗎？', options: [['absent', '沒人', ''], ['present', '有人', '駕駛在車上、正在上下客或貨'], ['unknown', '看不出來', '']] }
+];
+function step1(v) {
+  const c = S.cur, a = c.answers;
+  const card = el('div', { class: 'card' });
+  let current = null;
+  for (const q of QUESTIONS) {
+    if (a[q.key] && !current) {
+      const opt = q.options.find(o => o[0] === a[q.key]);
+      card.append(el('div', { class: 'answered' }, el('div', {}, el('span', { text: q.title + '　' }), el('b', { text: opt ? opt[1] : '' })),
+        el('button', { class: 'btn small ghost', type: 'button', onclick: () => { a[q.key] = null; QUESTIONS.slice(QUESTIONS.indexOf(q) + 1).forEach(n => { a[n.key] = null; }); render(); } }, '改')));
+      if ((q.key === 'vehicle' && a.vehicle === 'motorcycle') || (q.key === 'place' && ['arcade', 'roadside'].includes(a.place))) break;
+      continue;
+    }
+    if (!current) {
+      current = q;
+      card.append(el('div', { class: 'bigq' }, el('div', { class: 'qtitle', text: q.title }),
+        q.options.map(([val, label, sub]) => el('button', { class: 'choice', type: 'button', onclick: () => { a[q.key] = val; save(); render(); } }, el('span', { text: label }), sub ? el('small', { text: sub }) : null))));
+    }
+  }
+  v.append(card);
+  const vd = verdict();
+  if (vd.state === 'no') {
+    v.append(note('no', '這種情況不能由民眾檢舉', vd.text), el('div', { class: 'card' }, el('h3', { text: '可以打 110' }), el('p', { class: 'hint', text: '請警察到場處理。電話：110' }), el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => go('home') }, '回首頁'))));
+  } else if (vd.ruleId) {
+    const r = S.data.vio.rules[vd.ruleId];
+    v.append(note(vd.state === 'yes' ? 'ok' : 'warn', vd.state === 'yes' ? '可以檢舉' : '可以檢舉，但證據要求比較高', `${r.name}：${r.law}，罰鍰 ${r.fine}。`, r.warning, a.driver === 'unknown' ? '記得拍到駕駛座，讓警方看得出車上沒有人。' : null));
+    stepNav(v, '下一步：拍照');
   }
 }
-const STATUS = { draft: ['草稿', 'info'], submitted: ['已送出', 'ok'], cited: ['已舉發', 'ok'], not_cited: ['不舉發', 'no'], warned: ['勸導', 'warn'] };
-function renderCases() {
-  const box = $('#case-list'); box.replaceChildren();
-  if (!S.cases.length) {
-    box.append(el('div', { class: 'card empty-state' }, el('h2', { text: '還沒有案件' }),
-      el('p', { class: 'hint', text: '在「新增檢舉」加入照片或填車牌後，案件會自動存在這裡，並顯示 7 天期限倒數。' }),
-      el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => showTab('new') }, '新增檢舉'))));
+
+/* ---- 第 2 步 ---- */
+function step2(v) {
+  const c = S.cur;
+  const have = new Set(c.photos.map(p => p.role));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '拍照清單' }),
+    el('div', { class: 'checklist' }, ROLE_ORDER.map(r => el('div', { class: 'checkitem' }, el('span', { class: 'box' + (have.has(r) ? ' on' : ''), text: have.has(r) ? '✓' : '' }), el('div', {}, ROLES[r], el('small', { text: ROLE_WHY[r] })))))));
+  v.append(timerCard());
+  const add = el('div', { class: 'card' }, el('h3', { text: '加入照片' }),
+    el('label', { class: 'btn primary block filebtn' }, '從相簿選照片', el('input', { type: 'file', accept: 'image/*', multiple: true, onchange: e => { const fl = e.target.files; addPhotos(fl).finally(() => { e.target.value = ''; }); } })),
+    note(S.lastImportNoGps ? 'warn' : 'info', '讓照片帶著定位', '選照片時，畫面上方有「選項」，點開後把「位置」打開，系統才讀得到地點。'),
+    el('div', { id: 'photo-list', class: 'photos' }), el('p', { class: 'hint', id: 'photo-summary' }));
+  v.append(add);
+  renderPhotoList();
+  stepNav(v, c.photos.length ? '下一步：請 Claude 判讀' : '先跳過照片');
+}
+function timerCard() {
+  const box = el('div', { class: 'card', id: 'timer-card' });
+  fillTimer(box);
+  return box;
+}
+function fillTimer(box) {
+  box.replaceChildren(el('h3', { text: '3 分鐘計時' }));
+  const t = S.timer;
+  if (!t.start) {
+    box.append(el('p', { class: 'hint', text: '拍完第一張後按開始，時間到會發出提示音，提醒你從同一角度再拍一張。' }),
+      el('button', { class: 'btn block', type: 'button', onclick: () => { ensureAudio(); S.timer = { start: Date.now(), fired: false }; fillTimer(box); } }, '開始 3 分鐘計時'));
     return;
   }
-  for (const c of S.cases) {
-    const st = c.status === 'submitted' && c.result ? c.result : c.status;
-    const [label, kind] = STATUS[st] || STATUS.draft;
-    let dl = null;
-    if (c.form.date && c.status === 'draft') {
-      const left = dayDiff(todayTaipei(), addDays(c.form.date, 6));
-      dl = el('span', { class: 'pill ' + (left < 0 ? 'no' : left <= 1 ? 'warn' : 'info'), text: left < 0 ? '已逾期' : left === 0 ? '今天到期' : `剩 ${left} 天` });
+  const left = Math.max(0, 180 - Math.floor((Date.now() - t.start) / 1000));
+  const mm = String(Math.floor(left / 60)).padStart(2, '0'), ss = String(left % 60).padStart(2, '0');
+  box.append(el('div', { class: 'timer' }, el('span', { class: 'clock' + (left === 0 ? ' done' : ''), id: 'timer-clock', text: left === 0 ? '可以補拍了' : `${mm}:${ss}` }),
+    el('button', { class: 'btn small', type: 'button', onclick: () => { S.timer = { start: null, fired: false }; fillTimer(box); } }, left === 0 ? '重新計時' : '取消')));
+  if (left === 0) box.append(el('p', { class: 'hint', text: '請從同一角度再拍一張，加入照片時角色選「隔 3 分鐘補拍」。' }));
+}
+function ensureAudio() { try { S.audio = S.audio || new (window.AudioContext || window.webkitAudioContext)(); if (S.audio.state === 'suspended') S.audio.resume(); } catch (e) {} }
+function beep() {
+  try { const a = S.audio; if (!a) return; [0, 0.35, 0.7].forEach(t => { const o = a.createOscillator(), g = a.createGain(); o.frequency.value = 880; g.gain.value = 0.2; o.connect(g); g.connect(a.destination); o.start(a.currentTime + t); o.stop(a.currentTime + t + 0.22); }); } catch (e) {}
+}
+setInterval(() => {
+  const t = S.timer; if (!t.start) return;
+  const left = 180 - Math.floor((Date.now() - t.start) / 1000);
+  const clock = $('#timer-clock');
+  if (left > 0) { if (clock) clock.textContent = `${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`; return; }
+  if (!t.fired) { t.fired = true; beep(); toast('3 分鐘到了，可以補拍了'); const box = $('#timer-card'); if (box) fillTimer(box); }
+}, 1000);
+async function addPhotos(fileList) {
+  const files = [...fileList]; if (!files.length) return;
+  const sum = $('#photo-summary'); if (sum) sum.textContent = '讀取照片中…';
+  let noGps = false;
+  for (const f of files) {
+    const id = uid(); S.files[id] = f;
+    const [meta, thumb] = await Promise.all([readMeta(f), makeThumb(f)]);
+    if (meta.lat == null) noGps = true;
+    const used = new Set(S.cur.photos.map(p => p.role));
+    S.cur.photos.push({ id, name: f.name, type: f.type || '', size: f.size, thumb, role: ROLE_ORDER.find(r => !used.has(r)) || 'other', roleManual: false, ...meta });
+  }
+  S.lastImportNoGps = noGps;
+  S.cur.photos.sort((a, b) => (a.takenAt || '').localeCompare(b.takenAt || ''));
+  await applyPhotoFacts();
+  save(); render();
+}
+async function applyPhotoFacts() {
+  const c = S.cur, f = c.form, first = c.photos.find(p => p.takenAt);
+  if (first && f.autoTime) { f.date = first.takenAt.slice(0, 10); f.time = first.takenAt.slice(11, 16); f.timeSource = first.timeSource; }
+  const g = photoGeo(c);
+  if (g) {
+    c.geo = { lat: g.lat, lng: g.lng, source: 'photo' };
+    if (f.autoLoc) {
+      await loadTowns();
+      const hit = locateTown(g.lat, g.lng);
+      if (hit) { f.county = hit.county; f.town = hit.town; f.districtLabel = defaultDistrict(hit.county, hit.town); f.locSource = 'gps'; }
+      const sug = locationSuggestions(c).find(s => s.from.startsWith('附近舊案件') || s.from.startsWith('常用地點（'));
+      if (sug && !f.road) { f.road = sug.apply.road || ''; f.detail = sug.apply.detail || ''; f.locSource = sug.from.startsWith('附近') ? 'history' : 'place'; }
     }
-    const resultSel = c.status === 'submitted' ? el('select', { 'aria-label': '處理結果', onchange: e => { c.result = e.target.value; store.set(K_CASES, S.cases); renderCases(); } },
-      el('option', { value: '' }, '處理結果：等待中'), el('option', { value: 'cited', selected: c.result === 'cited' }, '已舉發'),
-      el('option', { value: 'warned', selected: c.result === 'warned' }, '勸導'), el('option', { value: 'not_cited', selected: c.result === 'not_cited' }, '不舉發')) : null;
+  }
+}
+function renderPhotoList() {
+  const list = $('#photo-list'), sum = $('#photo-summary'); if (!list) return;
+  list.replaceChildren();
+  for (const p of S.cur.photos) {
+    const sel = el('select', { 'aria-label': '這張照片拍的是', onchange: e => { p.role = e.target.value; p.roleManual = true; save(); render(); } },
+      Object.entries(ROLES).map(([k, t]) => el('option', { value: k, selected: p.role === k }, t)));
+    list.append(el('div', { class: 'photo' },
+      p.thumb ? el('img', { src: p.thumb, alt: ROLES[p.role] }) : el('div', { class: 'noimg' }, '無法預覽'),
+      el('div', { class: 'meta' }, sel,
+        el('div', {}, p.takenAt ? `${fmtDate(p.takenAt.slice(0, 10))} ${p.takenAt.slice(11, 16)}` : '沒有時間', p.timeSource === 'file' ? el('span', { class: 'pill warn', text: '檔案時間' }) : null),
+        el('div', { class: 'row' }, p.lat != null ? el('span', { class: 'pill ok', text: '有定位' }) : el('span', { class: 'pill no', text: '沒有定位' }), S.files[p.id] ? null : el('span', { class: 'pill info', text: '重新加入才能判讀' }))),
+      el('button', { class: 'x', type: 'button', 'aria-label': '移除這張照片', onclick: () => { S.cur.photos = S.cur.photos.filter(x => x !== p); delete S.files[p.id]; save(); render(); } }, '×')));
+  }
+  const n = S.cur.photos.length;
+  if (!n) { sum.textContent = '還沒有照片。'; return; }
+  const g = photoGeo(), iv = intervalMinutes();
+  const bits = [`共 ${n} 張`];
+  if (iv != null) bits.push(`第一張到最後一張相隔 ${iv} 分鐘`);
+  bits.push(g ? '已讀到定位' : '沒有讀到定位，可以重新選照片並打開「位置」，或在第 4 步選地點');
+  if (g && g.spread > 100) bits.push(`照片位置相差約 ${Math.round(g.spread)} 公尺，請確認是同一台車`);
+  sum.textContent = bits.join('；') + '。';
+}
+
+/* ---- 第 3 步 ---- */
+function aiPrompt(n) {
+  return `你在協助台灣民眾檢舉「汽車違規停在人行道或行人穿越道（斑馬線）」。以下有 ${n} 張照片，依拍攝時間排序（照片1最早）。
+
+請仔細看所有照片並判讀。看不清楚就填 "unknown"、空字串或 false，不要猜。
+
+台灣車牌格式：新式為 3 個英文字母加 4 個數字（例如 ABC-1234，英文不會出現 I 和 O）；舊式有 AB-1234、1234-AB、ABC-123、123-ABC 等。請用大寫並保留連字號。
+
+每張照片的 role 請從這些選一個：overview（全景，看得出停放位置）、plate（車牌特寫）、driver_seat（看得到駕駛座）、other。
+retake 請列出還在現場的話建議補拍什麼（每項一句，最多 3 項；證據已足夠就給空陣列）。
+
+只回覆一個 JSON 物件：
+{
+  "photos": [{"index": 1, "role": "overview", "note": "一句話"}],
+  "plate_candidates": [{"plate": "ABC-1234", "confidence": 0.9}],
+  "vehicle_class": "car | motorcycle | unknown",
+  "vehicle_desc": "例如：自用小客車、休旅車、小貨車、計程車",
+  "color": "例如：白色",
+  "location_type": "sidewalk | crosswalk | arcade | roadside | unknown",
+  "driver_present": "yes | no | unknown",
+  "road_text": "路名牌上的路名，例如：忠孝東路四段；沒有就空字串",
+  "house_number_text": "看得到的門牌號碼，例如：100號；沒有就空字串",
+  "evidence": {"plate_visible": true, "violation_context_visible": true, "driver_seat_visible": false, "landmark_visible": false},
+  "retake": ["例如：靠近車頭再拍一張車牌，避開反光"],
+  "notes": "一到兩句繁體中文總結"
+}
+plate_candidates 最多 3 個，依可能性排序；confidence 介於 0 到 1。`;
+}
+function step3(v) {
+  const c = S.cur;
+  const card = el('div', { class: 'card' }, el('h3', { text: '請 Claude 判讀照片' }),
+    el('p', { class: 'hint', text: 'Claude 會讀車牌、判斷每張照片拍的是什麼、讀路名牌和門牌，並告訴你證據還缺什麼。使用你自己的 Claude 帳號額度。照片傳送前，平台會先移除照片裡的位置資料；你的個人資料不會傳送。' }));
+  const usable = c.photos.some(p => S.files[p.id]);
+  const canImg = !!S.sample && S.sampleImgMax > 0;
+  if (!canImg) card.append(note('warn', '這個畫面不能傳照片給 Claude', '請直接到下一步自己填寫車牌和地點。'));
+  else if (!c.photos.length) card.append(note('info', '還沒有照片', '回上一步加入照片，或直接到下一步自己填寫。'));
+  else if (!usable) card.append(note('info', '照片要重新加入', '重新開啟的草稿不會保留原始照片，請回上一步重新加入，才能判讀。'));
+  const btn = el('button', { class: 'btn primary block', type: 'button', id: 'ai-go', disabled: !canImg || !usable || !!S.aiCtl, onclick: runAi }, S.aiCtl ? '判讀中…' : c.ai ? '重新判讀' : '開始判讀');
+  const stop = el('button', { class: 'btn block', type: 'button', id: 'ai-stop', hidden: !S.aiCtl, onclick: () => S.aiCtl && S.aiCtl.abort() }, '停止');
+  card.append(btn, stop, el('div', { class: 'hint', id: 'ai-status', 'aria-live': 'polite' }));
+  v.append(card);
+  if (c.ai) v.append(aiResultCard(c.ai));
+  stepNav(v, '下一步：確認內容');
+}
+function aiResultCard(r) {
+  const c = S.cur, a = c.answers;
+  const box = el('div', { class: 'card' }, el('h3', { text: '判讀結果' }));
+  const cands = Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate) : [];
+  if (cands.length) box.append(el('div', { class: 'hint', text: '車牌候選（點一下套用）' }), el('div', { class: 'cands' }, cands.slice(0, 3).map(x => {
+    const p = normPlate(String(x.plate));
+    return el('button', { class: 'cand', type: 'button', 'aria-pressed': String(c.form.plate === p), onclick: () => { c.form.plate = p; save(); render(); } }, el('span', { class: 'plate sm', text: p }), el('span', { text: `可信度 ${Math.round((Number(x.confidence) || 0) * 100)}%` }));
+  })));
+  else box.append(note('warn', 'Claude 沒有讀出車牌', '請到下一步自己輸入。'));
+  const tr = (m, k) => m[k] || '看不出來';
+  box.append(el('dl', { class: 'kv' },
+    el('dt', { text: '車輛' }), el('dd', { text: [tr({ car: '汽車', motorcycle: '機車' }, r.vehicle_class), r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('、') }),
+    el('dt', { text: '停放位置' }), el('dd', { text: tr({ sidewalk: '人行道', crosswalk: '斑馬線', arcade: '騎樓', roadside: '路邊' }, r.location_type) }),
+    el('dt', { text: '駕駛座' }), el('dd', { text: tr({ yes: '有人', no: '沒人' }, r.driver_present) }),
+    el('dt', { text: '路名牌' }), el('dd', { text: r.road_text || '沒看到' }),
+    el('dt', { text: '門牌' }), el('dd', { text: r.house_number_text || '沒看到' })));
+  if (Array.isArray(r.retake) && r.retake.length) box.append(note('warn', '建議補拍', ...r.retake.slice(0, 3).map(String)));
+  if (r.notes) box.append(el('p', { class: 'hint', text: String(r.notes) }));
+  if (r.vehicle_class === 'motorcycle' && a.vehicle === 'car') box.append(note('no', 'Claude 認為這是機車', '機車目前不能由民眾檢舉，請再確認。'));
+  if (['arcade', 'roadside'].includes(r.location_type) && ['sidewalk', 'crosswalk'].includes(a.place)) box.append(note('warn', '停放位置可能不符', '騎樓或路邊違停不能檢舉，請再確認照片。'));
+  if (r.driver_present === 'yes' && a.driver === 'absent') box.append(note('warn', 'Claude 認為駕駛座有人', '請再確認，有人的話屬於臨時停車。'));
+  return box;
+}
+async function runAi() {
+  if (!S.sample) return;
+  const c = S.cur;
+  const ps = c.photos.filter(p => S.files[p.id]);
+  if (!ps.length) return;
+  const use = ps.slice(0, Math.min(S.sampleImgMax || 4, 4));
+  S.aiCtl = new AbortController();
+  render();
+  const st = () => $('#ai-status');
+  try {
+    st().textContent = '準備照片中…';
+    const blobs = [];
+    for (const p of use) blobs.push(await makeAiJpeg(S.files[p.id]));
+    if (st()) st().textContent = 'Claude 判讀中，通常需要 10 到 60 秒…';
+    const r = await S.sample.json(aiPrompt(use.length), { images: blobs, signal: S.aiCtl.signal });
+    if (!r || typeof r !== 'object') throw { code: 'invalid_json' };
+    c.ai = r;
+    applyAi(r, use);
+    S.aiCtl = null; save(); render();
+    if (st()) st().textContent = '判讀完成，請核對結果。';
+  } catch (e) {
+    S.aiCtl = null; render();
+    const msg = { cancelled: '已停止。', not_granted: '你沒有允許這個頁面使用 Claude，請到下一步自己填寫。', sampling_disabled: '這個帳號目前不能使用 Claude 判讀。', images_unavailable: '這個畫面不能傳照片給 Claude。', image_rejected: '照片格式無法判讀，請換一張。', rate_limited: '使用太頻繁或已達額度上限，請稍後再試。', invalid_json: 'Claude 的回覆格式不對，請再按一次。', refused: 'Claude 沒有判讀這些照片，請自己填寫。', session_expired: '登入已過期，請重新登入 Claude。' }[e && e.code] || '判讀失敗，請稍後再試，或自己填寫。';
+    if (st()) st().textContent = msg;
+  }
+}
+function applyAi(r, used) {
+  const c = S.cur, f = c.form;
+  if (Array.isArray(r.photos)) {
+    for (const ph of r.photos) {
+      const p = used[Number(ph.index) - 1];
+      if (p && !p.roleManual && ['overview', 'plate', 'driver_seat'].includes(ph.role)) p.role = ph.role;
+    }
+    const overviews = c.photos.filter(p => p.role === 'overview' && p.takenAt);
+    if (overviews.length >= 2) { const last = overviews[overviews.length - 1]; if (minutesBetween(overviews[0].takenAt, last.takenAt) >= 2 && !last.roleManual) last.role = 'interval'; }
+  }
+  const cands = Array.isArray(r.plate_candidates) ? r.plate_candidates.filter(x => x && x.plate) : [];
+  if (cands.length && !f.plate) f.plate = normPlate(String(cands[0].plate));
+  const desc = [r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('');
+  if (desc && !f.vdesc) f.vdesc = desc;
+  if (r.road_text && !f.road) { f.road = String(r.road_text); f.locSource = 'ai'; }
+  if (r.house_number_text && !f.detail) f.detail = String(r.house_number_text).replace(/前$/, '') + '前';
+}
+
+/* ---- 第 4 步 ---- */
+function step4(v) {
+  const c = S.cur, f = c.form;
+  // 車輛
+  const plateIn = el('input', { id: 'f-plate', type: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', placeholder: 'ABC-1234', value: f.plate });
+  plateIn.addEventListener('input', e => { f.plate = e.target.value.toUpperCase(); refresh4(); save(); });
+  plateIn.addEventListener('change', e => { f.plate = normPlate(e.target.value); e.target.value = f.plate; refresh4(); save(); });
+  const vdescIn = el('input', { id: 'f-vdesc', type: 'text', placeholder: '例如：白色自用小客車', value: f.vdesc, oninput: e => { f.vdesc = e.target.value; refresh4(); save(); } });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '車輛' }), el('div', { class: 'grid2' }, field('車牌', plateIn, 'plate-check'), field('車輛描述', vdescIn)), el('div', { id: 'plate-hist', class: 'stack' })));
+
+  // 地點
+  const countySel = el('select', { id: 'f-county' }, el('option', { value: '' }, '請選擇'), COUNTIES.map(x => el('option', { value: x, selected: f.county === x }, x)));
+  countySel.addEventListener('change', e => { f.county = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refresh4(); save(); });
+  const townIn = el('input', { id: 'f-town', type: 'text', placeholder: '例如：大安區', value: f.town, oninput: e => { f.town = e.target.value; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'manual'; refresh4(); save(); } });
+  const distSel = el('select', { id: 'f-district', onchange: e => { f.districtLabel = e.target.value; refresh4(); save(); } });
+  const roadIn = el('input', { id: 'f-road', type: 'text', placeholder: '例如：忠孝東路四段', value: f.road, oninput: e => { f.road = e.target.value; f.locSource = 'manual'; refresh4(); save(); } });
+  const detailIn = el('input', { id: 'f-detail', type: 'text', placeholder: '例如：100號前、與敦化南路口', value: f.detail, oninput: e => { f.detail = e.target.value; refresh4(); save(); } });
+  const pasteBox = el('textarea', { id: 'paste-loc', placeholder: '在 Apple 地圖點自己的位置 →「分享」→「拷貝」，再回來長按這裡貼上' });
+  const pasteWrap = el('div', { class: 'stack', hidden: true }, pasteBox, el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: () => applyPaste(pasteBox.value) }, '套用'), el('span', { class: 'hint', id: 'paste-status' })));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '地點' }),
+    el('div', { id: 'loc-sugs', class: 'stack' }),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; if (!pasteWrap.hidden) pasteBox.focus(); } }, '貼上地圖位置'), el('span', { id: 'map-links', class: 'row' })),
+    pasteWrap,
+    el('div', { class: 'grid2' }, el('div', { class: 'field' }, el('label', { for: 'f-county' }, '縣市'), countySel, el('span', { class: 'sub', id: 'loc-src' })), field('鄉鎮市區', townIn)),
+    el('div', { class: 'field', id: 'district-wrap', hidden: true }, el('label', { for: 'f-district' }, '官方選單上的「行政區」'), distSel, el('span', { class: 'sub', id: 'district-note' })),
+    field('路段', roadIn), field('門牌、路口或地點說明', detailIn),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: savePlace }, '存成常用地點'))));
+
+  // 時間
+  const dateIn = el('input', { id: 'f-date', type: 'date', value: f.date, oninput: e => { f.date = e.target.value; f.autoTime = false; f.timeSource = 'manual'; refresh4(); save(); } });
+  const timeIn = el('input', { id: 'f-time', type: 'time', value: f.time, oninput: e => { f.time = e.target.value; f.autoTime = false; refresh4(); save(); } });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '時間與期限' }), el('div', { class: 'grid2' }, field('違規日期', dateIn, 'date-src'), field('違規時間', timeIn)), el('div', { id: 'deadline', class: 'stack' })));
+
+  // 違規事實與說明
+  const descIn = el('textarea', { id: 'f-desc', oninput: e => { f.desc = e.target.value; f.descEdited = true; refresh4(); save(); } });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '違規事實與說明' }), el('div', { id: 'violation', class: 'stack' }),
+    el('div', { class: 'field' }, el('label', { for: 'f-desc' }, '違規事實說明'), descIn, el('div', { class: 'row between' }, el('span', { class: 'sub', id: 'desc-count' }), el('button', { class: 'btn small', type: 'button', onclick: () => { f.descEdited = false; refresh4(); save(); } }, '重新產生')))));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '證據檢查' }), el('div', { id: 'evidence', class: 'checks' })));
+  stepNav(v, '下一步：送出');
+  refresh4();
+}
+function refresh4() {
+  const c = S.cur, f = c.form, J = jurOf();
+  const setIf = (id, val) => { const n = $(id); if (n && document.activeElement !== n && n.value !== (val || '')) n.value = val || ''; };
+  setIf('#f-plate', f.plate); setIf('#f-vdesc', f.vdesc); setIf('#f-town', f.town); setIf('#f-road', f.road); setIf('#f-detail', f.detail); setIf('#f-date', f.date); setIf('#f-time', f.time);
+  const cs = $('#f-county'); if (cs && cs.value !== f.county) cs.value = f.county || '';
+  // 車牌
+  const pc = checkPlate(f.plate), pcs = $('#plate-check'); if (pcs) { pcs.textContent = pc.msg; pcs.className = 'sub' + (pc.ok === false ? ' bad' : ''); }
+  const hist = $('#plate-hist');
+  if (hist) {
+    hist.replaceChildren();
+    const dup = duplicateWarning();
+    if (dup) hist.append(note('no', '可能重複檢舉', dup));
+    const h = plateHistory();
+    if (h.length) hist.append(note('warn', `這台車你檢舉過 ${h.length} 次`, h.slice(0, 5).map(x => `${shortDate(x.form.date)} ${x.form.road || x.form.town || ''}`).join('、')));
+  }
+  // 地點建議
+  const sugBox = $('#loc-sugs');
+  if (sugBox) {
+    sugBox.replaceChildren();
+    const sugs = locationSuggestions();
+    if (sugs.length) sugBox.append(el('div', { class: 'hint', text: '點一下套用地點' }), el('div', { class: 'chips' }, sugs.map(s => el('button', { class: 'chip', type: 'button', onclick: () => { applyLocation(s.apply, s.from.startsWith('Claude') ? 'ai' : s.from.startsWith('附近') ? 'history' : 'place'); refresh4(); save(); toast('已套用地點'); } }, s.label, el('br'), el('small', { text: s.from })))));
+  }
+  const src = { gps: '縣市、鄉鎮市區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的地圖位置', ai: '路名取自 Claude 讀到的路名牌，請核對', manual: '' }[f.locSource] || '';
+  const ls = $('#loc-src'); if (ls) ls.textContent = src;
+  const ml = $('#map-links');
+  if (ml) {
+    ml.replaceChildren();
+    const g = curGeo();
+    if (g) { const ll = `${g.lat.toFixed(6)},${g.lng.toFixed(6)}`; ml.append(el('a', { class: 'btn small', href: `https://maps.apple.com/?ll=${ll}&q=${encodeURIComponent('違規地點')}`, target: '_blank', rel: 'noopener' }, 'Apple 地圖看路名'), el('a', { class: 'btn small', href: `https://www.google.com/maps/search/?api=1&query=${ll}`, target: '_blank', rel: 'noopener' }, 'Google 地圖')); }
+  }
+  const dw = $('#district-wrap');
+  if (dw) {
+    if (J && J.district_options) {
+      dw.hidden = false;
+      const ds = $('#f-district');
+      if (ds.dataset.for !== f.county) { ds.replaceChildren(el('option', { value: '' }, '請選擇'), ...J.district_options.map(o => el('option', { value: o }, o))); ds.dataset.for = f.county; }
+      ds.value = f.districtLabel || '';
+      $('#district-note').textContent = !f.districtLabel && ['中正區', '文山區'].includes(f.town) ? J.district_split_note : '';
+    } else dw.hidden = true;
+  }
+  // 期限
+  const dl = $('#deadline');
+  if (dl) {
+    dl.replaceChildren();
+    const dsrc = $('#date-src'); if (dsrc) dsrc.textContent = f.date ? ({ exif: '取自照片拍攝時間', file: '取自檔案時間，請核對' }[f.timeSource] || '') : '';
+    if (f.date) {
+      const last = addDays(f.date, 6), left = dayDiff(todayTaipei(), last);
+      dl.append(el('div', { class: 'deadline' + (left <= 1 ? ' urgent' : '') }, el('span', { class: 'big', text: left < 0 ? '已逾期' : left === 0 ? '今天' : `剩 ${left} 天` }), el('span', { text: left < 0 ? `最晚要在 ${fmtDate(last)} 送出，現在送出會不予舉發。` : `最晚 ${fmtDate(last)} 24:00 前送出（違規當天算第 1 天）。` })));
+      if (left >= 0) {
+        const ymd = last.replace(/-/g, ''), next = addDays(last, 1).replace(/-/g, '');
+        const text = `違停檢舉期限：${f.plate || ''} ${f.road || ''}`.trim();
+        const details = `最晚 ${fmtDate(last)} 24:00 前送出。地點：${locText()}`;
+        dl.append(el('div', { class: 'row' },
+          el('a', { class: 'btn small', href: `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(text)}&dates=${ymd}/${next}&details=${encodeURIComponent(details)}`, target: '_blank', rel: 'noopener' }, '加到 Google 日曆'),
+          el('button', { class: 'btn small', type: 'button', onclick: e => copyText(`${text}｜${details}`, e.currentTarget) }, '複製提醒文字')));
+      }
+    }
+  }
+  // 違規事實
+  const vb = $('#violation');
+  if (vb) {
+    vb.replaceChildren();
+    const r = ruleOf();
+    if (r) {
+      const label = J && J.violation_labels ? J.violation_labels[verdict().ruleId] : null;
+      vb.append(el('div', { text: `${r.name}（${r.law}）` }));
+      if (label) vb.append(el('div', { class: 'hint', text: `官方選單請選：「${label}」` }));
+      if (J && J.violation_labels_note) vb.append(el('div', { class: 'hint', text: J.violation_labels_note }));
+    } else vb.append(el('p', { class: 'hint', text: '請先完成第 1 步。' }));
+  }
+  if (!f.descEdited) f.desc = buildDesc();
+  setIf('#f-desc', f.desc);
+  const max = (J || {}).description_max_length || 200, cnt = $('#desc-count');
+  if (cnt) { cnt.textContent = `${(f.desc || '').length} / ${max} 字`; cnt.className = 'sub' + ((f.desc || '').length > max ? ' bad' : ''); }
+  // 證據
+  const evb = $('#evidence');
+  if (evb) {
+    evb.replaceChildren();
+    const r = ruleOf();
+    if (r) {
+      const auto = evidenceAuto(), L = S.data.vio.evidence_labels;
+      for (const [k, req] of [...r.evidence.map(x => [x, true]), ...r.recommended.map(x => [x, false])]) {
+        const m = c.evidence[k], on = m != null ? m : auto[k], id = 'ev-' + k;
+        evb.append(el('label', { class: 'check', for: id }, el('input', { type: 'checkbox', id, checked: on, onchange: e => { c.evidence[k] = e.target.checked; save(); } }),
+          el('span', {}, L[k], ' ', el('small', { text: req ? '（必要）' : '（建議）' }), m == null && auto[k] ? el('span', { class: 'pill auto', text: '自動' }) : null)));
+      }
+    }
+  }
+}
+async function applyPaste(text) {
+  const st = $('#paste-status');
+  const r = parsePasted(text);
+  if (r.lat == null && !r.road) { if (st) st.textContent = '沒有找到座標或地址，請確認貼上的內容。'; return; }
+  const f = S.cur.form;
+  if (r.lat != null) {
+    S.cur.geo = { lat: r.lat, lng: r.lng, source: 'paste' };
+    await loadTowns();
+    const hit = locateTown(r.lat, r.lng);
+    if (hit) { f.county = hit.county; f.town = hit.town; }
+  }
+  if (r.county) f.county = r.county;
+  if (r.town) f.town = r.town;
+  if (r.road) f.road = r.road;
+  if (r.number) f.detail = r.number + '前';
+  f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'paste'; f.autoLoc = false;
+  if (st) st.textContent = '已套用，請核對。';
+  save(); refresh4();
+}
+function savePlace() {
+  const f = S.cur.form;
+  if (!f.road) { toast('請先填路段'); return; }
+  const g = curGeo();
+  const p = { id: uid(), name: `${f.road}${f.detail || ''}`, county: f.county, town: f.town, districtLabel: f.districtLabel, road: f.road, detail: f.detail, lat: g ? g.lat : null, lng: g ? g.lng : null };
+  S.places = [p, ...S.places.filter(x => x.name !== p.name)].slice(0, 30);
+  savePlaces(); toast('已存成常用地點'); refresh4();
+}
+
+/* ---- 第 5 步 ---- */
+function fieldValue(src) {
+  const f = S.cur.form, P = S.profile, J = jurOf() || {}, v = verdict(), r = ruleOf();
+  const [front, back] = splitPlate(f.plate);
+  return ({
+    'profile.name': P.name, 'profile.idNumber': P.idNumber, 'profile.phone': P.phone, 'profile.email': P.email, 'profile.address': P.address,
+    'case.date': fmtDate(f.date), 'case.time': f.time, 'case.districtLabel': f.districtLabel || f.town, 'case.road': f.road, 'case.locationDetail': f.detail,
+    'case.vehicleTypeLabel': J.vehicle_type_label || '', 'case.plateFront': front, 'case.plateBack': back, 'case.plate': f.plate,
+    'case.violationLabel': J.violation_labels && v.ruleId ? J.violation_labels[v.ruleId] : r ? r.name : '', 'case.description': f.desc, 'case.fullLocation': locText()
+  })[src] || '';
+}
+const GENERIC_KEYS = ['profile.name', 'profile.idNumber', 'profile.phone', 'profile.email', 'profile.address', 'case.date', 'case.time', 'case.districtLabel', 'case.road', 'case.locationDetail', 'case.fullLocation', 'case.plate', 'case.violationLabel', 'case.description'];
+const GENERIC_LABELS = { 'profile.name': '姓名', 'profile.idNumber': '身分證字號', 'profile.phone': '電話', 'profile.email': '電子信箱', 'profile.address': '地址', 'case.date': '違規日期', 'case.time': '違規時間', 'case.districtLabel': '鄉鎮市區', 'case.road': '路段', 'case.locationDetail': '門牌或地點說明', 'case.fullLocation': '違規地點', 'case.plate': '車牌', 'case.violationLabel': '違規事實', 'case.description': '說明' };
+function submitFields() {
+  const J = jurOf();
+  if (J) return J.steps.flatMap(s => s.fields.map(fd => ({ ...fd, step: s.title })));
+  return GENERIC_KEYS.map(k => ({ label: GENERIC_LABELS[k], source: k, step: '通用資料' }));
+}
+function autofillPayload() {
+  const f = S.cur.form;
+  let keys = submitFields().map(x => x.source).filter(s => s !== 'static');
+  if (keys.includes('case.plateFront')) keys = keys.filter(k => k !== 'case.plateFront' && k !== 'case.plateBack').concat('case.plate');
+  const [, m, d] = (f.date || '').split('-').map(Number), [hh, mm] = (f.time || '').split(':').map(Number);
+  const fields = S.data.fill.fields.filter(x => keys.includes(x.source)).map(x => {
+    const o = { name: x.name, labels: x.labels, value: fieldValue(x.source) };
+    if (x.prefer) o.prefer = x.prefer;
+    if (x.kind) o.kind = x.kind;
+    if (x.kind === 'date') Object.assign(o, { iso: f.date, m, d });
+    if (x.kind === 'time') Object.assign(o, { h: hh, min: mm });
+    if (x.kind === 'plate') o.parts = splitPlate(f.plate);
+    return o;
+  }).filter(o => o.value);
+  return JSON.stringify({ app: 'prh', v: 1, site: f.county, fields });
+}
+function step5(v) {
+  const c = S.cur, f = c.form;
+  if (!reportable()) { v.append(note('no', '這件不能檢舉', '請回第 1 步確認。')); stepNav(v); return; }
+  if (!f.county) { v.append(note('warn', '還沒有填縣市', '請回上一步填寫地點，這裡會列出該縣市官方網站要填的每一欄。')); stepNav(v); return; }
+  if (S.focus) { focusMode(v); return; }
+  const J = jurOf();
+  const url = J ? J.url : S.data.jur.others[f.county];
+  if (!profileReady()) v.append(note('warn', '個人資料還沒填完整', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'profile' }) }, '去填個人資料'))));
+  v.append(el('div', { class: 'card' }, el('h3', { text: J ? J.agency : `${f.county}警察局` }),
+    J ? el('p', { class: 'hint', text: J.auth_summary }) : el('p', { class: 'hint', text: `${f.county}的欄位還沒整理，自動填表會依欄位名稱盡量比對。` }),
+    J && J.special_jurisdiction_note ? el('p', { class: 'hint', text: J.special_jurisdiction_note }) : null,
+    url ? el('div', { class: 'copylist' }, copyRow('官方網址', url, '請用 Safari 開啟：複製後貼到 Safari 網址列。書籤只能在 Safari 使用。')) : null));
+
+  const ready = S.settings.autofillReady;
+  v.append(el('div', { class: 'card' }, el('h3', {}, '方法一：自動填表', el('span', { class: 'pill auto', text: '建議' })),
+    el('ol', { class: 'steps' },
+      el('li', {}, '按這個按鈕，把資料複製起來', el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: e => copyText(autofillPayload(), e.currentTarget) }, '複製自動填表資料'))),
+      el('li', {}, '用 Safari 打開官方網址（上面那一列按「複製」，再到 Safari 網址列貼上）'),
+      el('li', {}, '在官方網頁點 Safari 的「書籤」→「違停自動填表」，畫面上方出現框框後，長按框框選「貼上」'),
+      el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片，再按送出')),
+    J && J.id === 'taipei' ? note('info', '臺北的小提醒', '第一次使用要先按「發送認證信」，到信箱點連結。到下一頁時，再點一次書籤就會繼續填。') : null,
+    J && J.id === 'taoyuan' ? note('info', '桃園的小提醒', '第一頁填好後要輸入驗證碼並收認證信，進到第二頁時再點一次書籤。第二頁的欄位還沒確認，沒填到的請自己填。') : null,
+    ready ? null : note('warn', '還沒設定書籤', '只要設定一次。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'autofill' }) }, '一步一步設定')))));
+
+  v.append(el('div', { class: 'card' }, el('h3', { text: '方法二：一欄一欄複製' }),
+    el('p', { class: 'hint', text: '一次只顯示一欄，大字、一鍵複製。切到 Safari 貼上後回來，會停在下一欄。' }),
+    el('button', { class: 'btn block', type: 'button', onclick: () => { S.focus = true; render(); window.scrollTo(0, 0); } }, c.focusIdx ? `繼續逐欄複製（第 ${c.focusIdx + 1} 欄）` : '開始逐欄複製')));
+
+  if (c.photos.length) v.append(el('div', { class: 'card' }, el('h3', { text: '要上傳的照片' }), el('p', { class: 'hint', text: '上傳時從「照片」選這幾張原始照片：' }),
+    el('ul', { class: 'stack', style: 'margin:0;padding-left:20px' }, c.photos.map((p, i) => el('li', { text: `照片${i + 1}：${ROLES[p.role]}，${p.takenAt ? fmtDate(p.takenAt.slice(0, 10)) + ' ' + p.takenAt.slice(11, 16) : ''}` })))));
+
+  const sub = c.submission;
+  const cn = el('input', { id: 's-case', type: 'text', value: sub.caseNumber, autocomplete: 'off', oninput: e => { sub.caseNumber = e.target.value.trim(); save(); } });
+  const qp = el('input', { id: 's-pass', type: 'text', value: sub.queryPassword, autocomplete: 'off', oninput: e => { sub.queryPassword = e.target.value.trim(); save(); } });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '送出之後' }), el('p', { class: 'hint', text: (J && J.result_note) || '送出後請把案件編號和查詢密碼記在這裡。' }),
+    el('div', { class: 'grid2' }, field('案件編號', cn), field('查詢密碼', qp)),
+    el('button', { class: 'btn primary block', type: 'button', onclick: () => { c.status = 'submitted'; sub.submittedAt = new Date().toISOString(); save(true); toast('已記錄為已送出'); go('home'); } }, c.status === 'submitted' ? '更新紀錄' : '我已經送出了')));
+
+  v.append(el('details', {}, el('summary', {}, '全部欄位一覽'), el('div', {}, el('div', { class: 'copylist' }, submitFields().map(fd => fd.source === 'static' ? el('div', { class: 'copyrow' }, el('div', {}, el('span', { class: 'k', text: fd.label }), el('span', { class: 'n', text: fd.value }))) : copyRow(fd.label, fieldValue(fd.source), fd.note, fd.source === 'profile.idNumber' ? maskId(fieldValue(fd.source)) : null))))));
+  stepNav(v);
+}
+function focusMode(v) {
+  const c = S.cur, list = submitFields();
+  c.focusIdx = Math.min(Math.max(0, c.focusIdx || 0), list.length - 1);
+  const fd = list[c.focusIdx];
+  const val = fd.source === 'static' ? '' : fieldValue(fd.source);
+  const move = d => { c.focusIdx = Math.min(Math.max(0, c.focusIdx + d), list.length - 1); save(); render(); window.scrollTo(0, 0); };
+  v.append(el('div', { class: 'card focusbox' },
+    el('div', { class: 'row between' }, el('span', { class: 'count', text: `${c.focusIdx + 1} / ${list.length}` }), el('span', { class: 'hint', text: fd.step })),
+    el('div', { class: 'bar' }, el('span', { style: `width:${Math.round((c.focusIdx + 1) / list.length * 100)}%` })),
+    el('div', { class: 'flabel', text: fd.label }),
+    fd.source === 'static' ? el('p', { text: fd.value }) : el('div', { class: 'fvalue', text: val || '（尚未填寫）' }),
+    fd.note ? el('p', { class: 'hint', text: fd.note }) : null,
+    fd.source === 'static' ? null : el('button', { class: 'btn primary block', type: 'button', disabled: !val, onclick: e => copyText(val, e.currentTarget) }, '複製'),
+    el('div', { class: 'grid2' }, el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === 0, onclick: () => move(-1) }, '上一欄'), el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === list.length - 1, onclick: () => move(1) }, '下一欄')),
+    el('button', { class: 'btn ghost block', type: 'button', onclick: () => { S.focus = false; render(); } }, '結束逐欄複製')));
+}
+
+/* ================= 紀錄 ================= */
+function renderRecords(v) {
+  v.append(el('h2', { class: 'page', text: '紀錄' }));
+  const all = S.cases, sent = all.filter(c => c.status === 'submitted');
+  const cited = sent.filter(c => c.result === 'cited').length, warned = sent.filter(c => c.result === 'warned').length, notC = sent.filter(c => c.result === 'not_cited').length;
+  const decided = cited + warned + notC;
+  v.append(el('div', { class: 'card' }, el('h3', { text: '統計' }),
+    el('div', { class: 'stats' }, stat(all.length, '全部'), stat(sent.length, '已送出'), stat(cited, '已舉發'), stat(decided ? Math.round(cited / decided * 100) + '%' : '—', '成案率')),
+    el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', disabled: !all.length, onclick: exportCsv }, '匯出 CSV 表格'))));
+
+  const hs = hotspots().slice(0, 5);
+  if (hs.length) {
+    const max = hs[0].count;
+    const card = el('div', { class: 'card' }, el('h3', { text: '最常檢舉的地點' }), el('div', { class: 'bars' }, hs.map(h => el('div', { class: 'barrow' }, el('span', { text: h.label }), el('b', { text: `${h.count} 次` }), el('div', { class: 'bar' }, el('span', { style: `width:${Math.round(h.count / max * 100)}%` }))))));
+    const hot = hs.filter(h => h.count >= 2);
+    if (hot.length) {
+      const sel = el('select', { id: 'letter-place' }, hot.map(h => el('option', { value: h.key }, `${h.label}（${h.count} 次）`)));
+      const to = el('select', { id: 'letter-to' }, ['里長', '市議員', '交通局', '警察分局'].map(x => el('option', { value: x }, x)));
+      const out = el('div', { class: 'stack', id: 'letter-out' });
+      card.append(el('h4', { text: '寫陳情信' }), el('p', { class: 'hint', text: '同一地點常有違停時，可以請里長、議員或交通局設置阻車柱、改善標線或加強取締。Claude 會依你的紀錄寫一封草稿（不會放入車牌和你的個人資料）。' }),
+        el('div', { class: 'grid2' }, el('div', { class: 'field' }, el('label', { for: 'letter-place' }, '地點'), sel), el('div', { class: 'field' }, el('label', { for: 'letter-to' }, '寄給誰'), to)),
+        el('button', { class: 'btn', type: 'button', disabled: !S.sample, onclick: () => writeLetter(hot.find(h => h.key === sel.value), to.value, out) }, S.sample ? '請 Claude 寫陳情信' : '這個畫面不能使用 Claude'), out);
+    }
+    v.append(card);
+  }
+  const repeat = [...S.cases.reduce((m, c) => { const k = plateKey(c.form.plate); if (k.length >= 4) m.set(k, (m.get(k) || []).concat(c)); return m; }, new Map()).values()].filter(x => x.length >= 2).sort((a, b) => b.length - a.length);
+  if (repeat.length) v.append(el('div', { class: 'card' }, el('h3', { text: '慣性違停的車' }), el('div', { class: 'stack' }, repeat.slice(0, 5).map(x => el('div', { class: 'row' }, plateChip(x[0].form.plate), el('span', { class: 'hint', text: `${x.length} 次：${x.map(c => shortDate(c.form.date)).join('、')}` }))))));
+
+  const filters = [['all', '全部'], ['draft', '草稿'], ['submitted', '已送出'], ['done', '有結果']];
+  const q = el('input', { type: 'search', id: 'rec-q', placeholder: '搜尋車牌或路名', value: S.rec.q });
+  const list = el('div', { class: 'stack', id: 'rec-list' });
+  q.addEventListener('input', e => { S.rec.q = e.target.value; fillRecList(list); });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '案件' }),
+    el('div', { class: 'chips' }, filters.map(([k, t]) => el('button', { class: 'chip', type: 'button', 'aria-pressed': String(S.rec.filter === k), onclick: () => { S.rec.filter = k; render(); } }, t))),
+    el('div', { class: 'field' }, q), list));
+  fillRecList(list);
+}
+function fillRecList(list) {
+  list.replaceChildren();
+  const q = S.rec.q.trim().toUpperCase();
+  const rows = S.cases.filter(c => {
+    if (S.rec.filter === 'draft' && c.status !== 'draft') return false;
+    if (S.rec.filter === 'submitted' && c.status !== 'submitted') return false;
+    if (S.rec.filter === 'done' && !c.result) return false;
+    if (q && !(plateKey(c.form.plate).includes(plateKey(q)) && plateKey(q)) && !locText(c).toUpperCase().includes(q)) return false;
+    return true;
+  });
+  if (!S.cases.length) { list.append(el('p', { class: 'hint', text: '還沒有案件。在「檢舉」加入照片或填車牌後，案件會自動存在這裡。' }), el('button', { class: 'btn primary', type: 'button', onclick: startNew }, '我看到違停')); return; }
+  if (!rows.length) { list.append(el('p', { class: 'hint', text: '沒有符合的案件。' })); return; }
+  for (const c of rows) {
+    const resultSel = c.status === 'submitted' ? el('select', { 'aria-label': '處理結果', onchange: e => { c.result = e.target.value; persistCases(); render(); } },
+      el('option', { value: '' }, '處理結果：等待中'), ...[['cited', '已舉發'], ['warned', '勸導'], ['not_cited', '不舉發']].map(([k, t]) => el('option', { value: k, selected: c.result === k }, t))) : null;
     const del = el('button', { class: 'btn small danger', type: 'button' }, '刪除');
     del.addEventListener('click', () => {
-      if (del.dataset.armed) { S.cases = S.cases.filter(x => x.id !== c.id); store.set(K_CASES, S.cases); if (S.cur.id === c.id) { S.cur = newCase(); renderAll(); } renderCases(); }
+      if (del.dataset.armed) { S.cases = S.cases.filter(x => x.id !== c.id); persistCases(); if (S.cur.id === c.id) S.cur = newCase(); render(); }
       else { del.dataset.armed = '1'; del.textContent = '確定刪除？'; setTimeout(() => { if (del.isConnected) { delete del.dataset.armed; del.textContent = '刪除'; } }, 3000); }
     });
-    box.append(el('div', { class: 'card case' },
-      el('div', { class: 'top-line' }, c.form.plate ? el('span', { class: 'plate sm', text: c.form.plate }) : el('span', { class: 'hint', text: '（未填車牌）' }),
-        el('span', { class: 'pill ' + kind, text: label }), dl),
-      el('div', { class: 'place', text: [[c.form.county, c.form.town, c.form.road, c.form.detail].filter(Boolean).join('') || '（未填地點）', c.form.date ? `${fmtDate(c.form.date)} ${c.form.time}` : ''].filter(Boolean).join('｜') }),
-      c.submission && c.submission.caseNumber ? el('div', { class: 'place', text: `案件編號 ${c.submission.caseNumber}${c.submission.queryPassword ? '｜查詢密碼 ' + c.submission.queryPassword : ''}` }) : null,
+    list.append(el('div', { class: 'card case' },
+      el('div', { class: 'row' }, plateChip(c.form.plate), statusPill(c), deadlinePill(c)),
+      el('div', { class: 'place', text: [locText(c) || '（未填地點）', c.form.date ? `${fmtDate(c.form.date)} ${c.form.time}` : ''].filter(Boolean).join('｜') }),
+      c.submission.caseNumber ? el('div', { class: 'place', text: `案件編號 ${c.submission.caseNumber}${c.submission.queryPassword ? '｜查詢密碼 ' + c.submission.queryPassword : ''}` }) : null,
       el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => openCase(c.id) }, '開啟'), resultSel, del)));
   }
 }
-function openCase(id) {
-  const c = S.cases.find(x => x.id === id); if (!c) return;
-  S.cur = JSON.parse(JSON.stringify(c)); S.files = {}; S.isSample = false; $('#sample-banner').hidden = true;
-  renderAll(); showTab('new'); window.scrollTo(0, 0);
+async function writeLetter(h, to, out) {
+  if (!S.sample || !h) return;
+  out.replaceChildren(el('p', { class: 'hint', text: 'Claude 撰寫中，大約需要 10 到 40 秒…' }));
+  const prompt = `請用繁體中文（台灣用語）寫一封給「${to}」的陳情信草稿，請求改善人行道或斑馬線長期被汽車違規停車的問題。
+
+地點：${h.county}${h.town}${h.road}
+民眾自行記錄的違停次數：${h.count} 次
+記錄的日期與時間：${h.dates.slice(0, 20).join('、')}
+
+要求：
+1. 語氣禮貌、具體，300 到 450 字。
+2. 說明行人（特別是長者、推嬰兒車、輪椅使用者）被迫走到車道的危險。
+3. 具體建議：設置阻車柱或實體分隔、改善標線、在常發生的時段加強取締，並請對方回覆處理情形。
+4. 不要寫任何車牌號碼。
+5. 結尾留「陳情人：（姓名）」「聯絡方式：（電話或 Email）」讓本人自己填。
+只輸出信件內容。`;
+  try {
+    const { text } = await S.sample(prompt, { modelTier: 'default', cache: false });
+    const ta = el('textarea', { id: 'letter-text', class: 'answer', style: 'width:100%;min-height:260px;border:1px solid var(--line)' });
+    ta.value = text;
+    out.replaceChildren(el('div', { class: 'field' }, ta), el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: e => copyText(ta.value, e.currentTarget) }, '複製陳情信')),
+      el('p', { class: 'hint', text: '可以寄到里長的 Email、議員服務處，或各縣市政府的市長信箱、1999 陳情網站。' }));
+  } catch (e) { out.replaceChildren(el('p', { class: 'hint', text: e && e.code === 'not_granted' ? '你沒有允許這個頁面使用 Claude。' : '撰寫失敗，請稍後再試。' })); }
+}
+async function exportCsv() {
+  const head = ['狀態', '處理結果', '違規日期', '違規時間', '縣市', '鄉鎮市區', '路段', '地點說明', '車牌', '車輛', '違規事實', '案件編號', '建立時間'];
+  const st = { draft: '草稿', submitted: '已送出' }, rs = { cited: '已舉發', warned: '勸導', not_cited: '不舉發' };
+  const esc = s => `"${String(s == null ? '' : s).replace(/"/g, '""')}"`;
+  const rows = S.cases.map(c => [st[c.status] || c.status, rs[c.result] || '', c.form.date, c.form.time, c.form.county, c.form.town, c.form.road, c.form.detail, c.form.plate, c.form.vdesc, (ruleOf(c) || {}).name || '', c.submission.caseNumber, c.createdAt.slice(0, 10)]);
+  const csv = '﻿' + [head, ...rows].map(r => r.map(esc).join(',')).join('\r\n');
+  await saveFile(`違停檢舉紀錄_${todayTaipei()}.csv`, csv);
+}
+async function saveFile(filename, data) {
+  if (!S.downloads) { toast('這個畫面不能下載檔案'); return; }
+  try { await S.downloads.save({ filename, data }); toast('已儲存'); }
+  catch (e) { if (!e || e.code !== 'declined') toast('無法儲存檔案'); }
 }
 
-/* ---------- 個人資料 ---------- */
-function loadProfileInputs() {
+/* ================= 我的 ================= */
+const ME_ITEMS = [
+  ['profile', '個人資料', '姓名、身分證、電話、Email、地址'],
+  ['places', '常用地點', '家附近、通勤路線，一鍵帶入'],
+  ['autofill', '自動填表設定', '在官方網站一鍵填好所有欄位'],
+  ['guide', '拍照教學', '怎麼拍最容易成案'],
+  ['ask', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
+  ['test', '照片定位測試', '確認手機選照片時能帶出地點'],
+  ['backup', '備份與清除', '把資料存成檔案，或全部清除']
+];
+function renderMe(v) {
+  if (!S.sub) {
+    v.append(el('h2', { class: 'page', text: '我的' }), el('div', { class: 'menu' }, ME_ITEMS.map(([k, t, s]) => el('button', { type: 'button', onclick: () => go('me', { sub: k }) },
+      el('span', {}, t, el('small', { text: s })), el('span', { class: 'arrow', text: '›' })))));
+    return;
+  }
+  v.append(el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: null }) }, '‹ 返回「我的」')));
+  ({ profile: meProfile, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, backup: meBackup })[S.sub](v);
+}
+function meProfile(v) {
   const P = S.profile;
-  $('#p-name').value = P.name || ''; $('#p-id').value = P.idNumber || ''; $('#p-phone').value = P.phone || '';
-  $('#p-email').value = P.email || ''; $('#p-address').value = P.address || '';
-  checkProfileHints();
+  const name = el('input', { id: 'p-name', type: 'text', autocomplete: 'name', value: P.name });
+  const id = el('input', { id: 'p-id', type: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', value: P.idNumber });
+  const phone = el('input', { id: 'p-phone', type: 'tel', autocomplete: 'tel', placeholder: '0912345678', value: P.phone });
+  const email = el('input', { id: 'p-email', type: 'email', autocomplete: 'email', value: P.email });
+  const addr = el('input', { id: 'p-address', type: 'text', autocomplete: 'street-address', value: P.address });
+  const hints = () => {
+    const r = checkId(id.value), s = $('#p-id-check'); s.textContent = r.msg; s.className = 'sub' + (r.ok === false ? ' bad' : '');
+    const ph = phone.value.replace(/\D/g, ''), ps = $('#p-phone-check');
+    ps.textContent = !ph ? '' : /^09\d{8}$/.test(ph) ? '手機格式正確' : '桃園要求 9 到 10 碼手機號碼，請確認'; ps.className = 'sub' + (ph && !/^09\d{8}$/.test(ph) ? ' bad' : '');
+  };
+  id.addEventListener('input', hints); phone.addEventListener('input', hints);
+  v.append(el('div', { class: 'card' }, el('h3', { text: '個人資料' }),
+    el('p', { class: 'hint', text: '只填一次。資料只存在這支手機的瀏覽器，不會上傳，也不會傳給 Claude。送出檢舉時才會複製到官方網站。' }),
+    field('姓名（與身分證相同）', name), field('身分證字號或居留證號', id, 'p-id-check'), field('手機號碼', phone, 'p-phone-check'),
+    el('div', { class: 'field' }, el('label', { for: 'p-email' }, '電子信箱'), email, el('span', { class: 'sub', text: '桃園建議避免免費信箱；認證信可能在垃圾郵件匣。' })),
+    field('通訊地址', addr),
+    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => {
+      S.profile = { name: name.value.trim(), idNumber: id.value.trim().toUpperCase(), phone: phone.value.replace(/[^\d]/g, ''), email: email.value.trim(), address: addr.value.trim() };
+      $('#p-status').textContent = store.set(K.profile, S.profile) ? '已儲存在這支手機。' : '儲存失敗：瀏覽器不允許儲存資料。';
+    } }, '儲存'), el('span', { id: 'p-status', class: 'hint', 'aria-live': 'polite' }))));
+  hints();
 }
-function checkProfileHints() {
-  const r = checkId($('#p-id').value), s = $('#p-id-check'); s.textContent = r.msg; s.className = 'sub' + (r.ok === false ? ' bad' : '');
-  const ph = $('#p-phone').value.replace(/\D/g, ''), ps = $('#p-phone-check');
-  if (!ph) { ps.textContent = ''; ps.className = 'sub'; }
-  else if (/^09\d{8}$/.test(ph)) { ps.textContent = '手機格式正確'; ps.className = 'sub'; }
-  else { ps.textContent = '桃園要求 9 到 10 碼手機號碼，請確認'; ps.className = 'sub bad'; }
+function mePlaces(v) {
+  const card = el('div', { class: 'card' }, el('h3', { text: '常用地點' }), el('p', { class: 'hint', text: '在檢舉第 4 步按「存成常用地點」就會加到這裡。照片定位在附近時，會自動建議。' }));
+  if (!S.places.length) card.append(el('p', { class: 'hint', text: '還沒有常用地點。' }));
+  for (const p of S.places) card.append(el('div', { class: 'todo' }, el('div', { class: 't' }, el('b', { text: p.name }), el('span', { class: 'place', text: [p.county, p.town, p.lat != null ? '有座標' : '沒有座標'].filter(Boolean).join('｜') })),
+    el('button', { class: 'btn small danger', type: 'button', onclick: () => { S.places = S.places.filter(x => x.id !== p.id); savePlaces(); render(); } }, '刪除')));
+  v.append(card);
 }
+async function meAutofill(v) {
+  const box = el('div', { class: 'card' }, el('h3', { text: '自動填表設定' }),
+    el('p', { class: 'hint', text: '設定一個 Safari 書籤。之後在官方檢舉網頁點這個書籤，再貼上資料，就會自動填好姓名、身分證、日期、地點、車牌、違規事實和說明。驗證碼、上傳照片、按送出還是由你自己做。' }));
+  v.append(box);
+  const code = el('textarea', { id: 'bm-code', readonly: true, style: 'width:100%;min-height:90px;font-size:12px;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--surface-2)' });
+  const copyBtn = el('button', { class: 'btn primary block', type: 'button', disabled: true }, '載入中…');
+  box.append(el('h4', { text: '第一次設定（約 2 分鐘）' }),
+    el('ol', { class: 'steps' },
+      el('li', {}, '按下面的「複製書籤程式碼」', el('div', { class: 'row' }, copyBtn)),
+      el('li', {}, '打開 Safari，隨便開一個網頁，例如 google.com'),
+      el('li', {}, '點下方的「分享」（方框加向上箭頭）→ 選「加入書籤」→ 名稱改成「違停自動填表」→ 按「儲存」'),
+      el('li', {}, '點 Safari 下方的「書籤」（打開的書）→ 右下角「編輯」→ 點剛剛的「違停自動填表」'),
+      el('li', {}, '把網址那一欄整個清空，長按選「貼上」，再按「完成」')),
+    el('details', {}, el('summary', {}, '看程式碼'), el('div', {}, code)),
+    el('h4', { text: '之後怎麼用' }),
+    el('ol', { class: 'steps' },
+      el('li', {}, '在檢舉第 5 步按「複製自動填表資料」'),
+      el('li', {}, '用 Safari 打開官方檢舉網站'),
+      el('li', {}, '點「書籤」→「違停自動填表」，長按畫面上方的框框選「貼上」'),
+      el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片、按送出')),
+    note('info', '第一次實際使用時', '這個功能還沒在官方網站實測。如果有欄位沒填到，畫面會列出來，請告訴我是哪幾欄，我會調整。'),
+    el('button', { class: 'btn block', type: 'button', onclick: () => { S.settings.autofillReady = !S.settings.autofillReady; saveSettings(); render(); } }, S.settings.autofillReady ? '已設定 ✓（按一下取消）' : '我設定好了'));
+  try {
+    if (!S.autofillSrc) S.autofillSrc = await (await fetch('autofill.js')).text();
+    const bm = 'javascript:' + encodeURIComponent(S.autofillSrc.replace(/^\s*\/\*[\s\S]*?\*\/\s*/, ''));
+    code.value = bm; copyBtn.disabled = false; copyBtn.textContent = '複製書籤程式碼';
+    copyBtn.addEventListener('click', e => copyText(bm, e.currentTarget));
+  } catch (e) { copyBtn.textContent = '程式碼載入失敗，請重新整理'; }
+}
+function meGuide(v) {
+  const svg = (inner) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 64 64'); s.innerHTML = inner; return s; };
+  const items = [
+    ['全景', '退後幾步，讓畫面同時有車子和人行道或斑馬線。最好拍到路名牌、門牌或明顯的店家招牌。', '<rect x="2" y="44" width="60" height="16" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 48h8M24 48h8M40 48h8M8 56h8M24 56h8M40 56h8" stroke="currentColor" stroke-width="3"/><rect x="18" y="26" width="30" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2.5"/>'],
+    ['車牌', '靠近拍，車牌要佔畫面三分之一以上，避開反光。前車牌或後車牌都可以。', '<rect x="8" y="22" width="48" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><text x="32" y="37" text-anchor="middle" font-size="12" font-weight="700" fill="currentColor">ABC-1234</text>'],
+    ['駕駛座', '從車窗拍駕駛座，看得出有沒有人。這張決定是「停車」還是「臨時停車」。', '<path d="M10 40h44l-6-16H18z" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="26" cy="32" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 4l56 56" stroke="currentColor" stroke-width="2" opacity=".35"/>'],
+    ['隔 3 分鐘再拍', '同一個角度，隔 3 分鐘以上再拍一張，證明車子一直停著。可以用第 2 步的計時器。', '<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M32 18v14l9 6" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>'],
+    ['不要做的事', '不要修圖、加濾鏡、裁切；不要用網路上別人的照片；不要拍到路人的臉特寫。', '<circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2.5"/><path d="M16 48L48 16" stroke="currentColor" stroke-width="3"/>']
+  ];
+  v.append(el('div', { class: 'card' }, el('h3', { text: '拍照教學' }), ...items.map(([t, d, s]) => el('div', { class: 'guide' }, svg(s), el('div', {}, el('h4', { text: t }), el('p', { class: 'hint', text: d }))))));
+}
+function meAsk(v) {
+  const q = el('textarea', { id: 'ask-q', placeholder: '例如：車子停在人行道上但打著雙黃燈，可以檢舉嗎？' });
+  const out = el('div', { class: 'stack', id: 'ask-out' });
+  const btn = el('button', { class: 'btn primary', type: 'button', disabled: !S.sample }, S.sample ? '問 Claude' : '這個畫面不能使用 Claude');
+  btn.addEventListener('click', async () => {
+    const question = q.value.trim(); if (!question) return;
+    btn.disabled = true; out.replaceChildren(el('p', { class: 'hint', text: 'Claude 思考中…' }));
+    const V = S.data.vio;
+    const prompt = `你是協助台灣民眾檢舉交通違規的小幫手。請依下列規則資料回答使用者的問題，用繁體中文（台灣用語）、白話、200 字以內。不確定的地方要直接說不確定，並建議向當地警察局確認。不要提供任何繞過驗證或代為送出的方法。
 
-/* ---------- 照片測試頁 ---------- */
+規則資料（查證日期 ${V._meta.last_verified}）：
+${JSON.stringify({ rules: V.rules, not_reportable: V.not_reportable, deadline: V.deadline_rule, evidence: V.evidence_labels })}
+其他已知規則：同一車輛違規相隔未逾 6 分鐘且未經過一個路口，只舉發一次；檢舉要實名；照片要用原始檔；深夜 0–6 時情節輕微的違停可能改為勸導（臺北表示人行道和斑馬線違停屬妨礙通行）。
+
+使用者的問題：${question}`;
+    try {
+      const { text } = await S.sample(prompt, { modelTier: 'default', onText: ({ text }) => { out.replaceChildren(el('div', { class: 'answer', text })); } });
+      out.replaceChildren(el('div', { class: 'answer', text }), el('p', { class: 'hint', text: '這是 Claude 依規則資料的說明，不是法律意見。' }));
+    } catch (e) { out.replaceChildren(el('p', { class: 'hint', text: e && e.code === 'not_granted' ? '你沒有允許這個頁面使用 Claude。' : '回答失敗，請稍後再試。' })); }
+    btn.disabled = false;
+  });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '法規小幫手' }), el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
+}
 let testLines = [];
-async function runTest(fileList) {
-  const out = $('#test-out'); out.replaceChildren(el('p', { class: 'status', text: '讀取中…' }));
+function meTest(v) {
+  const out = el('div', { class: 'stack', id: 'test-out' });
+  const copyBtn = el('button', { class: 'btn', type: 'button', hidden: true, onclick: e => copyText(testLines.join('\n'), e.currentTarget) }, '複製測試結果');
+  v.append(el('div', { class: 'card' }, el('h3', { text: '照片定位測試' }),
+    el('p', { class: 'hint', text: '請各試一次：先照平常方式選照片；再試一次在選照片畫面點「選項」，把「位置」打開。' }),
+    el('label', { class: 'btn primary block filebtn' }, '選照片測試', el('input', { type: 'file', accept: 'image/*', multiple: true, onchange: e => { const fl = [...e.target.files]; runTest(fl, out, copyBtn).finally(() => { e.target.value = ''; }); } })),
+    out, el('div', { class: 'row' }, copyBtn), el('p', { class: 'hint', text: '複製的結果裡，座標只保留到小數點後 3 位（約 100 公尺）。' })));
+}
+async function runTest(files, out, copyBtn) {
+  out.replaceChildren(el('p', { class: 'hint', text: '讀取中…' }));
   testLines = [`裝置：${navigator.userAgent}`, `測試時間：${new Date().toISOString()}`];
   const rows = [];
-  for (const f of fileList) {
+  for (const f of files) {
     const m = await readMeta(f);
     const gps = m.lat != null ? `${m.lat.toFixed(3)}, ${m.lng.toFixed(3)}` : '沒有';
     const t = m.takenAt ? `${m.takenAt.replace('T', ' ')}${m.timeSource === 'file' ? '（檔案時間）' : ''}` : '沒有';
-    rows.push({ name: f.name, type: f.type || '不明', size: `${(f.size / 1048576).toFixed(1)} MB`, dim: m.width ? `${m.width}×${m.height}` : '—', t, tz: m.offset || '—', gps, cam: [m.make, m.model].filter(Boolean).join(' ') || '—', ok: m.lat != null, err: m.error });
+    rows.push({ name: f.name, type: f.type || '不明', t, gps, ok: m.lat != null });
     testLines.push(`- ${f.name}｜${f.type || '不明'}｜${(f.size / 1048576).toFixed(1)}MB｜時間 ${t}｜時區 ${m.offset || '無'}｜定位 ${gps}｜相機 ${[m.make, m.model].filter(Boolean).join(' ') || '無'}${m.error ? '｜錯誤 ' + m.error : ''}`);
   }
-  const okCount = rows.filter(r => r.ok).length;
+  const ok = rows.filter(r => r.ok).length;
+  S.settings.gpsTest = { ok, total: rows.length, at: new Date().toISOString() }; saveSettings();
   out.replaceChildren(
-    el('div', { class: 'verdict ' + (okCount === rows.length ? 'v-yes' : okCount ? 'v-warn' : 'v-no') },
-      el('b', { text: okCount === rows.length ? `${rows.length} 張都讀到定位` : okCount ? `${rows.length} 張中有 ${okCount} 張讀到定位` : '沒有讀到定位' }),
-      el('p', { text: okCount === rows.length ? '這支手機可以用「從相簿選照片」的方式取得地點。' : '請再試一次：選照片時點畫面上方的「選項」，把「位置」打開。如果還是沒有，請按「複製測試結果」貼給 Claude。' })),
-    el('div', { class: 'tbl-wrap' }, el('table', {},
-      el('thead', {}, el('tr', {}, ['檔名', '格式', '大小', '尺寸', '拍攝時間', '時區', '定位', '相機'].map(h => el('th', { text: h })))),
-      el('tbody', {}, rows.map(r => el('tr', {}, [r.name, r.type, r.size, r.dim, r.t, r.tz, r.gps, r.cam].map((v, i) => el('td', {}, i === 6 ? el('span', { class: 'pill ' + (r.ok ? 'ok' : 'no'), text: v }) : v))))))));
-  testLines.push(`結果：${okCount}/${rows.length} 張有定位`);
-  $('#btn-copy-test').hidden = false;
+    note(ok === rows.length ? 'ok' : ok ? 'warn' : 'no', ok === rows.length ? `${rows.length} 張都讀到定位` : ok ? `${rows.length} 張中有 ${ok} 張讀到定位` : '沒有讀到定位',
+      ok === rows.length ? '這支手機可以用「從相簿選照片」取得地點。' : '請再試一次：選照片時點畫面上方的「選項」，把「位置」打開。還是沒有的話，請按「複製測試結果」貼給 Claude。'),
+    el('div', { class: 'tbl-wrap' }, el('table', {}, el('thead', {}, el('tr', {}, ['檔名', '格式', '拍攝時間', '定位'].map(h => el('th', { text: h })))),
+      el('tbody', {}, rows.map(r => el('tr', {}, el('td', { text: r.name }), el('td', { text: r.type }), el('td', { text: r.t }), el('td', {}, el('span', { class: 'pill ' + (r.ok ? 'ok' : 'no'), text: r.gps }))))))));
+  testLines.push(`結果：${ok}/${rows.length} 張有定位`);
+  copyBtn.hidden = false;
 }
-
-/* ---------- 分頁、範例 ---------- */
-function showTab(name) {
-  for (const b of document.querySelectorAll('.tabbar button')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
-  for (const s of document.querySelectorAll('.tab')) s.hidden = s.id !== 'tab-' + name;
-  if (name === 'cases') renderCases();
-  if (name === 'profile') loadProfileInputs();
-  window.scrollTo(0, 0);
-}
-function loadSample() {
-  const c = newCase();
-  c.answers = { vehicle: 'car', place: 'crosswalk', driver: 'absent' };
-  const now = nowTaipeiParts();
-  c.form = { ...c.form, date: now.date, time: now.time, county: '臺北市', town: '大安區', districtLabel: '大安區', road: '忠孝東路四段', detail: '與敦化南路一段口', plate: 'AAA-0001', vdesc: '白色自用小客車', autoTime: false, autoLoc: false };
-  c.ai = { plate_candidates: [{ plate: 'AAA-0001', confidence: 0.93 }, { plate: 'AAA-0007', confidence: 0.04 }], vehicle_class: 'car', vehicle_desc: '自用小客車', color: '白色', location_type: 'crosswalk', driver_present: 'no', road_text: '忠孝東路四段', house_number_text: '', evidence: { plate_visible: true, violation_context_visible: true, driver_seat_visible: true, landmark_visible: true }, notes: '範例：車身壓在斑馬線上，駕駛座無人。建議隔 3 分鐘再補拍一張。' };
-  S.cur = c; S.files = {}; S.isSample = true; $('#sample-banner').hidden = false;
-  renderAll(); window.scrollTo(0, 0);
-}
-
-/* ---------- 全部重畫 ---------- */
-function renderAll() {
-  for (const seg of document.querySelectorAll('.seg')) {
-    const q = seg.dataset.q;
-    for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(S.cur.answers[q] === b.dataset.v));
-  }
-  const P = S.profile;
-  $('#setup-banner').hidden = !!(P.name && P.idNumber && P.phone && P.email && P.address);
-  renderVerdict(); renderPhotos(); renderAi(); syncFormInputs(); renderDeadline(); renderEvidence(); renderSubmit();
-}
-
-/* ---------- 事件 ---------- */
-for (const seg of document.querySelectorAll('.seg')) {
-  seg.addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    const q = seg.dataset.q; S.cur.answers[q] = S.cur.answers[q] === b.dataset.v ? null : b.dataset.v;
-    renderAll(); save();
+function meBackup(v) {
+  const data = () => JSON.stringify({ app: 'parking-report-helper', version: 2, exportedAt: new Date().toISOString(), profile: S.profile, places: S.places, settings: S.settings, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) });
+  const ta = el('textarea', { id: 'restore-text', placeholder: '貼上備份文字' });
+  const wipe = el('button', { class: 'btn danger', type: 'button' }, '清除這支手機上的所有資料');
+  wipe.addEventListener('click', () => {
+    if (!wipe.dataset.armed) { wipe.dataset.armed = '1'; wipe.textContent = '再按一次確定清除'; setTimeout(() => { if (wipe.isConnected) { delete wipe.dataset.armed; wipe.textContent = '清除這支手機上的所有資料'; } }, 4000); return; }
+    Object.values(K).forEach(k => store.del(k));
+    S.profile = { name: '', idNumber: '', phone: '', email: '', address: '' }; S.cases = []; S.places = []; S.settings = { autofillReady: false, gpsTest: null }; S.cur = newCase(); S.files = {};
+    toast('已清除'); go('home');
   });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '備份' }),
+    el('p', { class: 'hint', text: 'iPhone 有時會清掉網頁資料。建議定期備份。備份不含照片。' }),
+    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => saveFile(`違停檢舉備份_${todayTaipei()}.json`, data()) }, '存成備份檔'), el('button', { class: 'btn', type: 'button', onclick: e => copyText(data(), e.currentTarget) }, '複製備份文字'))),
+    el('div', { class: 'card' }, el('h3', { text: '從備份還原' }), el('div', { class: 'field' }, ta),
+      el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => {
+        const st = $('#restore-status');
+        try {
+          const d = JSON.parse(ta.value);
+          if (d.app !== 'parking-report-helper') throw new Error();
+          if (d.profile) { S.profile = d.profile; store.set(K.profile, S.profile); }
+          if (Array.isArray(d.places)) { S.places = d.places; savePlaces(); }
+          if (d.settings) { S.settings = { ...S.settings, ...d.settings }; saveSettings(); }
+          if (Array.isArray(d.cases)) { const ids = new Set(S.cases.map(c => c.id)); S.cases = [...S.cases, ...d.cases.filter(c => !ids.has(c.id)).map(migrate)]; persistCases(); }
+          st.textContent = '已還原。';
+        } catch (e) { st.textContent = '備份文字格式不對，請整段貼上。'; }
+      } }, '還原'), el('span', { id: 'restore-status', class: 'hint', 'aria-live': 'polite' }))),
+    el('div', { class: 'card' }, el('h3', { text: '清除' }), el('p', { class: 'hint', text: '會刪除個人資料、案件、常用地點和設定。' }), el('div', { class: 'row' }, wipe)));
 }
-$('#photo-input').addEventListener('change', e => { const fl = e.target.files; addPhotos(fl).finally(() => { e.target.value = ''; }); });
-$('#btn-ai').addEventListener('click', runAi);
-$('#btn-ai-stop').addEventListener('click', () => S.aiCtl && S.aiCtl.abort());
-const bind = (id, key, extra) => $(id).addEventListener('input', e => { S.cur.form[key] = e.target.value; if (extra) extra(e); renderAll(); save(); });
-bind('#f-date', 'date', () => { S.cur.form.autoTime = false; S.cur.form.timeSource = 'manual'; });
-bind('#f-time', 'time', () => { S.cur.form.autoTime = false; });
-bind('#f-town', 'town', () => { S.cur.form.autoLoc = false; S.cur.form.districtLabel = defaultDistrict(S.cur.form.county, S.cur.form.town); });
-bind('#f-road', 'road', () => { S.cur.form.roadFrom = ''; });
-bind('#f-detail', 'detail');
-bind('#f-vdesc', 'vdesc');
-$('#f-plate').addEventListener('change', e => { S.cur.form.plate = normPlate(e.target.value); e.target.value = S.cur.form.plate; renderAll(); save(); });
-$('#f-plate').addEventListener('input', e => { S.cur.form.plate = e.target.value.toUpperCase(); renderAll(); save(); });
-$('#f-county').addEventListener('change', e => { const f = S.cur.form; f.county = e.target.value; f.autoLoc = false; f.districtLabel = defaultDistrict(f.county, f.town); renderAll(); save(); });
-$('#f-district').addEventListener('change', e => { S.cur.form.districtLabel = e.target.value; renderAll(); save(); });
-$('#f-desc').addEventListener('input', e => { S.cur.form.desc = e.target.value; S.cur.form.descEdited = true; renderAll(); save(); });
-$('#btn-regen').addEventListener('click', () => { S.cur.form.descEdited = false; renderAll(); save(); });
-$('#btn-reset').addEventListener('click', () => { S.cur = newCase(); S.files = {}; S.isSample = false; $('#sample-banner').hidden = true; $('#ai-status').textContent = ''; renderAll(); window.scrollTo(0, 0); });
-$('#btn-sample').addEventListener('click', loadSample);
-$('#btn-go-profile').addEventListener('click', () => showTab('profile'));
-for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => showTab(b.dataset.tab));
 
-for (const id of ['#p-id', '#p-phone']) $(id).addEventListener('input', checkProfileHints);
-$('#btn-save-profile').addEventListener('click', () => {
-  S.profile = { name: $('#p-name').value.trim(), idNumber: $('#p-id').value.trim().toUpperCase(), phone: $('#p-phone').value.replace(/[^\d]/g, ''), email: $('#p-email').value.trim(), address: $('#p-address').value.trim() };
-  $('#profile-status').textContent = store.set(K_PROFILE, S.profile) ? '已儲存在這支手機' : '儲存失敗：瀏覽器不允許儲存資料';
-  loadProfileInputs(); renderAll();
-});
-$('#btn-backup').addEventListener('click', e => {
-  const data = { app: 'parking-report-helper', version: 1, exportedAt: new Date().toISOString(), profile: S.profile, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) };
-  copyText(JSON.stringify(data), e.currentTarget);
-});
-$('#btn-restore').addEventListener('click', () => {
-  const st = $('#backup-status');
-  try {
-    const d = JSON.parse($('#restore-text').value);
-    if (d.app !== 'parking-report-helper') throw new Error();
-    if (d.profile) { S.profile = d.profile; store.set(K_PROFILE, S.profile); }
-    if (Array.isArray(d.cases)) { const ids = new Set(S.cases.map(c => c.id)); S.cases = [...S.cases, ...d.cases.filter(c => !ids.has(c.id))]; store.set(K_CASES, S.cases); }
-    st.textContent = '已還原'; loadProfileInputs();
-  } catch (e) { st.textContent = '備份文字格式不對，請整段貼上'; }
-});
-const wipe = $('#btn-wipe');
-wipe.addEventListener('click', () => {
-  if (!wipe.dataset.armed) { wipe.dataset.armed = '1'; wipe.textContent = '再按一次確定清除'; setTimeout(() => { delete wipe.dataset.armed; wipe.textContent = '清除這支手機上的所有資料'; }, 4000); return; }
-  store.del(K_PROFILE); store.del(K_CASES);
-  S.profile = { name: '', idNumber: '', phone: '', email: '', address: '' }; S.cases = []; S.cur = newCase(); S.files = {};
-  delete wipe.dataset.armed; wipe.textContent = '清除這支手機上的所有資料';
-  loadProfileInputs(); renderAll(); toast('已清除');
-});
-$('#test-input').addEventListener('change', e => { const fl = [...e.target.files]; runTest(fl).finally(() => { e.target.value = ''; }); });
-$('#btn-copy-test').addEventListener('click', e => copyText(testLines.join('\n'), e.currentTarget));
+/* ================= 範例 ================= */
+function loadSample() {
+  const c = newCase(), now = nowTaipei();
+  c.answers = { vehicle: 'car', place: 'crosswalk', driver: 'absent' };
+  c.form = { ...c.form, date: now.date, time: now.time, county: '臺北市', town: '大安區', districtLabel: '大安區', road: '忠孝東路四段', detail: '與敦化南路一段口', plate: 'AAA-0001', vdesc: '白色自用小客車', autoTime: false, autoLoc: false, locSource: 'ai' };
+  c.ai = { plate_candidates: [{ plate: 'AAA-0001', confidence: 0.93 }, { plate: 'AAA-0007', confidence: 0.04 }], vehicle_class: 'car', vehicle_desc: '自用小客車', color: '白色', location_type: 'crosswalk', driver_present: 'no', road_text: '忠孝東路四段', house_number_text: '', evidence: { plate_visible: true, violation_context_visible: true, driver_seat_visible: true, landmark_visible: true }, retake: ['隔 3 分鐘從同一角度再拍一張，證明車子一直停著'], notes: '範例：車身壓在斑馬線上，駕駛座無人。' };
+  S.cur = c; S.files = {}; S.isSample = true; S.focus = false;
+  go('report', { step: 3 });
+}
 
-/* ---------- 啟動 ---------- */
+/* ================= 事件與啟動 ================= */
+for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => go(b.dataset.view, b.dataset.view === 'me' ? { sub: null } : {}));
 (async function boot() {
+  render();
   try {
-    const [jur, vio] = await Promise.all([fetch('data/jurisdictions.json').then(r => r.json()), fetch('data/violations.json').then(r => r.json())]);
-    S.data.jur = jur; S.data.vio = vio;
-  } catch (e) {
-    $('#verdict').replaceChildren(el('b', { text: '資料載入失敗' }), el('p', { text: '請重新整理頁面。' }));
-  }
-  renderAll();
+    const [jur, vio, fill] = await Promise.all(['data/jurisdictions.json', 'data/violations.json', 'data/autofill.json'].map(p => fetch(p).then(r => r.json())));
+    S.data.jur = jur; S.data.vio = vio; S.data.fill = fill;
+  } catch (e) { $('#view').replaceChildren(note('no', '資料載入失敗', '請重新整理頁面。')); return; }
+  render();
   try {
     const sample = window.claude && await window.claude.use('sample');
     if (sample) {
-      S.sample = sample;
       const lim = await sample.limits().catch(() => null);
       S.sampleImgMax = (lim && lim.images && lim.images.maxCount) || 0;
-      if (!S.sampleImgMax) { S.sample = null; $('#ai-status').textContent = '這個畫面不能傳照片給 Claude，請自己填寫車牌和地點。'; }
-    } else $('#ai-status').textContent = '這個畫面無法使用 Claude 判讀，請自己填寫車牌和地點。';
-  } catch (e) { $('#ai-status').textContent = '這個畫面無法使用 Claude 判讀，請自己填寫車牌和地點。'; }
-  renderAi();
+      S.sample = sample;
+    }
+  } catch (e) {}
+  try { S.downloads = window.claude ? await window.claude.use('downloads') : null; } catch (e) {}
+  if (S.view === 'report') render();
 })();
 </script>

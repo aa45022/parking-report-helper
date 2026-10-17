@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "description": "自動填表用的欄位標籤對照。程式會在官方網頁上找標籤文字含有這些詞的欄位。詞越長越優先。",
+    "last_updated": "2026-10-17",
+    "note": "目前還沒有在官方網頁實測過，第一次使用後依實際結果調整。"
+  },
+  "fields": [
+    { "source": "profile.name", "name": "姓名", "labels": ["檢舉人姓名", "真實姓名", "姓名", "name"] },
+    { "source": "profile.idNumber", "name": "身分證字號", "labels": ["身分證或居留證號", "身分證統一編號", "身分證字號", "居留證號", "身分證", "居留證", "idno", "idnumber"] },
+    { "source": "profile.phone", "name": "電話", "labels": ["聯絡電話(手機)", "行動電話", "聯絡電話", "手機號碼", "手機", "電話", "mobile", "phone", "tel"] },
+    { "source": "profile.email", "name": "電子信箱", "labels": ["電子信箱", "電子郵件", "e-mail", "email", "信箱", "mail"] },
+    { "source": "profile.address", "name": "地址", "labels": ["通訊地址", "聯絡地址", "戶籍地址", "住址", "地址", "address", "addr"] },
+    { "source": "case.date", "name": "違規日期", "kind": "date", "labels": ["違規日期", "發生日期", "違規時間日期", "日期", "date"] },
+    { "source": "case.time", "name": "違規時間", "kind": "time", "labels": ["違規時間", "發生時間", "時間", "time"] },
+    { "source": "case.districtLabel", "name": "行政區", "prefer": "select", "labels": ["違規行政區", "行政區", "鄉鎮市區", "鄉鎮市", "區域", "district"] },
+    { "source": "case.road", "name": "路段", "labels": ["違規路段", "路段", "路名", "道路名稱", "road"] },
+    { "source": "case.locationDetail", "name": "門牌或地點備註", "labels": ["巷弄號或公里數", "地點備註", "詳細地點", "地點說明", "巷弄號", "門牌"] },
+    { "source": "case.fullLocation", "name": "違規地點", "labels": ["違規地點", "發生地點", "地點", "location"] },
+    { "source": "case.vehicleTypeLabel", "name": "車種", "prefer": "select", "labels": ["車輛種類", "違規車種", "車種", "車型"] },
+    { "source": "case.plate", "name": "車號", "kind": "plate", "labels": ["違規車號", "車牌號碼", "牌照號碼", "車號", "車牌", "carno", "plate"] },
+    { "source": "case.violationLabel", "name": "違規事實", "prefer": "select", "labels": ["違規事實", "違規項目", "違規行為", "違規條款", "法條"] },
+    { "source": "case.description", "name": "違規事實說明", "prefer": "textarea", "labels": ["違規事實說明", "檢舉內容", "補充說明", "內容說明", "事實說明", "說明", "content", "memo"] }
+  ]
+}
