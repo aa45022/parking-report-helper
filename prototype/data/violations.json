@@ -1,0 +1,66 @@
+{
+  "_meta": {
+    "description": "可檢舉判斷規則。依道路交通管理處罰條例第 7 條之 1（2024-06-30 施行版）。",
+    "last_verified": "2026-10-17",
+    "sources": [
+      "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=K0040012",
+      "https://www.ly.gov.tw/Pages/Detail.aspx?nodeid=33324&pid=240917",
+      "https://www.cna.com.tw/news/ahel/202406280052.aspx",
+      "https://github.com/iroowu/traffic-violation-reporter"
+    ]
+  },
+  "rules": {
+    "sidewalk_parking": {
+      "name": "汽車在人行道上停車",
+      "law": "第 56 條第 1 項第 1 款",
+      "basis": "第 7 條之 1 第 1 項第 16 款（機車及騎樓除外）",
+      "fine": "小型車 900 元、大型車 1,200 元",
+      "place_word": "人行道",
+      "evidence": ["plate", "context", "driver_seat"],
+      "recommended": ["interval", "landmark"]
+    },
+    "crosswalk_parking": {
+      "name": "汽車在斑馬線（行人穿越道）上停車",
+      "law": "第 56 條第 1 項第 1 款",
+      "basis": "第 7 條之 1 第 1 項第 16 款（機車及騎樓除外）",
+      "fine": "小型車 900 元、大型車 1,200 元",
+      "place_word": "行人穿越道",
+      "evidence": ["plate", "context", "driver_seat"],
+      "recommended": ["interval", "landmark"]
+    },
+    "sidewalk_temp_stop": {
+      "name": "汽車在人行道上臨時停車",
+      "law": "第 55 條第 1 項第 1 款",
+      "basis": "第 7 條之 1 第 1 項第 14 款（機車及騎樓除外）",
+      "fine": "600 元",
+      "place_word": "人行道",
+      "evidence": ["plate", "context", "driver_seat"],
+      "recommended": ["stop_and_leave", "landmark"],
+      "warning": "臨時停車要同時有「上下客貨」「停止未滿 3 分鐘（停車與駛離各一張）」「妨礙人車通行」的照片或影片，否則常被勸導免罰。"
+    },
+    "crosswalk_temp_stop": {
+      "name": "汽車在斑馬線（行人穿越道）上臨時停車",
+      "law": "第 55 條第 1 項第 1 款",
+      "basis": "第 7 條之 1 第 1 項第 14 款（機車及騎樓除外）",
+      "fine": "600 元",
+      "place_word": "行人穿越道",
+      "evidence": ["plate", "context", "driver_seat"],
+      "recommended": ["stop_and_leave", "landmark"],
+      "warning": "臨時停車要同時有「上下客貨」「停止未滿 3 分鐘（停車與駛離各一張）」「妨礙人車通行」的照片或影片，否則常被勸導免罰。"
+    }
+  },
+  "not_reportable": {
+    "motorcycle": "機車停在人行道或斑馬線，目前不能由民眾檢舉（條文寫「但機車及騎樓不在此限」）。可以打 110 請警察到場處理。",
+    "arcade": "停在騎樓的車，目前不能由民眾檢舉。可以打 110 請警察到場處理。",
+    "roadside": "紅線、黃線、路口或公車站附近的路邊違停，2024 年 6 月 30 日起不能由民眾檢舉。可以打 110 請警察到場處理。"
+  },
+  "evidence_labels": {
+    "plate": "車牌清楚",
+    "context": "看得出停在人行道或斑馬線上",
+    "driver_seat": "拍到駕駛座（看得出有沒有人）",
+    "interval": "隔 3 分鐘以上從同一角度再拍一張",
+    "landmark": "拍到路名牌、門牌或明顯地標",
+    "stop_and_leave": "有停車和駛離的畫面"
+  },
+  "deadline_rule": "違規當天算第 1 天，第 7 天 24:00 前要送出。"
+}

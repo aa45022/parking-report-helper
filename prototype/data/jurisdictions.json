@@ -1,0 +1,135 @@
+{
+  "_meta": {
+    "description": "各縣市交通違規檢舉網站規格。status：verified＝實際操作確認；partial＝部分欄位已知；url_only＝只有網址。",
+    "spec_version": "2026-10-17",
+    "primary_source": "iroowu/traffic-violation-reporter references/counties.json（MIT 授權，作者查證日 2026-09-26）",
+    "primary_source_url": "https://github.com/iroowu/traffic-violation-reporter"
+  },
+  "jurisdictions": {
+    "臺北市": {
+      "id": "taipei",
+      "agency": "臺北市政府警察局交通警察大隊",
+      "status": "partial",
+      "last_verified": "2026-09-26",
+      "url": "https://prsweb.tcpd.gov.tw/",
+      "auth_summary": "沒有圖形驗證碼。第一次要按「發送認證信」，30 分鐘內到信箱點連結；同一個信箱認證過，之後就不用再認證。",
+      "district_options": ["中正一區", "中正二區", "大同區", "中山區", "松山區", "大安區", "萬華區", "信義區", "士林區", "北投區", "內湖區", "南港區", "文山一區", "文山二區", "捷運站"],
+      "district_split_note": "中正區、文山區在官方選單分成「一區、二區」，依警察分局轄區劃分，系統還無法自動判斷，請自己選。",
+      "violation_labels": {
+        "sidewalk_parking": "汽車於人行道、行人穿越道停車(但機車及騎樓不在此限)",
+        "crosswalk_parking": "汽車於人行道、行人穿越道停車(但機車及騎樓不在此限)",
+        "sidewalk_temp_stop": "汽車於人行道、行人穿越道臨時停車(但機車及騎樓不在此限)",
+        "crosswalk_temp_stop": "汽車於人行道、行人穿越道臨時停車(但機車及騎樓不在此限)"
+      },
+      "vehicle_type_label": "一般(汽、機車)",
+      "description_max_length": 200,
+      "steps": [
+        {
+          "title": "第 1 步：檢舉人資料",
+          "fields": [
+            { "label": "身分證或居留證號", "source": "profile.idNumber" },
+            { "label": "姓名", "source": "profile.name" },
+            { "label": "聯絡電話", "source": "profile.phone" },
+            { "label": "地址", "source": "profile.address" },
+            { "label": "電子信箱", "source": "profile.email", "note": "第一次使用要按「發送認證信」，到信箱點連結" }
+          ]
+        },
+        {
+          "title": "第 2 步：違規內容",
+          "fields": [
+            { "label": "違規日期", "source": "case.date", "note": "下拉選單，只列今天往前 7 天" },
+            { "label": "違規時間", "source": "case.time" },
+            { "label": "行政區", "source": "case.districtLabel", "note": "下拉選單" },
+            { "label": "路段", "source": "case.road", "note": "下拉選單，可以打字搜尋" },
+            { "label": "巷弄號／交叉路口／地點備註", "source": "case.locationDetail", "note": "三選一，至少要填一個" },
+            { "label": "車種", "source": "case.vehicleTypeLabel" },
+            { "label": "車號（前段）", "source": "case.plateFront" },
+            { "label": "車號（後段）", "source": "case.plateBack" },
+            { "label": "違規事實", "source": "case.violationLabel", "note": "下拉選單，選這一項" },
+            { "label": "違規事實說明", "source": "case.description", "note": "最多 200 字" }
+          ]
+        },
+        {
+          "title": "第 3 步：上傳照片",
+          "fields": [
+            { "label": "附件", "source": "static", "value": "從「照片」選原始照片，最多 5 張，合計 80MB 內。官方建議用 JPEG。" }
+          ]
+        }
+      ],
+      "upload": { "max_files": 5, "max_total_mb": 80, "formats": ["jpg", "jpeg", "png", "bmp", "tiff", "mov", "wmv", "avi", "mp4", "3gp", "ts"] },
+      "result_note": "送出後會拿到「案件編號（TP 開頭）」和「查詢密碼」，請記回這裡。",
+      "sources": ["https://prsweb.tcpd.gov.tw/", "https://github.com/iroowu/traffic-violation-reporter"]
+    },
+    "桃園市": {
+      "id": "taoyuan",
+      "agency": "桃園市政府警察局",
+      "status": "partial",
+      "last_verified": "2026-09-26",
+      "url": "https://tvrweb.typd.gov.tw:3444/TTPB/D0101",
+      "auth_summary": "第一步要輸入 5 碼圖形驗證碼，並完成信箱驗證，之後才會出現第二步表單。驗證碼請自己輸入。",
+      "violation_labels": {
+        "sidewalk_parking": "汽車於人行道停車",
+        "crosswalk_parking": "汽車於行人穿越道停車",
+        "sidewalk_temp_stop": "汽車於人行道臨時停車",
+        "crosswalk_temp_stop": "汽車於行人穿越道臨時停車"
+      },
+      "violation_labels_note": "桃園第二步的選項文字還沒確認，請選最接近的一項。",
+      "description_max_length": 200,
+      "steps": [
+        {
+          "title": "第 1 步：登入檢舉人資料",
+          "fields": [
+            { "label": "姓名", "source": "profile.name", "note": "要跟身分證上的中文姓名一致" },
+            { "label": "身分證字號", "source": "profile.idNumber" },
+            { "label": "電子信箱", "source": "profile.email", "note": "要驗證；頁面建議避免免費信箱，認證信可能在垃圾郵件匣" },
+            { "label": "聯絡電話(手機)", "source": "profile.phone" },
+            { "label": "聯絡地址", "source": "profile.address" },
+            { "label": "圖形驗證碼", "source": "static", "value": "請自己輸入畫面上的 5 碼" }
+          ]
+        },
+        {
+          "title": "第 2 步：違規內容（欄位待確認）",
+          "fields": [
+            { "label": "違規日期", "source": "case.date" },
+            { "label": "違規時間", "source": "case.time" },
+            { "label": "違規地點", "source": "case.fullLocation" },
+            { "label": "車牌號碼", "source": "case.plate" },
+            { "label": "違規事實", "source": "case.violationLabel" },
+            { "label": "說明", "source": "case.description" }
+          ]
+        },
+        {
+          "title": "第 3 步：上傳照片",
+          "fields": [
+            { "label": "附件", "source": "static", "value": "從「照片」選原始照片；照片要看得到車牌、車身顏色和地面標線。上傳限制待確認。" }
+          ]
+        }
+      ],
+      "special_jurisdiction_note": "大園區的航勤北路、航勤南路、航翔路、航站北路、航站南路歸航空警察局；龍潭區的龍科路、龍園一路、五路、六路、七路、十路歸保二總隊；國道歸國道警察局。",
+      "result_note": "送出後會拿到「案號」和「查詢專用密碼」，請記回這裡。",
+      "sources": ["https://tvrweb.typd.gov.tw:3444/", "https://github.com/iroowu/traffic-violation-reporter"]
+    }
+  },
+  "others": {
+    "新北市": "https://tvrs.ntpd.gov.tw/",
+    "基隆市": "https://tptv.klg.gov.tw/",
+    "新竹市": "https://tra2.hccp.gov.tw/new/",
+    "新竹縣": "https://traffic.hchpb.gov.tw/",
+    "宜蘭縣": "https://ppl.report.ilcpb.gov.tw/index.php?catid=10",
+    "苗栗縣": "https://trv.mpb.gov.tw/Home/Index",
+    "臺中市": "https://tvrweb.police.taichung.gov.tw/",
+    "彰化縣": "https://traffic.chpb.gov.tw/ViolatePetition/C005400",
+    "南投縣": "https://jiaowei.ncpd.gov.tw/sc11/rwd/rincase1.aspx",
+    "雲林縣": "https://trv.ylhpb.gov.tw/",
+    "嘉義市": "https://trn.ccpb.gov.tw/",
+    "嘉義縣": "https://www.cypd.gov.tw/TrafficMailbox/f21e7f75-04e2-082d-d2ae-1d038340ed7b",
+    "臺南市": "https://tr.tnpd.gov.tw/",
+    "高雄市": "https://policemail.kcg.gov.tw/",
+    "屏東縣": "https://trafficmailbox.ptpolice.gov.tw/",
+    "花蓮縣": "http://hlpb.twgov.mobi/order/index.php",
+    "臺東縣": "https://www.ttcpb.gov.tw/chinese/home.jsp?mserno=201105170007&serno=201108090002&contlink=ap/mail1.jsp",
+    "澎湖縣": "https://www.phpb.gov.tw/home.jsp?id=404",
+    "金門縣": "https://kpb.kinmen.gov.tw/Content_List.aspx?n=40C0F63E039C5390",
+    "連江縣": "https://www.lchpd.gov.tw/chhtml/content/2668?mcid=111837"
+  }
+}
