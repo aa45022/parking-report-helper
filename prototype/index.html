@@ -486,7 +486,7 @@ function parsePasted(text) {
 
 /* ================= 照片 ================= */
 async function readMeta(file) {
-  const out = { takenAt: null, timeSource: null, offset: null, lat: null, lng: null, make: '', model: '', width: null, height: null, error: null };
+  const out = { takenAt: null, timeSource: null, offset: null, lat: null, lng: null, make: '', model: '', width: null, height: null, exif: false, gpsTag: false, error: null };
   try {
     if (!window.ExifReader) throw new Error('ExifReader 沒有載入');
     const tags = ExifReader.load(await file.arrayBuffer(), { expanded: true });
@@ -498,6 +498,8 @@ async function readMeta(file) {
     const gps = tags.gps || {};
     if (typeof gps.Latitude === 'number' && typeof gps.Longitude === 'number' && !(gps.Latitude === 0 && gps.Longitude === 0)) { out.lat = gps.Latitude; out.lng = gps.Longitude; }
     out.make = (ex.Make || {}).description || '';
+    out.exif = !!(m || out.make);
+    out.gpsTag = !!(ex.GPSLatitude || ex.GPSLongitude);
     out.model = (ex.Model || {}).description || '';
     out.width = (ex.PixelXDimension || {}).value || null;
     out.height = (ex.PixelYDimension || {}).value || null;
@@ -1190,6 +1192,28 @@ function step1(v) {
   v.append(actionbar(el('button', { class: 'btn primary', type: 'button', onclick: () => toStep(2) }, '下一步：拍照', icon('arrow', 20))));
 }
 
+/* ---- 照片定位診斷：說明為什麼沒有定位、要怎麼調整 ---- */
+const GPS_FIX = {
+  picker: '選照片時，點畫面上方的「選項」，把「位置」打開，再選一次。',
+  camera: '到 iPhone「設定」→「隱私權與安全性」→「定位服務」→「相機」，選「使用 App 期間」，並打開「精確位置」。',
+  check: '想確認照片本身有沒有位置：在「照片」App 打開那張照片往上滑，有看到地圖就是有位置。',
+  manual: '這一件可以在檢舉單的「地點」選常用地點、讓 Claude 讀路名牌、貼上地圖位置，或自己輸入。'
+};
+function gpsDiagnosis(photos) {
+  if (!photos.length) return null;
+  if (photos.some(p => p.lat != null)) return { state: 'ok' };
+  if (photos.some(p => /ExifReader/.test(p.error || ''))) return { state: 'loader', title: '讀取照片資訊的元件沒有載入', why: '可能是網路不穩。照片本身沒有問題。', fix: ['把 App 關掉再打開（或重新整理），再加入一次照片。', GPS_FIX.manual] };
+  const lib = photos.filter(p => p.source !== 'camera');
+  if (!lib.length) return { state: 'camera', title: 'App 相機拍的照片不會有定位', why: '這是手機的限制：從網頁打開的相機，照片不會附上位置，沒辦法用設定改變。', fix: [GPS_FIX.manual, '想讓地點自動帶出來：改用手機內建的「相機」App 拍，再回來按「相簿」選照片（選的時候要打開「位置」）。'] };
+  if (lib.every(p => !p.exif)) return { state: 'nometa', title: '照片裡沒有任何拍攝資訊', why: '這幾張照片連拍攝時間、相機型號都沒有。通常是截圖，或從 LINE 等 App 存下來的照片（傳送時會被拿掉），也可能是選照片時被拿掉了。', fix: ['用手機內建「相機」App 拍的原始照片再試一次。', GPS_FIX.picker, '還是一樣的話，到「我的 → 照片定位檢查」檢查，把結果告訴我。'] };
+  return { state: 'stripped', title: '照片有拍攝時間，但沒有位置', why: '有兩種可能：選照片時沒有打開「位置」，或拍照時 iPhone 相機本來就沒有記錄位置。', fix: [GPS_FIX.picker, GPS_FIX.check, '如果照片 App 裡也沒有地圖：' + GPS_FIX.camera, GPS_FIX.manual] };
+}
+function gpsHelp(d, open) {
+  return el('details', { open: !!open }, el('summary', {}, '為什麼沒有定位？怎麼調整'), el('div', {},
+    el('p', { class: 'hint', style: 'margin:0', text: d.why }),
+    el('ol', { class: 'steps' }, d.fix.map(t => el('li', { text: t })))));
+}
+
 /* ---- 第 2 步：拍照 ---- */
 function byRole(c = S.cur) {
   const slots = {}, extras = [];
@@ -1226,13 +1250,14 @@ function step2(v) {
   if (open) v.append(photoPanel(open));
   v.append(timerCard());
 
-  const g = photoGeo(c), first = c.photos.find(p => p.takenAt), onlyCam = c.photos.length && c.photos.every(p => p.source === 'camera');
+  const g = photoGeo(c), first = c.photos.find(p => p.takenAt), gd = gpsDiagnosis(c.photos);
   const it = (ic, text, kind) => el('div', { class: 'it' }, el('span', { style: `color:var(--${kind || 'muted'})` }, icon(ic, 18)), el('span', { text }));
   v.append(el('div', { class: 'infolist' },
-    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !c.photos.length ? '拍完照會自動帶出時間；地點在下一步確認。' : onlyCam ? '相機拍的照片不含定位，下一步可以選常用地點、讓 Claude 讀路名牌，或貼上地圖位置。' : '照片沒有定位。從相簿選照片時，點畫面上方「選項」把「位置」打開。', g ? 'ok' : null),
+    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !gd ? '拍完照會自動帶出時間；地點在下一步確認。' : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
     first ? it('clock', `違規時間：${fmtDate(first.takenAt.slice(0, 10))} ${first.takenAt.slice(11, 16)}${first.timeSource === 'file' ? '（檔案時間，請核對）' : ''}`, 'ok') : null,
     c.photos.length ? it('folder', S.photoDb ? '照片存在 App 裡，不會出現在手機相簿。送出時可以一鍵存到「檔案」或雲端。' : '這個畫面不能儲存照片原檔，關掉 App 後要重新加入。', S.photoDb ? 'ok' : 'warn') : null,
     S.sample && S.sampleImgMax ? it('spark', '下一步會請 Claude 看照片，讀車牌和路名牌。') : null));
+  if (gd && gd.state !== 'ok') v.append(gpsHelp(gd, gd.state !== 'camera'));
 
   const camLabel = next === 'interval' ? '拍 3 分鐘後' : next === 'other' ? (left ? '多拍一張' : '再拍一張') : '拍' + ROLES[next];
   v.append(actionbar(
@@ -1531,7 +1556,9 @@ const EDITORS = {
     const detailIn = el('input', { id: 'f-detail', type: 'text', placeholder: '例如：100號前、與敦化南路口', value: f.detail, oninput: e => { f.detail = e.target.value; refreshTicket(); save(); } });
     const pasteBox = el('textarea', { id: 'paste-loc', style: 'min-height:80px', placeholder: '在 Apple 地圖點自己的位置 →「分享」→「拷貝」，再回來長按這裡貼上' });
     const pasteWrap = el('div', { class: 'stack', hidden: true }, el('div', { class: 'field' }, pasteBox), el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: () => applyPaste(pasteBox.value) }, '套用'), el('span', { class: 'hint', id: 'paste-status' })));
-    return [el('div', { id: 'loc-sugs', class: 'stack' }),
+    const gd = curGeo() ? null : gpsDiagnosis(S.cur.photos);
+    return [gd && gd.state !== 'ok' ? el('div', { class: 'stack' }, note('info', gd.title, '用下面的方法選地點：常用地點、Claude 讀到的路名牌、貼上地圖位置，或自己輸入。'), gpsHelp(gd, false)) : null,
+      el('div', { id: 'loc-sugs', class: 'stack' }),
       el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; if (!pasteWrap.hidden) pasteBox.focus(); } }, '貼上地圖位置'), el('span', { id: 'map-links', class: 'toolrow' })),
       pasteWrap,
       el('div', { class: 'grid2' }, field('縣市', countySel), field('鄉鎮市區', townIn)),
@@ -1858,7 +1885,7 @@ const ME_ITEMS = [
   ['autofill', 'wand', '自動填表設定', '在官方網站一鍵填好所有欄位'],
   ['guide', 'book', '拍照教學', '怎麼拍最容易成案'],
   ['ask', 'chat', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
-  ['test', 'target', '照片定位測試', '確認手機選照片時能帶出地點'],
+  ['test', 'target', '照片定位檢查', '照片沒有定位？檢查原因和調整方法'],
   ['privacy', 'shield', '隱私說明與保護', '隱私密碼、自動上鎖、資料存在哪裡'],
   ['backup', 'archive', '備份與清除', '把資料存成檔案，或全部清除']
 ];
@@ -2091,31 +2118,42 @@ ${JSON.stringify({ rules: V.rules, not_reportable: V.not_reportable, deadline: V
 let testLines = [];
 function meTest(v) {
   const out = el('div', { class: 'stack', id: 'test-out' });
-  const copyBtn = el('button', { class: 'btn', type: 'button', hidden: true, onclick: e => copyText(testLines.join('\n'), e.currentTarget) }, '複製測試結果');
+  const copyBtn = el('button', { class: 'btn', type: 'button', hidden: true, onclick: e => copyText(testLines.join('\n'), e.currentTarget) }, '複製檢查結果');
   const inp = el('input', { type: 'file', accept: 'image/*', multiple: true, class: 'sr', id: 'test-input', tabindex: '-1', onchange: e => { const fl = [...e.target.files]; runTest(fl, out, copyBtn).finally(() => { e.target.value = ''; }); } });
-  v.append(el('div', { class: 'card' },
-    el('p', { class: 'hint', text: '請各試一次：先照平常方式選照片；再試一次在選照片畫面點「選項」，把「位置」打開。（App 相機拍的照片本來就沒有定位，不用測。）' }),
-    inp, el('button', { class: 'btn primary block', type: 'button', onclick: () => inp.click() }, icon('image', 20), '選照片測試'),
-    out, el('div', { class: 'row' }, copyBtn), el('p', { class: 'hint', text: '複製的結果裡，座標只保留到小數點後 3 位（約 100 公尺）。' })));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '照片會沒有定位的 3 個原因' }),
+    el('ol', { class: 'steps' },
+      el('li', {}, el('b', { text: 'App 相機拍的照片：' }), '一定沒有定位，這是手機的限制。要自動帶出地點，請用手機內建「相機」App 拍，再從相簿選。'),
+      el('li', {}, el('b', { text: '選照片時沒有打開「位置」：' }), GPS_FIX.picker),
+      el('li', {}, el('b', { text: 'iPhone 相機沒有記錄位置：' }), GPS_FIX.camera)),
+    el('p', { class: 'hint', text: GPS_FIX.check })));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '檢查你的照片' }),
+    el('p', { class: 'hint', text: '請用手機內建「相機」App 拍的照片，各試一次：先照平常方式選；再試一次在選照片畫面點「選項」，把「位置」打開。' }),
+    inp, el('button', { class: 'btn primary block', type: 'button', onclick: () => inp.click() }, icon('image', 20), '選照片檢查'),
+    out, el('div', { class: 'row' }, copyBtn), el('p', { class: 'hint', text: '檢查只在手機上進行。複製的結果不含座標，也不含照片。' })));
+}
+function photoReason(m) {
+  if (m.lat != null) return ['ok', '有定位'];
+  if (/ExifReader/.test(m.error || '')) return ['no', '讀取元件沒有載入'];
+  if (!m.exif) return ['no', '沒有任何拍攝資訊'];
+  return ['warn', '有拍攝時間，沒有位置'];
 }
 async function runTest(files, out, copyBtn) {
   out.replaceChildren(el('p', { class: 'hint', text: '讀取中…' }));
-  testLines = [`裝置：${navigator.userAgent}`, `測試時間：${new Date().toISOString()}`];
+  testLines = [`裝置：${navigator.userAgent}`, `檢查時間：${new Date().toISOString()}`, `瀏覽器：${/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent) ? '其他瀏覽器' : /Safari\//.test(navigator.userAgent) ? 'Safari' : 'App 內建瀏覽器（例如 Claude App）'}`];
   const rows = [];
-  for (const f of files) {
+  for (const [i, f] of files.entries()) {
     const m = await readMeta(f);
-    const gps = m.lat != null ? `${m.lat.toFixed(3)}, ${m.lng.toFixed(3)}` : '沒有';
-    const t = m.takenAt ? `${m.takenAt.replace('T', ' ')}${m.timeSource === 'file' ? '（檔案時間）' : ''}` : '沒有';
-    rows.push({ name: f.name, type: f.type || '不明', t, gps, ok: m.lat != null });
-    testLines.push(`- ${f.name}｜${f.type || '不明'}｜${(f.size / 1048576).toFixed(1)}MB｜時間 ${t}｜時區 ${m.offset || '無'}｜定位 ${gps}｜相機 ${[m.make, m.model].filter(Boolean).join(' ') || '無'}${m.error ? '｜錯誤 ' + m.error : ''}`);
+    const [kind, reason] = photoReason(m);
+    rows.push({ ...m, source: 'library', n: i + 1, type: f.type || '不明', kind, reason });
+    testLines.push(`- 照片${i + 1}｜${f.type || '不明'}｜${(f.size / 1048576).toFixed(1)}MB｜拍攝資訊 ${m.exif ? '有' : '沒有'}｜時間來源 ${m.timeSource === 'exif' ? '照片' : m.timeSource === 'file' ? '檔案' : '無'}｜GPS 欄位 ${m.gpsTag ? '有' : '沒有'}｜定位 ${m.lat != null ? '有' : '沒有'}｜相機 ${[m.make, m.model].filter(Boolean).join(' ') || '無'}${m.error ? '｜錯誤 ' + m.error : ''}`);
   }
-  const ok = rows.filter(r => r.ok).length;
+  const ok = rows.filter(r => r.lat != null).length, d = gpsDiagnosis(rows);
   S.settings.gpsTest = { ok, total: rows.length, at: new Date().toISOString() }; saveSettings();
   out.replaceChildren(
-    note(ok === rows.length ? 'ok' : ok ? 'warn' : 'no', ok === rows.length ? `${rows.length} 張都讀到定位` : ok ? `${rows.length} 張中有 ${ok} 張讀到定位` : '沒有讀到定位',
-      ok === rows.length ? '這支手機可以用「從相簿選照片」取得地點。' : '請再試一次：選照片時點畫面上方的「選項」，把「位置」打開。還是沒有的話，請按「複製測試結果」貼給 Claude。'),
-    el('div', { class: 'tbl-wrap' }, el('table', {}, el('thead', {}, el('tr', {}, ['檔名', '格式', '拍攝時間', '定位'].map(h => el('th', { text: h })))),
-      el('tbody', {}, rows.map(r => el('tr', {}, el('td', { text: r.name }), el('td', { text: r.type }), el('td', { text: r.t }), el('td', {}, el('span', { class: 'pill ' + (r.ok ? 'ok' : 'no'), text: r.gps }))))))));
+    ok === rows.length ? note('ok', `${rows.length} 張都讀到定位`, '這支手機可以用「從相簿選照片」自動帶出地點。之後選照片時，都照這次的方式選。')
+      : el('div', { class: 'stack' }, note(ok ? 'warn' : 'no', ok ? `${rows.length} 張中有 ${ok} 張讀到定位` : d.title, ok ? '沒讀到的照片，原因寫在下面的表格。' : d.why), d.fix ? el('ol', { class: 'steps' }, d.fix.map(t => el('li', { text: t }))) : null),
+    el('div', { class: 'tbl-wrap' }, el('table', {}, el('thead', {}, el('tr', {}, ['照片', '拍攝時間', '結果'].map(h => el('th', { text: h })))),
+      el('tbody', {}, rows.map(r => el('tr', {}, el('td', { text: `第 ${r.n} 張` }), el('td', { text: r.takenAt ? r.takenAt.replace('T', ' ').slice(0, 16) + (r.timeSource === 'file' ? '（檔案時間）' : '') : '沒有' }), el('td', {}, el('span', { class: 'pill ' + r.kind, text: r.reason }))))))));
   testLines.push(`結果：${ok}/${rows.length} 張有定位`);
   copyBtn.hidden = false;
 }
