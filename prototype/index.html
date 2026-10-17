@@ -481,9 +481,16 @@ function parsePasted(text) {
   const t = String(text || '');
   const m = t.match(/(-?\d{1,2}\.\d{3,})\s*[,，]\s*(-?\d{2,3}\.\d{3,})/);
   if (m) { const a = +m[1], b = +m[2]; if (a > 21 && a < 27 && b > 118 && b < 123) { out.lat = a; out.lng = b; } }
-  const s = t.replace(/台(?=[北中南東])/g, '臺');
-  const am = s.match(/(臺北市|新北市|桃園市|臺中市|臺南市|高雄市|基隆市|新竹市|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義市|嘉義縣|屏東縣|宜蘭縣|花蓮縣|臺東縣|澎湖縣|金門縣|連江縣)?\s*([一-鿿]{1,3}[區鄉鎮市])?\s*([一-鿿]{1,10}?(?:路|街|大道)(?:[一二三四五六七八九十]段)?)((?:\d+巷)?(?:\d+弄)?\d+(?:之\d+)?號)?/);
-  if (am) { out.county = am[1] || ''; out.town = am[2] || ''; out.road = am[3] || ''; out.number = am[4] || ''; }
+  // 地址的縣市、區、路、門牌各自找，不管順序（Apple 地圖常是「路、區、市」的順序）
+  let s = t.replace(/https?:\/\/\S+/g, ' ').replace(/台(?=[北中南東])/g, '臺').replace(/中華民國|臺灣|台灣|Taiwan/gi, ' ');
+  const cm = s.match(new RegExp(COUNTIES.join('|')));
+  if (cm) { out.county = cm[0]; s = s.replace(cm[0], ' '); }
+  const nm = s.match(/(?:\d+巷)?(?:\d+弄)?\d+(?:之\d+)?號/);
+  if (nm) { out.number = nm[0]; s = s.replace(nm[0], ' '); }
+  const tm = s.match(/[一-鿿]{1,3}?[區鄉鎮市]/);
+  if (tm) { out.town = tm[0]; s = s.replace(tm[0], ' '); }
+  const rm = s.match(/[一-鿿]{1,10}?(?:路|街|大道)(?:[一二三四五六七八九十]段)?/);
+  if (rm) out.road = rm[0];
   return out;
 }
 
@@ -1073,12 +1080,13 @@ async function openCase(id) {
 
 /* ================= 首頁 ================= */
 function renderHome(v) {
-  const setupDone = profileReady() && S.settings.autofillReady && (S.lock || !CRYPTO_OK);
+  const setupDone = profileReady() && S.settings.autofillReady && (S.lock || !CRYPTO_OK) && (S.settings.locPasteOk || S.settings.libGpsOk);
   if (!setupDone) {
     const item = (on, title, sub, btnText, fn) => el('div', { class: 'setup' }, el('span', { class: 'dot' + (on ? ' on' : '') }, on ? icon('check', 14, 3) : null), el('div', {}, el('div', { text: title }), el('div', { class: 'hint', text: sub })), on ? null : el('button', { class: 'btn small', type: 'button', onclick: fn }, btnText));
     v.append(el('div', { class: 'card' }, el('h3', { text: '開始前的準備' }),
       item(profileReady(), '個人資料', '只填一次，存在這支手機', '去填', () => go('me', { sub: 'profile' })),
       CRYPTO_OK ? item(!!S.lock, '隱私密碼', '把個人資料加密，別人拿到手機也看不到', '去設定', () => go('me', { sub: 'privacy' })) : null,
+      item(!!(S.settings.locPasteOk || S.settings.libGpsOk), '現場定位', '在現場按一下捷徑，就取得位置和地址', '去設定', () => go('me', { sub: 'shortcut' })),
       item(S.settings.autofillReady, '自動填表書籤', '設定一次，之後在官方網站一鍵填好', '去設定', () => go('me', { sub: 'autofill' })),
       el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: loadSample }, '先看範例怎麼用'))));
   }
@@ -1201,14 +1209,15 @@ const GPS_FIX = {
   picker: '選照片時，點畫面上方的「選項」，把「位置」打開，再選一次。',
   camera: '到 iPhone「設定」→「隱私權與安全性」→「定位服務」→「相機」，選「使用 App 期間」，並打開「精確位置」。',
   check: '想確認照片本身有沒有位置：在「照片」App 打開那張照片往上滑，有看到地圖就是有位置。',
-  manual: '這一件可以在檢舉單的「地點」選常用地點、讓 Claude 讀路名牌、貼上地圖位置，或自己輸入。'
+  manual: '這一件可以在檢舉單的「地點」選常用地點、讓 Claude 讀路名牌、貼上地圖位置，或自己輸入。',
+  shortcut: '在現場按一下「違停定位」捷徑，再到下面的「現場位置」貼上，地點就會填好（設定方法在「我的 → 一鍵定位捷徑」）。'
 };
 function gpsDiagnosis(photos) {
   if (!photos.length) return null;
   if (photos.some(p => p.lat != null)) return { state: 'ok' };
   if (photos.some(p => /ExifReader/.test(p.error || ''))) return { state: 'loader', title: '讀取照片資訊的元件沒有載入', why: '可能是網路不穩。照片本身沒有問題。', fix: ['把 App 關掉再打開（或重新整理），再加入一次照片。', GPS_FIX.manual] };
   const lib = photos.filter(p => p.source !== 'camera');
-  if (!lib.length) return { state: 'camera', title: 'App 相機拍的照片不會有定位', why: '這是手機的限制：從網頁打開的相機，照片不會附上位置，沒辦法用設定改變。', fix: [GPS_FIX.manual, '想讓地點自動帶出來：改用手機內建的「相機」App 拍，再回來按「相簿」選照片（選的時候要打開「位置」）。'] };
+  if (!lib.length) return { state: 'camera', title: 'App 相機拍的照片不會有定位', why: '這是手機的限制：從網頁打開的相機，照片不會附上位置，沒辦法用設定改變。', fix: [GPS_FIX.shortcut, '或改用手機內建的「相機」App 拍，再回來按「相簿」選照片（選的時候要打開「位置」）。', GPS_FIX.manual] };
   if (lib.every(p => !p.exif)) return { state: 'nometa', title: '照片裡沒有任何拍攝資訊', why: '這幾張照片連拍攝時間、相機型號都沒有。通常是截圖，或從 LINE 等 App 存下來的照片（傳送時會被拿掉），也可能是選照片時被拿掉了。', fix: ['用手機內建「相機」App 拍的原始照片再試一次。', GPS_FIX.picker, '還是一樣的話，到「我的 → 照片定位檢查」檢查，把結果告訴我。'] };
   return { state: 'stripped', title: '照片有拍攝時間，但沒有位置', why: '有兩種可能：選照片時沒有打開「位置」，或拍照時 iPhone 相機本來就沒有記錄位置。', fix: [GPS_FIX.picker, GPS_FIX.check, '如果照片 App 裡也沒有地圖：' + GPS_FIX.camera, GPS_FIX.manual] };
 }
@@ -1254,14 +1263,18 @@ function step2(v) {
   if (open) v.append(photoPanel(open));
   v.append(timerCard());
 
-  const g = photoGeo(c), first = c.photos.find(p => p.takenAt), gd = gpsDiagnosis(c.photos);
+  const g = curGeo(c), first = c.photos.find(p => p.takenAt), gd = g ? null : gpsDiagnosis(c.photos);
   const it = (ic, text, kind) => el('div', { class: 'it' }, el('span', { style: `color:var(--${kind || 'muted'})` }, icon(ic, 18)), el('span', { text }));
   v.append(el('div', { class: 'infolist' },
-    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !gd ? (S.settings.libGpsOk ? '拍完照會自動帶出時間；地點在下一步確認。' : '從相簿選照片時，點上方「選項」把「位置」打開，地點就會自動帶出來。') : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
+    it('pin', g ? (g.source === 'paste' ? `已取得現場位置：${locText() || '（只有座標）'}` : `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}`) : !gd ? (S.settings.libGpsOk ? '拍完照會自動帶出時間；地點在下一步確認。' : '從相簿選照片時，點上方「選項」把「位置」打開，地點就會自動帶出來。') : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
     first ? it('clock', `違規時間：${fmtDate(first.takenAt.slice(0, 10))} ${first.takenAt.slice(11, 16)}${first.timeSource === 'file' ? '（檔案時間，請核對）' : ''}`, 'ok') : null,
     c.photos.some(p => p.source === 'library' && p.stored) ? it('image', '從相簿選的照片已經存進 App。送出、也存到雲端之後，可以到「照片」App 刪掉原本那幾張。') : null,
     c.photos.length ? it('folder', S.photoDb ? '照片存在 App 裡，不會出現在手機相簿。送出時可以一鍵存到「檔案」或雲端。' : '這個畫面不能儲存照片原檔，關掉 App 後要重新加入。', S.photoDb ? 'ok' : 'warn') : null,
     S.sample && S.sampleImgMax ? it('spark', '下一步會請 Claude 看照片，讀車牌和路名牌。') : null));
+  if (!g) v.append(el('div', { class: 'card' }, el('h3', {}, icon('pin', 20), '現場位置'),
+    el('p', { class: 'hint', text: '在現場按一下「違停定位」捷徑，再回來貼上，縣市、區、路名和門牌就會自動填好。' }),
+    pasteLocBox('paste-loc2'),
+    S.settings.locPasteOk ? null : el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: 'shortcut' }) }, '還沒設定？一步一步設定捷徑'))));
   if (gd && gd.state !== 'ok') v.append(gpsHelp(gd, gd.state !== 'camera'));
 
   const camLabel = next === 'interval' ? '拍 3 分鐘後' : next === 'other' ? (left ? '多拍一張' : '再拍一張') : '拍' + ROLES[next];
@@ -1524,7 +1537,7 @@ function rowValue(key) {
     case 'plate': { const pc = checkPlate(f.plate); return [el('div', {}, plateChip(f.plate, '')), small(f.plate ? pc.msg : '請填車牌', !f.plate || pc.ok === false)]; }
     case 'vehicle': return [el('b', { text: f.vdesc || '（可不填）' })];
     case 'place': {
-      const src = { gps: '縣市、區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的地圖位置', ai: '路名取自 Claude 讀到的路名牌，請核對' }[f.locSource] || '';
+      const src = { gps: '縣市、區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的現場位置', ai: '路名取自 Claude 讀到的路名牌，請核對' }[f.locSource] || '';
       const miss = !f.county ? '請選縣市' : !f.road ? '請填路段' : '';
       return [el('b', { text: locText() || '還沒有地點' }), small(miss || src, !!miss)];
     }
@@ -1563,12 +1576,11 @@ const EDITORS = {
     const distSel = el('select', { id: 'f-district', onchange: e => { f.districtLabel = e.target.value; refreshTicket(); save(); } });
     const roadIn = el('input', { id: 'f-road', type: 'text', placeholder: '例如：忠孝東路四段', value: f.road, oninput: e => { f.road = e.target.value; f.locSource = 'manual'; refreshTicket(); save(); } });
     const detailIn = el('input', { id: 'f-detail', type: 'text', placeholder: '例如：100號前、與敦化南路口', value: f.detail, oninput: e => { f.detail = e.target.value; refreshTicket(); save(); } });
-    const pasteBox = el('textarea', { id: 'paste-loc', style: 'min-height:80px', placeholder: '在 Apple 地圖點自己的位置 →「分享」→「拷貝」，再回來長按這裡貼上' });
-    const pasteWrap = el('div', { class: 'stack', hidden: true }, el('div', { class: 'field' }, pasteBox), el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: () => applyPaste(pasteBox.value) }, '套用'), el('span', { class: 'hint', id: 'paste-status' })));
+    const pasteWrap = el('div', { class: 'stack', hidden: true }, pasteLocBox('paste-loc'));
     const gd = curGeo() ? null : gpsDiagnosis(S.cur.photos);
     return [gd && gd.state !== 'ok' ? el('div', { class: 'stack' }, note('info', gd.title, '用下面的方法選地點：常用地點、Claude 讀到的路名牌、貼上地圖位置，或自己輸入。'), gpsHelp(gd, false)) : null,
       el('div', { id: 'loc-sugs', class: 'stack' }),
-      el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; if (!pasteWrap.hidden) pasteBox.focus(); } }, '貼上地圖位置'), el('span', { id: 'map-links', class: 'toolrow' })),
+      el('div', { class: 'toolrow' }, el('button', { class: 'btn small', type: 'button', onclick: () => { pasteWrap.hidden = !pasteWrap.hidden; } }, '貼上現場位置'), el('span', { id: 'map-links', class: 'toolrow' })),
       pasteWrap,
       el('div', { class: 'grid2' }, field('縣市', countySel), field('鄉鎮市區', townIn)),
       el('div', { class: 'field', id: 'district-wrap', hidden: true }, el('label', { for: 'f-district' }, '官方選單上的「行政區」'), distSel, el('span', { class: 'sub', id: 'district-note' })),
@@ -1663,24 +1675,42 @@ function refreshTicket() {
     }
   }
 }
-async function applyPaste(text) {
-  const st = $('#paste-status');
+async function applyLocText(text) {
   const r = parsePasted(text);
-  if (r.lat == null && !r.road) { if (st) st.textContent = '沒有找到座標或地址，請確認貼上的內容。'; return; }
-  const f = S.cur.form;
+  if (r.lat == null && !r.road) return { ok: false, msg: '沒有找到座標或地址，請確認貼上的內容。' };
+  const c = S.cur, f = c.form;
+  let hit = null;
   if (r.lat != null) {
-    S.cur.geo = { lat: r.lat, lng: r.lng, source: 'paste' };
-    await loadTowns();
-    const hit = locateTown(r.lat, r.lng);
+    c.geo = { lat: r.lat, lng: r.lng, source: 'paste' };
+    await loadTowns(); hit = locateTown(r.lat, r.lng);
     if (hit) { f.county = hit.county; f.town = hit.town; }
+    if (!S.settings.locPasteOk) { S.settings.locPasteOk = true; saveSettings(); }
   }
-  if (r.county) f.county = r.county;
-  if (r.town) f.town = r.town;
+  if (r.county && !hit) f.county = r.county;
+  if (r.town && !hit) f.town = r.town;
   if (r.road) f.road = r.road;
   if (r.number) f.detail = r.number + '前';
   f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'paste'; f.autoLoc = false;
-  if (st) st.textContent = '已套用，請核對。';
-  save(); refreshTicket();
+  save();
+  return { ok: true, msg: `已套用：${locText() || '（只有座標）'}，請核對。` };
+}
+/* 貼上現場位置：可以讀剪貼簿；讀不到時改成長按貼上 */
+function pasteLocBox(id) {
+  const ta = el('textarea', { id, style: 'min-height:72px', 'aria-label': '貼上現場位置', placeholder: '執行「違停定位」捷徑後，長按這裡選「貼上」' });
+  const st = el('span', { class: 'hint', 'aria-live': 'polite' });
+  const apply = async text => {
+    const r = await applyLocText(text);
+    if (!r.ok) { st.textContent = r.msg; return; }
+    toast('已套用現場位置');
+    if (S.view === 'report' && S.step === 3) { st.textContent = r.msg; refreshTicket(); } else render();
+  };
+  ta.addEventListener('paste', () => setTimeout(() => apply(ta.value), 0));
+  const read = el('button', { class: 'btn small primary', type: 'button', onclick: async () => {
+    try { const t = navigator.clipboard && navigator.clipboard.readText ? await navigator.clipboard.readText() : ''; if (!t) throw new Error('empty'); ta.value = t; apply(t); }
+    catch (e) { ta.focus(); st.textContent = '請長按上面的框框，選「貼上」。'; }
+  } }, icon('copy', 16), '貼上剪貼簿的位置');
+  return el('div', { class: 'stack' }, el('div', { class: 'field' }, ta),
+    el('div', { class: 'row' }, read, el('button', { class: 'btn small', type: 'button', onclick: () => apply(ta.value) }, '套用'), st));
 }
 function savePlace() {
   const f = S.cur.form;
@@ -1894,6 +1924,7 @@ const ME_ITEMS = [
   ['autofill', 'wand', '自動填表設定', '在官方網站一鍵填好所有欄位'],
   ['guide', 'book', '拍照教學', '怎麼拍最容易成案'],
   ['ask', 'chat', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
+  ['shortcut', 'pin', '一鍵定位捷徑', '用 iPhone「捷徑」取得現場位置和地址'],
   ['test', 'target', '照片定位檢查', '照片沒有定位？檢查原因和調整方法'],
   ['privacy', 'shield', '隱私說明與保護', '隱私密碼、自動上鎖、資料存在哪裡'],
   ['backup', 'archive', '備份與清除', '把資料存成檔案，或全部清除']
@@ -1908,7 +1939,7 @@ function renderMe(v) {
   v.append(el('div', { class: 'flowhead' }, el('div', { class: 'top-line' },
     el('button', { class: 'iconbtn', type: 'button', 'aria-label': '返回「我的」', onclick: () => go('me', { sub: null }) }, icon('back')),
     el('div', { class: 'label' }, el('small', { text: '我的' }), el('b', { text: item ? item[2] : '' })))));
-  ({ profile: meProfile, skin: meSkin, photos: mePhotos, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, privacy: mePrivacy, backup: meBackup })[S.sub](v);
+  ({ profile: meProfile, skin: meSkin, photos: mePhotos, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, shortcut: meShortcut, test: meTest, privacy: mePrivacy, backup: meBackup })[S.sub](v);
 }
 function meSkin(v) {
   const auto = el('input', { type: 'checkbox', id: 'skin-auto', checked: !S.settings.skin });
@@ -1954,6 +1985,7 @@ function mePrivacy(v) {
         ['個人資料（姓名、身分證、電話、Email、地址）', '只在這支手機，可加密', '不會傳給 Claude，也不會上傳任何伺服器。只有你按「複製」時放進剪貼簿，再由你自己貼到官方網站'],
         ['照片', '這個 App 自己的空間（不在手機相簿），依設定自動刪除', '你按「存到檔案」時，才由你選擇存到哪裡（例如 iCloud 雲碟、Google 雲端硬碟）。請 Claude 判讀時，才會傳給你自己帳號的 Claude；傳送前平台會先移除照片裡的位置資料'],
         ['案件紀錄（車牌、地點、時間）', '只在這支手機', '不會上傳。寫陳情信時，只送地點和日期給 Claude，不送車牌'],
+        ['現場位置（用捷徑或貼上的）', '只在這支手機，存在案件裡', '不會上傳。捷徑查地址時，是 iPhone 透過 Apple 地圖服務查詢，跟平常使用地圖一樣'],
         ['法規小幫手的問題', '不保存', '會送給你自己帳號的 Claude，請不要在問題裡寫個人資料']
       ].map(r => el('tr', {}, r.map(x => el('td', { text: x })))))))));
 
@@ -2123,6 +2155,48 @@ ${JSON.stringify({ rules: V.rules, not_reportable: V.not_reportable, deadline: V
     btn.disabled = false;
   });
   v.append(el('div', { class: 'card' }, el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。問題會送給你自己帳號的 Claude，請不要寫姓名、身分證、車牌等資料。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
+}
+function meShortcut(v) {
+  const steps = (...items) => el('ol', { class: 'steps' }, items.map(t => el('li', { text: t })));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '為什麼要用捷徑' }),
+      el('p', { class: 'hint', text: '這個 App 在 Claude 裡面，沒辦法直接取得手機的位置。iPhone 內建的「捷徑」App 可以：按一下，就把現場的座標和地址複製起來，再回到這裡貼上。不用註冊、不用其他網站。' })),
+    el('div', { class: 'card' }, el('h3', { text: '設定步驟（約 3 分鐘，只做一次）' }),
+      steps('打開 iPhone 內建的「捷徑」App（找不到的話，在主畫面中間往下滑，搜尋「捷徑」）。',
+        '點右上角的「＋」建立新捷徑，再點最上面的名稱，改成「違停定位」。',
+        '點「加入動作」，在搜尋框輸入「取得目前位置」，點一下加入。',
+        '再搜尋「文字」，加入。點一下文字框，在鍵盤上方點「目前位置」把它插入；再點一下剛插入的「目前位置」，在選單裡選「緯度」。',
+        '在後面打一個英文逗號「,」，再插入一次「目前位置」，這次選「經度」。',
+        '打一個空格，再插入一次「目前位置」，選「街道」。完成後看起來像：緯度,經度 街道。',
+        '搜尋「拷貝到剪貼簿」，加入。',
+        '搜尋「打開 App」，加入，App 選「Claude」。',
+        '點「完成」。第一次執行時，iPhone 會問能不能使用你的位置，請選「使用 App 期間允許」。')),
+    el('div', { class: 'card' }, el('h3', { text: '放在順手的地方（建議）' }),
+      steps('加到主畫面：在捷徑 App 長按「違停定位」→「分享」→「加入主畫面」。',
+        '或輕點手機背面兩下就執行：「設定」→「輔助使用」→「觸控」→「輕點背面」→「點兩下」→ 選「違停定位」。')),
+    el('div', { class: 'card' }, el('h3', { text: '在現場怎麼用' }),
+      steps('看到違停，先執行「違停定位」（點主畫面的圖示，或輕點手機背面兩下）。',
+        '捷徑會自動打開 Claude。回到這個 App 的拍照步驟。',
+        '在「現場位置」按「貼上剪貼簿的位置」（或長按框框選「貼上」），地點就填好了。')),
+    el('div', { class: 'card' }, el('h3', { text: '試試看' }),
+      el('p', { class: 'hint', text: '設定好後執行一次捷徑，回來貼在下面，看看讀到什麼。這裡只是測試，不會存起來。' }),
+      shortcutTester()),
+    note('info', '隱私', '捷徑查地址時，是 iPhone 透過 Apple 地圖服務查詢，跟你平常用地圖一樣。這個 App 只收到你貼上的文字，存在這支手機裡。'));
+}
+function shortcutTester() {
+  const ta = el('textarea', { id: 'sc-test', style: 'min-height:72px', 'aria-label': '貼上捷徑的結果', placeholder: '長按這裡選「貼上」' });
+  const out = el('div', { class: 'stack', 'aria-live': 'polite' });
+  const check = async () => {
+    const r = parsePasted(ta.value);
+    let hit = null; if (r.lat != null) { await loadTowns(); hit = locateTown(r.lat, r.lng); }
+    const row = (k, val) => [el('dt', { text: k }), el('dd', { text: val || '沒有讀到' })];
+    const ok = r.lat != null && r.road;
+    out.replaceChildren(note(ok ? 'ok' : r.lat != null || r.road ? 'warn' : 'no', ok ? '設定成功' : r.lat != null ? '有座標，但沒有路名' : r.road ? '有路名，但沒有座標' : '沒有讀到位置',
+        ok ? '在現場用同樣的方式貼上就可以了。' : '請對照設定步驟 4 到 6，確認「文字」裡有緯度、經度和街道。'),
+      el('dl', { class: 'kv' }, ...row('座標', r.lat != null ? '有' : ''), ...row('縣市', hit ? hit.county : r.county), ...row('鄉鎮市區', hit ? hit.town : r.town), ...row('路段', r.road), ...row('門牌', r.number)));
+    if (r.lat != null && !S.settings.locPasteOk) { S.settings.locPasteOk = true; saveSettings(); }
+  };
+  ta.addEventListener('paste', () => setTimeout(check, 0));
+  return el('div', { class: 'stack' }, el('div', { class: 'field' }, ta), el('div', { class: 'row' }, el('button', { class: 'btn small primary', type: 'button', onclick: check }, '檢查')), out);
 }
 let testLines = [];
 function meTest(v) {

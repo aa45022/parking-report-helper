@@ -15,5 +15,6 @@
 - 三種外觀（`road` 路標、`night` 夜巡、`green` 小綠人）共用同一套畫面，只用 `:root[data-skin]` 的 CSS 變數和少量覆寫切換；新增或修改畫面時三種都要檢查。
 - 自動填表（`prototype/autofill.js`）只在使用者自己的瀏覽器裡填欄位，修改後要跑 `npm test`。
   - 法規、縣市規格、文字範本要寫成資料檔，不寫死在程式裡；每筆資料要附來源與查證日期。
+- 使用者不想透過其他網站服務（例如 Cloudflare 帳號、Email 驗證登入）。v0.4 私人網站暫停；在 Claude 裡用 iPhone「捷徑」App 的「違停定位」捷徑取得現場位置（文字格式「緯度,經度 街道」，複製後在 App 貼上，由 `parsePasted()` 解析）。
 - 不使用 AGPL 授權的套件（例如 Ultralytics）。
 - 照片 EXIF 用 ExifReader，不用 exifr（HEIC 讀取有 bug）。
