@@ -10,6 +10,7 @@
 |---|---|
 | [docs/PLAN.md](docs/PLAN.md) | 規劃設計書：產品定位、使用流程、功能、架構、技術設計、路線圖、風險、待決定事項 |
 | [docs/RESEARCH.md](docs/RESEARCH.md) | 研究彙整：法規、各縣市檢舉系統、競品、技術選項，附來源 |
+| [docs/PROPOSAL-v0.2.md](docs/PROPOSAL-v0.2.md) | 第二版改善提案：測試回饋、定位問題的兩條路、新介面設計、完整功能清單 |
 
 ## 核心原則
 

@@ -41,7 +41,7 @@
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; display: flex; flex-direction: column; min-height: 100%; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
 button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--blue); }
@@ -49,13 +49,13 @@ a { color: var(--blue); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
 .wrap { max-width: 640px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top { order: -2; background: var(--surface); }
 .top .wrap { display: flex; align-items: center; gap: 10px; padding-block: 12px 10px; }
 .top h1 { margin: 0; font-size: 19px; font-weight: 700; letter-spacing: 0.02em; text-wrap: balance; }
 .badge { font-size: 12px; font-weight: 500; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
 .zebra { height: 8px; background: repeating-linear-gradient(90deg, var(--stripe) 0 22px, transparent 22px 40px); opacity: 0.85; }
 
-main { padding-block: 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+main { padding-block: 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
 .tab { display: grid; gap: 16px; }
 .lead { margin: 0; color: var(--muted); font-size: 15px; }
 
@@ -165,12 +165,12 @@ th, td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: lef
 th { color: var(--muted); font-weight: 500; white-space: nowrap; }
 td { font-variant-numeric: tabular-nums; }
 
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.tabbar { order: -1; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: var(--surface); border-bottom: 1px solid var(--line); }
 .tabbar .wrap { display: grid; grid-template-columns: repeat(4, 1fr); }
 .tabbar button { border: 0; background: transparent; padding: 8px 4px 10px; min-height: 56px; display: grid; justify-items: center; gap: 2px; font-size: 12px; color: var(--muted); cursor: pointer; }
 .tabbar button svg { width: 24px; height: 24px; }
-.tabbar button[aria-selected="true"] { color: var(--blue); font-weight: 700; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 8; max-width: calc(100% - 32px); }
+.tabbar button[aria-selected="true"] { color: var(--blue); font-weight: 700; box-shadow: inset 0 -3px 0 var(--blue); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--surface); padding: 8px 16px; border-radius: 999px; font-size: 14px; z-index: 8; max-width: calc(100% - 32px); }
 .sample-banner { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 8px 12px; font-size: 14px; font-weight: 500; }
 </style>
 
@@ -193,6 +193,7 @@ td { font-variant-numeric: tabular-nums; }
       </div>
     </div>
     <div id="sample-banner" class="sample-banner" hidden>這是範例資料，不是真實案件。按「新的一件」清除。</div>
+    <div id="setup-banner" class="sample-banner row" style="justify-content: space-between;" hidden><span>第一次使用？先設定個人資料，送出時才能一鍵複製。</span><button class="btn small" type="button" id="btn-go-profile">去設定個人資料</button></div>
 
     <div class="card">
       <h2><span class="num">1</span>先確認能不能檢舉</h2>
@@ -895,6 +896,7 @@ function renderSubmit() {
     box.append(el('div', { class: 'jur' }, el('span', { class: 'agency', text: J.agency }), el('span', { class: 'hint', text: J.auth_summary }),
       J.special_jurisdiction_note ? el('span', { class: 'hint', text: J.special_jurisdiction_note }) : null));
     box.append(el('a', { class: 'btn primary block', href: J.url, target: '_blank', rel: 'noopener' }, `開啟${f.county}檢舉網站`));
+    box.append(el('div', { class: 'copylist' }, copyRow('官方網址', J.url, '上面的按鈕打不開時，按「複製」，再到 Safari 網址列貼上')));
     for (const step of J.steps) {
       box.append(el('div', { class: 'stack' }, el('h3', { text: step.title }),
         el('div', { class: 'copylist' }, step.fields.map(fd => {
@@ -907,7 +909,7 @@ function renderSubmit() {
   } else {
     const url = S.data.jur && S.data.jur.others[f.county];
     box.append(el('p', { class: 'hint', text: `${f.county}的欄位還沒整理，下面是通用資料，請依官方網站的欄位填寫。` }));
-    if (url) box.append(el('a', { class: 'btn primary block', href: url, target: '_blank', rel: 'noopener' }, `開啟${f.county}檢舉網站`));
+    if (url) box.append(el('a', { class: 'btn primary block', href: url, target: '_blank', rel: 'noopener' }, `開啟${f.county}檢舉網站`), el('div', { class: 'copylist' }, copyRow('官方網址', url, '上面的按鈕打不開時，按「複製」，再到 Safari 網址列貼上')));
     box.append(el('div', { class: 'copylist' },
       copyRow('姓名', P.name), copyRow('身分證字號', P.idNumber, null, maskId(P.idNumber)), copyRow('電話', P.phone), copyRow('電子信箱', P.email), copyRow('地址', P.address),
       copyRow('違規日期', fmtDate(f.date)), copyRow('違規時間', f.time), copyRow('違規地點', locText()), copyRow('車牌', f.plate), copyRow('違規事實', currentRule() ? `${currentRule().name}（${currentRule().law}）` : ''), copyRow('說明', f.desc)));
@@ -1043,6 +1045,8 @@ function renderAll() {
     const q = seg.dataset.q;
     for (const b of seg.querySelectorAll('button')) b.setAttribute('aria-pressed', String(S.cur.answers[q] === b.dataset.v));
   }
+  const P = S.profile;
+  $('#setup-banner').hidden = !!(P.name && P.idNumber && P.phone && P.email && P.address);
   renderVerdict(); renderPhotos(); renderAi(); syncFormInputs(); renderDeadline(); renderEvidence(); renderSubmit();
 }
 
@@ -1072,13 +1076,14 @@ $('#f-desc').addEventListener('input', e => { S.cur.form.desc = e.target.value; 
 $('#btn-regen').addEventListener('click', () => { S.cur.form.descEdited = false; renderAll(); save(); });
 $('#btn-reset').addEventListener('click', () => { S.cur = newCase(); S.files = {}; S.isSample = false; $('#sample-banner').hidden = true; $('#ai-status').textContent = ''; renderAll(); window.scrollTo(0, 0); });
 $('#btn-sample').addEventListener('click', loadSample);
+$('#btn-go-profile').addEventListener('click', () => showTab('profile'));
 for (const b of document.querySelectorAll('.tabbar button')) b.addEventListener('click', () => showTab(b.dataset.tab));
 
 for (const id of ['#p-id', '#p-phone']) $(id).addEventListener('input', checkProfileHints);
 $('#btn-save-profile').addEventListener('click', () => {
   S.profile = { name: $('#p-name').value.trim(), idNumber: $('#p-id').value.trim().toUpperCase(), phone: $('#p-phone').value.replace(/[^\d]/g, ''), email: $('#p-email').value.trim(), address: $('#p-address').value.trim() };
   $('#profile-status').textContent = store.set(K_PROFILE, S.profile) ? '已儲存在這支手機' : '儲存失敗：瀏覽器不允許儲存資料';
-  loadProfileInputs(); renderSubmit();
+  loadProfileInputs(); renderAll();
 });
 $('#btn-backup').addEventListener('click', e => {
   const data = { app: 'parking-report-helper', version: 1, exportedAt: new Date().toISOString(), profile: S.profile, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) };
