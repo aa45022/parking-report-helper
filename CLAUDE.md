@@ -6,6 +6,9 @@
   - 系統絕不代送檢舉、不填驗證碼、不自動點 Email 認證連結、不自動按送出。
   - 個人資料（姓名、身分證、電話、地址、Email）與照片只存在使用者裝置，不可送到伺服器或寫進 log。
   - 唯一例外：使用者按下「開始判讀」時，照片可以交給使用者自己帳號的 Claude 判讀（Artifact 的 `sample` 功能）。個人資料永遠不送 Claude。
+  - 個人資料存放要經過 `persistProfile()`：有隱私密碼時用 AES-GCM 加密（金鑰由 PBKDF2-SHA256 60 萬次產生），密碼和金鑰不可儲存；使用者可選擇不儲存身分證字號。
+  - 新增任何送給 Claude 的內容（`sample` 呼叫）或對外連線前，要先確認不含個人資料，並更新 App 裡的「隱私說明與保護」頁。
+  - 測試資料只能用假資料（例如 王小明、A123456789），不可放入真實個資。
 - 開發中的測試版在 `prototype/`，以**私人** Claude Artifact 發布：https://claude.ai/artifact/1etj4kg6yARfBafwF58MDA 。修改後用同一個檔案路徑重新發布，網址不變；發布時要一併帶上 `data/*` 與 `autofill.js`，權限為 `sample`（含圖片）與 `downloads`。
 - 自動填表（`prototype/autofill.js`）只在使用者自己的瀏覽器裡填欄位，修改後要跑 `npm test`。
   - 法規、縣市規格、文字範本要寫成資料檔，不寫死在程式裡；每筆資料要附來源與查證日期。

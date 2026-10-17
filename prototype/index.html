@@ -219,7 +219,7 @@ th { color: var(--muted); font-weight: 500; white-space: nowrap; }
 <header class="top">
   <div class="wrap">
     <h1>違停檢舉助手</h1>
-    <span class="badge">測試版 v0.2</span>
+    <span class="badge">測試版 v0.2.1</span>
   </div>
   <div class="zebra" aria-hidden="true"></div>
 </header>
@@ -429,10 +429,10 @@ const S = {
   view: 'home', sub: null, step: 1, focus: false,
   data: { jur: null, vio: null, fill: null, towns: null },
   sample: null, sampleImgMax: 0, downloads: null,
-  profile: store.get(K.profile, { name: '', idNumber: '', phone: '', email: '', address: '' }),
+  profile: null, lock: null, unlocked: true,
   cases: store.get(K.cases, []).map(migrate),
   places: store.get(K.places, []),
-  settings: store.get(K.settings, { autofillReady: false, gpsTest: null }),
+  settings: { autofillReady: false, gpsTest: null, storeId: true, ...store.get(K.settings, {}) },
   cur: null, files: {}, aiCtl: null,
   timer: { start: null, fired: false }, audio: null,
   rec: { filter: 'all', q: '' },
@@ -452,7 +452,14 @@ function migrate(c) {
   return { ...n, ...c, form: { ...n.form, ...(c.form || {}) }, answers: { ...n.answers, ...(c.answers || {}) }, submission: { ...n.submission, ...(c.submission || {}) }, evidence: c.evidence || {} };
 }
 S.cur = newCase();
-const profileReady = () => { const P = S.profile; return !!(P.name && P.idNumber && P.phone && P.email && P.address); };
+function emptyProfile() { return { name: '', idNumber: '', phone: '', email: '', address: '' }; }
+(function initProfile() {
+  const sp = store.get(K.profile, null);
+  if (sp && sp.enc) { S.lock = { blob: sp, key: null, salt: null }; S.unlocked = false; S.profile = emptyProfile(); }
+  else S.profile = { ...emptyProfile(), ...(sp || {}) };
+})();
+function isFilled(P) { return !!(P.name && P.phone && P.email && P.address && (S.settings.storeId === false || P.idNumber)); }
+const profileReady = () => S.lock ? !!(S.lock.blob && S.lock.blob.filled) : isFilled(S.profile);
 
 /* ================= 判斷規則 ================= */
 function verdict(c = S.cur) {
@@ -573,6 +580,65 @@ function persistCases() {
 const saveSettings = () => store.set(K.settings, S.settings);
 const savePlaces = () => store.set(K.places, S.places);
 
+/* ================= 隱私密碼：個人資料加密存放 =================
+ * 用隱私密碼經 PBKDF2（60 萬次）產生金鑰，再用 AES-GCM 加密個人資料。
+ * 手機裡只存加密後的內容；密碼和金鑰都不會儲存，只在解鎖期間留在記憶體。 */
+const CRYPTO_OK = !!(window.crypto && crypto.subtle && window.TextEncoder);
+const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function deriveKey(pin, salt) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 600000, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function sealProfile(profile, key, salt) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(profile)));
+  return { enc: 1, kdf: 'PBKDF2-SHA256-600000', salt: b64(salt), iv: b64(iv), data: b64(data), filled: isFilled(profile) };
+}
+async function openProfile(blob, pin) {
+  const salt = unb64(blob.salt), key = await deriveKey(pin, salt);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(blob.iv) }, key, unb64(blob.data));
+  return { profile: JSON.parse(new TextDecoder().decode(plain)), key, salt };
+}
+async function persistProfile() {
+  const P = { ...S.profile };
+  if (S.settings.storeId === false) P.idNumber = '';
+  if (S.lock) { S.lock.blob = await sealProfile(P, S.lock.key, S.lock.salt); return store.set(K.profile, S.lock.blob); }
+  return store.set(K.profile, P);
+}
+async function unlockProfile(pin) {
+  const r = await openProfile(S.lock.blob, pin);
+  S.profile = { ...emptyProfile(), ...r.profile }; S.lock.key = r.key; S.lock.salt = r.salt; S.unlocked = true;
+}
+function lockNow() { if (!S.lock) return; S.profile = emptyProfile(); S.lock.key = null; S.unlocked = false; }
+async function setPin(pin) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  S.lock = { blob: null, key: await deriveKey(pin, salt), salt };
+  S.unlocked = true;
+  return persistProfile();
+}
+async function removePin() { S.lock = null; S.unlocked = true; return persistProfile(); }
+function unlockCard() {
+  const pin = el('input', { id: 'unlock-pin', type: 'password', autocomplete: 'off', placeholder: '輸入隱私密碼' });
+  const msg = el('span', { class: 'sub', id: 'unlock-msg' });
+  const doUnlock = async () => {
+    if (!pin.value) return;
+    msg.className = 'sub'; msg.textContent = '解鎖中…';
+    try { await unlockProfile(pin.value); toast('已解鎖'); render(); }
+    catch (e) { msg.className = 'sub bad'; msg.textContent = '密碼不對，請再試一次。'; }
+  };
+  pin.addEventListener('keydown', e => { if (e.key === 'Enter') doUnlock(); });
+  return el('div', { class: 'card' }, el('h3', { text: '個人資料已上鎖' }),
+    el('p', { class: 'hint', text: '輸入隱私密碼才會顯示個人資料，並用在自動填表。離開 App 超過 5 分鐘會自動再上鎖。' }),
+    el('div', { class: 'field' }, el('label', { for: 'unlock-pin' }, '隱私密碼'), pin, msg),
+    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: doUnlock }, '解鎖'), el('button', { class: 'btn ghost', type: 'button', onclick: () => go('me', { sub: 'privacy' }) }, '忘記密碼？')));
+}
+let hiddenAt = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = Date.now(); return; }
+  if (S.lock && S.unlocked && hiddenAt && Date.now() - hiddenAt > 5 * 60 * 1000) { lockNow(); render(); toast('已自動上鎖'); }
+});
+
 /* ================= 共用元件 ================= */
 function copyRow(label, value, note, display) {
   const btn = el('button', { class: 'btn small', type: 'button', disabled: !value }, '複製');
@@ -628,7 +694,8 @@ function renderHome(v) {
     v.append(el('div', { class: 'card' }, el('h3', { text: '開始前的準備' }),
       item(profileReady(), '個人資料', '只填一次，存在這支手機', '去填', () => go('me', { sub: 'profile' })),
       item(!!S.settings.gpsTest, '照片定位測試', '確認你的手機選照片時能帶出地點', '去測試', () => go('me', { sub: 'test' })),
-      item(S.settings.autofillReady, '自動填表書籤', '設定一次，之後在官方網站一鍵填好', '去設定', () => go('me', { sub: 'autofill' }))));
+      item(S.settings.autofillReady, '自動填表書籤', '設定一次，之後在官方網站一鍵填好', '去設定', () => go('me', { sub: 'autofill' })),
+      CRYPTO_OK ? item(!!S.lock, '隱私密碼（建議）', '把個人資料加密存放，別人拿到手機也看不到', '去設定', () => go('me', { sub: 'privacy' })) : null));
   }
   v.append(el('button', { class: 'btn primary cta', type: 'button', onclick: startNew }, '我看到違停'));
   if (hasContent(S.cur) && S.cur.status === 'draft' && !S.isSample) v.append(el('button', { class: 'btn block', type: 'button', onclick: () => go('report') }, `繼續剛剛那一件${S.cur.form.plate ? '（' + S.cur.form.plate + '）' : ''}`));
@@ -1101,7 +1168,7 @@ function fieldValue(src) {
   const f = S.cur.form, P = S.profile, J = jurOf() || {}, v = verdict(), r = ruleOf();
   const [front, back] = splitPlate(f.plate);
   return ({
-    'profile.name': P.name, 'profile.idNumber': P.idNumber, 'profile.phone': P.phone, 'profile.email': P.email, 'profile.address': P.address,
+    'profile.name': P.name, 'profile.idNumber': S.settings.storeId === false ? '' : P.idNumber, 'profile.phone': P.phone, 'profile.email': P.email, 'profile.address': P.address,
     'case.date': fmtDate(f.date), 'case.time': f.time, 'case.districtLabel': f.districtLabel || f.town, 'case.road': f.road, 'case.locationDetail': f.detail,
     'case.vehicleTypeLabel': J.vehicle_type_label || '', 'case.plateFront': front, 'case.plateBack': back, 'case.plate': f.plate,
     'case.violationLabel': J.violation_labels && v.ruleId ? J.violation_labels[v.ruleId] : r ? r.name : '', 'case.description': f.desc, 'case.fullLocation': locText()
@@ -1134,6 +1201,7 @@ function step5(v) {
   const c = S.cur, f = c.form;
   if (!reportable()) { v.append(note('no', '這件不能檢舉', '請回第 1 步確認。')); stepNav(v); return; }
   if (!f.county) { v.append(note('warn', '還沒有填縣市', '請回上一步填寫地點，這裡會列出該縣市官方網站要填的每一欄。')); stepNav(v); return; }
+  if (S.lock && !S.unlocked) { v.append(unlockCard()); stepNav(v); return; }
   if (S.focus) { focusMode(v); return; }
   const J = jurOf();
   const url = J ? J.url : S.data.jur.others[f.county];
@@ -1149,7 +1217,9 @@ function step5(v) {
       el('li', {}, '按這個按鈕，把資料複製起來', el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: e => copyText(autofillPayload(), e.currentTarget) }, '複製自動填表資料'))),
       el('li', {}, '用 Safari 打開官方網址（上面那一列按「複製」，再到 Safari 網址列貼上）'),
       el('li', {}, '在官方網頁點 Safari 的「書籤」→「違停自動填表」，畫面上方出現框框後，長按框框選「貼上」'),
-      el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片，再按送出')),
+      el('li', {}, '檢查綠色框的內容，自己輸入驗證碼、上傳照片，再按送出'),
+      el('li', {}, '填完後回來按「清除剪貼簿」，把個人資料從剪貼簿清掉', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: async e => { if (await copyText(' ', e.currentTarget)) toast('剪貼簿已清除'); } }, '清除剪貼簿')))),
+    S.settings.storeId === false ? note('info', '你選擇不儲存身分證', '自動填表不會填身分證字號，請在官方網站自己輸入。') : null,
     J && J.id === 'taipei' ? note('info', '臺北的小提醒', '第一次使用要先按「發送認證信」，到信箱點連結。到下一頁時，再點一次書籤就會繼續填。') : null,
     J && J.id === 'taoyuan' ? note('info', '桃園的小提醒', '第一頁填好後要輸入驗證碼並收認證信，進到第二頁時再點一次書籤。第二頁的欄位還沒確認，沒填到的請自己填。') : null,
     ready ? null : note('warn', '還沒設定書籤', '只要設定一次。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'autofill' }) }, '一步一步設定')))));
@@ -1182,7 +1252,7 @@ function focusMode(v) {
     el('div', { class: 'bar' }, el('span', { style: `width:${Math.round((c.focusIdx + 1) / list.length * 100)}%` })),
     el('div', { class: 'flabel', text: fd.label }),
     fd.source === 'static' ? el('p', { text: fd.value }) : el('div', { class: 'fvalue', text: val || '（尚未填寫）' }),
-    fd.note ? el('p', { class: 'hint', text: fd.note }) : null,
+    fd.source === 'profile.idNumber' && S.settings.storeId === false ? el('p', { class: 'hint', text: '你選擇不儲存身分證，請在官方網站自己輸入。' }) : fd.note ? el('p', { class: 'hint', text: fd.note }) : null,
     fd.source === 'static' ? null : el('button', { class: 'btn primary block', type: 'button', disabled: !val, onclick: e => copyText(val, e.currentTarget) }, '複製'),
     el('div', { class: 'grid2' }, el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === 0, onclick: () => move(-1) }, '上一欄'), el('button', { class: 'btn', type: 'button', disabled: c.focusIdx === list.length - 1, onclick: () => move(1) }, '下一欄')),
     el('button', { class: 'btn ghost block', type: 'button', onclick: () => { S.focus = false; render(); } }, '結束逐欄複製')));
@@ -1298,6 +1368,7 @@ const ME_ITEMS = [
   ['guide', '拍照教學', '怎麼拍最容易成案'],
   ['ask', '法規小幫手', '問 Claude：這種情況能檢舉嗎？'],
   ['test', '照片定位測試', '確認手機選照片時能帶出地點'],
+  ['privacy', '隱私說明與保護', '資料存在哪裡、隱私密碼、不儲存身分證'],
   ['backup', '備份與清除', '把資料存成檔案，或全部清除']
 ];
 function renderMe(v) {
@@ -1307,29 +1378,90 @@ function renderMe(v) {
     return;
   }
   v.append(el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: null }) }, '‹ 返回「我的」')));
-  ({ profile: meProfile, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, backup: meBackup })[S.sub](v);
+  ({ profile: meProfile, places: mePlaces, autofill: meAutofill, guide: meGuide, ask: meAsk, test: meTest, privacy: mePrivacy, backup: meBackup })[S.sub](v);
+}
+function mePrivacy(v) {
+  v.append(el('div', { class: 'card' }, el('h3', { text: '你的資料存在哪裡' }),
+    el('div', { class: 'tbl-wrap' }, el('table', {},
+      el('thead', {}, el('tr', {}, ['資料', '存在哪裡', '會不會傳出去'].map(h => el('th', { text: h })))),
+      el('tbody', {}, [
+        ['個人資料（姓名、身分證、電話、Email、地址）', '只在這支手機', '不會傳給 Claude，也不會上傳任何伺服器。只有你按「複製」時放進剪貼簿，再由你自己貼到官方網站'],
+        ['照片', '只在手機記憶體，案件只留小縮圖', '你按「開始判讀」時，才會傳給你自己帳號的 Claude；傳送前平台會先移除照片裡的位置資料'],
+        ['案件紀錄（車牌、地點、時間）', '只在這支手機', '不會上傳。寫陳情信時，只送地點和日期給 Claude，不送車牌'],
+        ['法規小幫手的問題', '不保存', '會送給你自己帳號的 Claude，請不要在問題裡寫個人資料']
+      ].map(r => el('tr', {}, r.map(x => el('td', { text: x })))))))),
+    el('div', { class: 'card' }, el('h3', { text: '常見問題' }),
+      el('h4', { text: '我的個人資料會進到 Claude 的資料庫嗎？' }),
+      el('p', { class: 'hint', text: '不會。個人資料完全不會送到 Claude。程式碼放在你自己的私人 GitHub，可以檢查：送給 Claude 的只有照片、陳情信的地點日期、法規問題這三種。' }),
+      el('h4', { text: '照片和問題送到 Claude 之後呢？' }),
+      el('p', { class: 'hint', text: '是用你自己的 Claude 帳號處理。Claude 會不會用這些內容改進模型，依你帳號的隱私設定而定：請到 Claude 的「設定」裡找「隱私」，確認相關選項。' }),
+      el('h4', { text: '開發用的 Claude 對話看得到我填的資料嗎？' }),
+      el('p', { class: 'hint', text: '看不到。你在 App 裡填的資料只存在你的手機。請不要把身分證等個人資料貼到任何對話裡。' }),
+      el('h4', { text: '手機被別人拿到怎麼辦？' }),
+      el('p', { class: 'hint', text: '設定下面的隱私密碼，個人資料會加密存放，沒有密碼看不到。' })));
+
+  // 隱私密碼
+  const card = el('div', { class: 'card' }, el('h3', {}, '隱私密碼', S.lock ? el('span', { class: 'pill ok', text: '已啟用' }) : el('span', { class: 'pill warn', text: '未啟用' })));
+  const msg = el('span', { class: 'sub', id: 'pin-msg', 'aria-live': 'polite' });
+  const pinPair = (a, b) => [el('div', { class: 'field' }, el('label', { for: a }, '新的隱私密碼（至少 6 個字）'), el('input', { id: a, type: 'password', autocomplete: 'new-password' })),
+    el('div', { class: 'field' }, el('label', { for: b }, '再輸入一次'), el('input', { id: b, type: 'password', autocomplete: 'new-password' }))];
+  const readPair = (a, b) => { const p1 = $('#' + a).value, p2 = $('#' + b).value; if (p1.length < 6) { msg.className = 'sub bad'; msg.textContent = '密碼至少要 6 個字。'; return null; } if (p1 !== p2) { msg.className = 'sub bad'; msg.textContent = '兩次輸入的密碼不一樣。'; return null; } return p1; };
+  if (!CRYPTO_OK) card.append(note('warn', '這個畫面不支援加密', '請改用最新版的 Safari 或 Claude App。'));
+  else if (!S.lock) {
+    card.append(el('p', { class: 'hint', text: '設定後，個人資料會用這個密碼加密存放。每次要複製或自動填表時輸入一次，離開 App 超過 5 分鐘會自動上鎖。密碼不會儲存在任何地方，忘記了只能清除個人資料重新填寫。' }),
+      ...pinPair('pin-a', 'pin-b'), msg,
+      el('button', { class: 'btn primary', type: 'button', onclick: async () => { const p = readPair('pin-a', 'pin-b'); if (!p) return; msg.className = 'sub'; msg.textContent = '加密中…'; await setPin(p); toast('已啟用隱私密碼'); render(); } }, '啟用隱私密碼'));
+  } else if (!S.unlocked) {
+    card.append(el('p', { class: 'hint', text: '要變更或移除密碼，請先解鎖。' }), unlockCard(),
+      el('h4', { text: '忘記密碼' }), el('p', { class: 'hint', text: '密碼無法找回。可以清除加密的個人資料，再重新填寫（案件紀錄會保留）。' }),
+      (() => { const b = el('button', { class: 'btn danger', type: 'button' }, '清除個人資料重新填寫'); b.addEventListener('click', () => { if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = '再按一次確定清除'; return; } store.del(K.profile); S.lock = null; S.unlocked = true; S.profile = emptyProfile(); toast('已清除個人資料'); go('me', { sub: 'profile' }); }); return b; })());
+  } else {
+    const rm = el('button', { class: 'btn danger', type: 'button' }, '移除隱私密碼');
+    rm.addEventListener('click', async () => { if (!rm.dataset.armed) { rm.dataset.armed = '1'; rm.textContent = '再按一次確定移除（資料會改成不加密）'; return; } await removePin(); toast('已移除隱私密碼'); render(); });
+    card.append(el('p', { class: 'hint', text: '個人資料目前已加密，現在是解鎖狀態。' }),
+      el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => { lockNow(); toast('已上鎖'); render(); } }, '立即上鎖')),
+      el('h4', { text: '變更密碼' }), ...pinPair('pin-c', 'pin-d'), msg,
+      el('button', { class: 'btn', type: 'button', onclick: async () => { const p = readPair('pin-c', 'pin-d'); if (!p) return; msg.className = 'sub'; msg.textContent = '加密中…'; await setPin(p); toast('已變更密碼'); render(); } }, '變更密碼'),
+      el('div', { class: 'row' }, rm));
+  }
+  v.append(card);
+
+  // 不儲存身分證
+  const chk = el('input', { type: 'checkbox', id: 'no-id', checked: S.settings.storeId === false });
+  chk.addEventListener('change', async e => {
+    if (S.lock && !S.unlocked) { e.target.checked = !e.target.checked; toast('請先解鎖'); return; }
+    S.settings.storeId = !e.target.checked; saveSettings();
+    if (!S.settings.storeId) { S.profile.idNumber = ''; await persistProfile(); toast('已刪除手機裡的身分證字號'); } else toast('之後可以在「個人資料」填身分證字號');
+  });
+  v.append(el('div', { class: 'card' }, el('h3', { text: '身分證字號' }),
+    el('label', { class: 'check', for: 'no-id' }, chk, el('span', {}, '不要把身分證字號存在手機', el('br'), el('small', { text: '勾選後會刪除已存的身分證字號。自動填表不會填這一欄，每次在官方網站自己輸入。' })))));
 }
 function meProfile(v) {
+  if (S.lock && !S.unlocked) { v.append(unlockCard()); return; }
   const P = S.profile;
+  const noId = S.settings.storeId === false;
   const name = el('input', { id: 'p-name', type: 'text', autocomplete: 'name', value: P.name });
   const id = el('input', { id: 'p-id', type: 'text', autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false', value: P.idNumber });
   const phone = el('input', { id: 'p-phone', type: 'tel', autocomplete: 'tel', placeholder: '0912345678', value: P.phone });
   const email = el('input', { id: 'p-email', type: 'email', autocomplete: 'email', value: P.email });
   const addr = el('input', { id: 'p-address', type: 'text', autocomplete: 'street-address', value: P.address });
   const hints = () => {
-    const r = checkId(id.value), s = $('#p-id-check'); s.textContent = r.msg; s.className = 'sub' + (r.ok === false ? ' bad' : '');
+    const r = checkId(id.value), s = $('#p-id-check'); if (s) { s.textContent = r.msg; s.className = 'sub' + (r.ok === false ? ' bad' : ''); }
     const ph = phone.value.replace(/\D/g, ''), ps = $('#p-phone-check');
     ps.textContent = !ph ? '' : /^09\d{8}$/.test(ph) ? '手機格式正確' : '桃園要求 9 到 10 碼手機號碼，請確認'; ps.className = 'sub' + (ph && !/^09\d{8}$/.test(ph) ? ' bad' : '');
   };
   id.addEventListener('input', hints); phone.addEventListener('input', hints);
-  v.append(el('div', { class: 'card' }, el('h3', { text: '個人資料' }),
-    el('p', { class: 'hint', text: '只填一次。資料只存在這支手機的瀏覽器，不會上傳，也不會傳給 Claude。送出檢舉時才會複製到官方網站。' }),
-    field('姓名（與身分證相同）', name), field('身分證字號或居留證號', id, 'p-id-check'), field('手機號碼', phone, 'p-phone-check'),
+  v.append(el('div', { class: 'card' }, el('h3', {}, '個人資料', S.lock ? el('span', { class: 'pill ok', text: '已加密' }) : el('span', { class: 'pill warn', text: '未加密' })),
+    el('p', { class: 'hint', text: '只填一次。資料只存在這支手機，不會上傳，也不會傳給 Claude。送出檢舉時才會複製到官方網站。' }),
+    S.lock ? null : note('warn', '建議設定隱私密碼', '設定後個人資料會加密存放，別人拿到手機也看不到。', el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => go('me', { sub: 'privacy' }) }, '去設定'))),
+    field('姓名（與身分證相同）', name),
+    noId ? note('info', '身分證字號不儲存', '你選擇每次在官方網站自己輸入。可以到「隱私說明與保護」更改。') : field('身分證字號或居留證號', id, 'p-id-check'),
+    field('手機號碼', phone, 'p-phone-check'),
     el('div', { class: 'field' }, el('label', { for: 'p-email' }, '電子信箱'), email, el('span', { class: 'sub', text: '桃園建議避免免費信箱；認證信可能在垃圾郵件匣。' })),
     field('通訊地址', addr),
-    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => {
-      S.profile = { name: name.value.trim(), idNumber: id.value.trim().toUpperCase(), phone: phone.value.replace(/[^\d]/g, ''), email: email.value.trim(), address: addr.value.trim() };
-      $('#p-status').textContent = store.set(K.profile, S.profile) ? '已儲存在這支手機。' : '儲存失敗：瀏覽器不允許儲存資料。';
+    el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: async () => {
+      S.profile = { name: name.value.trim(), idNumber: noId ? '' : id.value.trim().toUpperCase(), phone: phone.value.replace(/[^\d]/g, ''), email: email.value.trim(), address: addr.value.trim() };
+      $('#p-status').textContent = await persistProfile() ? (S.lock ? '已加密儲存在這支手機。' : '已儲存在這支手機。') : '儲存失敗：瀏覽器不允許儲存資料。';
     } }, '儲存'), el('span', { id: 'p-status', class: 'hint', 'aria-live': 'polite' }))));
   hints();
 }
@@ -1401,7 +1533,7 @@ ${JSON.stringify({ rules: V.rules, not_reportable: V.not_reportable, deadline: V
     } catch (e) { out.replaceChildren(el('p', { class: 'hint', text: e && e.code === 'not_granted' ? '你沒有允許這個頁面使用 Claude。' : '回答失敗，請稍後再試。' })); }
     btn.disabled = false;
   });
-  v.append(el('div', { class: 'card' }, el('h3', { text: '法規小幫手' }), el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
+  v.append(el('div', { class: 'card' }, el('h3', { text: '法規小幫手' }), el('p', { class: 'hint', text: '遇到特殊情況，直接問。Claude 會依整理好的法規資料回答。問題會送給你自己帳號的 Claude，請不要寫姓名、身分證、車牌等資料。' }), el('div', { class: 'field' }, q), el('div', { class: 'row' }, btn), out));
 }
 let testLines = [];
 function meTest(v) {
@@ -1434,17 +1566,20 @@ async function runTest(files, out, copyBtn) {
   copyBtn.hidden = false;
 }
 function meBackup(v) {
-  const data = () => JSON.stringify({ app: 'parking-report-helper', version: 2, exportedAt: new Date().toISOString(), profile: S.profile, places: S.places, settings: S.settings, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) });
+  const data = () => JSON.stringify({ app: 'parking-report-helper', version: 3, exportedAt: new Date().toISOString(),
+    profile: S.lock ? null : S.profile, profileEnc: S.lock ? S.lock.blob : null,
+    places: S.places, settings: S.settings, cases: S.cases.map(c => ({ ...c, photos: c.photos.map(p => ({ ...p, thumb: null })) })) });
   const ta = el('textarea', { id: 'restore-text', placeholder: '貼上備份文字' });
   const wipe = el('button', { class: 'btn danger', type: 'button' }, '清除這支手機上的所有資料');
   wipe.addEventListener('click', () => {
     if (!wipe.dataset.armed) { wipe.dataset.armed = '1'; wipe.textContent = '再按一次確定清除'; setTimeout(() => { if (wipe.isConnected) { delete wipe.dataset.armed; wipe.textContent = '清除這支手機上的所有資料'; } }, 4000); return; }
     Object.values(K).forEach(k => store.del(k));
-    S.profile = { name: '', idNumber: '', phone: '', email: '', address: '' }; S.cases = []; S.places = []; S.settings = { autofillReady: false, gpsTest: null }; S.cur = newCase(); S.files = {};
+    S.profile = emptyProfile(); S.lock = null; S.unlocked = true; S.cases = []; S.places = []; S.settings = { autofillReady: false, gpsTest: null, storeId: true }; S.cur = newCase(); S.files = {};
     toast('已清除'); go('home');
   });
   v.append(el('div', { class: 'card' }, el('h3', { text: '備份' }),
     el('p', { class: 'hint', text: 'iPhone 有時會清掉網頁資料。建議定期備份。備份不含照片。' }),
+    S.lock ? note('ok', '備份裡的個人資料是加密的', '還原後要用同一個隱私密碼解鎖。') : note('warn', '備份裡的個人資料沒有加密', '請小心保存備份檔。設定隱私密碼後，備份裡的個人資料也會加密。'),
     el('div', { class: 'row' }, el('button', { class: 'btn primary', type: 'button', onclick: () => saveFile(`違停檢舉備份_${todayTaipei()}.json`, data()) }, '存成備份檔'), el('button', { class: 'btn', type: 'button', onclick: e => copyText(data(), e.currentTarget) }, '複製備份文字'))),
     el('div', { class: 'card' }, el('h3', { text: '從備份還原' }), el('div', { class: 'field' }, ta),
       el('div', { class: 'row' }, el('button', { class: 'btn', type: 'button', onclick: () => {
@@ -1452,7 +1587,11 @@ function meBackup(v) {
         try {
           const d = JSON.parse(ta.value);
           if (d.app !== 'parking-report-helper') throw new Error();
-          if (d.profile) { S.profile = d.profile; store.set(K.profile, S.profile); }
+          if (d.profileEnc && d.profileEnc.enc) { S.lock = { blob: d.profileEnc, key: null, salt: null }; S.unlocked = false; S.profile = emptyProfile(); store.set(K.profile, d.profileEnc); }
+          else if (d.profile) {
+            if (S.lock && !S.unlocked) { st.textContent = '請先到「隱私說明與保護」解鎖，再還原個人資料。'; return; }
+            S.profile = { ...emptyProfile(), ...d.profile }; persistProfile();
+          }
           if (Array.isArray(d.places)) { S.places = d.places; savePlaces(); }
           if (d.settings) { S.settings = { ...S.settings, ...d.settings }; saveSettings(); }
           if (Array.isArray(d.cases)) { const ids = new Set(S.cases.map(c => c.id)); S.cases = [...S.cases, ...d.cases.filter(c => !ids.has(c.id)).map(migrate)]; persistCases(); }
