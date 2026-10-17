@@ -117,6 +117,9 @@ main { padding-block: 18px calc(40px + env(safe-area-inset-bottom, 0px)); displa
 .cta-sub { font-size: 14px; opacity: 0.85; }
 .cta-arrow { grid-row: 1 / 3; grid-column: 3; }
 .cta-alt { min-height: 52px; }
+.cta-note { margin: 0; text-align: center; }
+:root[data-skin="night"] .cta-note { position: relative; }
+:root[data-skin="green"] .cta-note { margin: -6px 18px 16px; }
 :root[data-skin="night"] .cta { justify-items: center; padding-block: 10px; position: relative; }
 :root[data-skin="night"] .cta::before { content: ""; position: absolute; left: -16px; right: -16px; top: 40px; height: 150px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0 30px, transparent 30px 56px); }
 :root[data-skin="night"] .cta-btn { position: relative; background: transparent; color: var(--ink); grid-template-columns: 1fr; text-align: center; justify-items: center; padding: 0; row-gap: 10px; }
@@ -1086,7 +1089,8 @@ function renderHome(v) {
       el('span', { class: 'cta-title', text: '我看到違停' }),
       el('span', { class: 'cta-sub', text: '打開相機，先拍全景' }),
       el('span', { class: 'cta-arrow' }, icon('arrow', 26))),
-    el('button', { class: 'btn block cta-alt', type: 'button', onclick: () => { startNew(); openLibrary(); } }, icon('image', 20), '從相簿選照片')));
+    el('button', { class: 'btn block cta-alt', type: 'button', onclick: () => { startNew(); openLibrary(); } }, icon('image', 20), '從相簿選照片'),
+    S.settings.libGpsOk ? null : el('p', { class: 'hint cta-note', text: '從相簿選照片時，點上方「選項」把「位置」打開，地點就會自動帶出來。' })));
   if (hasContent(S.cur) && S.cur.status === 'draft' && !S.isSample) v.append(el('button', { class: 'btn block', type: 'button', onclick: () => go('report') }, `繼續剛剛那一件${S.cur.form.plate ? '（' + S.cur.form.plate + '）' : ''}`));
 
   const drafts = S.cases.filter(c => c.status === 'draft').sort((a, b) => (daysLeft(a) ?? 99) - (daysLeft(b) ?? 99));
@@ -1253,8 +1257,9 @@ function step2(v) {
   const g = photoGeo(c), first = c.photos.find(p => p.takenAt), gd = gpsDiagnosis(c.photos);
   const it = (ic, text, kind) => el('div', { class: 'it' }, el('span', { style: `color:var(--${kind || 'muted'})` }, icon(ic, 18)), el('span', { text }));
   v.append(el('div', { class: 'infolist' },
-    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !gd ? '拍完照會自動帶出時間；地點在下一步確認。' : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
+    it('pin', g ? `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}` : !gd ? (S.settings.libGpsOk ? '拍完照會自動帶出時間；地點在下一步確認。' : '從相簿選照片時，點上方「選項」把「位置」打開，地點就會自動帶出來。') : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
     first ? it('clock', `違規時間：${fmtDate(first.takenAt.slice(0, 10))} ${first.takenAt.slice(11, 16)}${first.timeSource === 'file' ? '（檔案時間，請核對）' : ''}`, 'ok') : null,
+    c.photos.some(p => p.source === 'library' && p.stored) ? it('image', '從相簿選的照片已經存進 App。送出、也存到雲端之後，可以到「照片」App 刪掉原本那幾張。') : null,
     c.photos.length ? it('folder', S.photoDb ? '照片存在 App 裡，不會出現在手機相簿。送出時可以一鍵存到「檔案」或雲端。' : '這個畫面不能儲存照片原檔，關掉 App 後要重新加入。', S.photoDb ? 'ok' : 'warn') : null,
     S.sample && S.sampleImgMax ? it('spark', '下一步會請 Claude 看照片，讀車牌和路名牌。') : null));
   if (gd && gd.state !== 'ok') v.append(gpsHelp(gd, gd.state !== 'camera'));
@@ -1350,6 +1355,10 @@ async function addFiles(fileList, source, role) {
   }
   c.photos.sort((a, b) => (a.takenAt || '').localeCompare(b.takenAt || ''));
   autoRoles(c, fresh);
+  if (source === 'library') {
+    if (fresh.some(p => p.lat != null)) { if (!S.settings.libGpsOk) { S.settings.libGpsOk = true; saveSettings(); } }
+    else toast('這次的照片沒有位置，原因和調整方法在下面');
+  }
   if (source === 'camera' && !S.timer.start) startTimer();
   await applyPhotoFacts();
   S.ui.busy = ''; save(); render();
