@@ -545,16 +545,18 @@ async function makeThumb(file) { try { return (await renderScaled(file, 200)).to
 async function makeAiJpeg(file) { const c = await renderScaled(file, 1600); return new Promise(r => c.toBlob(r, 'image/jpeg', 0.85)); }
 
 /* ================= 狀態 ================= */
-const ROLES = { overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '3 分鐘後', other: '其他' };
+const ROLES = { overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '3 分鐘後', landmark: '門牌或路名牌', other: '其他' };
 const ROLE_WHY = {
   overview: '看得出停在人行道或斑馬線上',
   plate: '靠近拍，車牌要清楚',
   driver_seat: '看得出車上有沒有人',
   interval: '同一個角度，隔 3 分鐘再拍',
+  landmark: '沒有定位時拍這張，Claude 會讀出地址',
   other: '其他角度或補充'
 };
-const ROLE_ICON = { overview: 'crosswalk', plate: 'plate', driver_seat: 'seat', interval: 'clock', other: 'image' };
+const ROLE_ICON = { overview: 'crosswalk', plate: 'plate', driver_seat: 'seat', interval: 'clock', landmark: 'pin', other: 'image' };
 const ROLE_ORDER = ['overview', 'plate', 'driver_seat', 'interval'];
+const SLOT_ROLES = [...ROLE_ORDER, 'landmark'];
 const STEP_NAMES = ['能不能檢舉', '拍照', '確認檢舉單', '送出'];
 const TIPS = [
   '拍駕駛座，警方才能判斷是「停車」還是「臨時停車」。',
@@ -664,7 +666,7 @@ function buildDesc(c = S.cur) {
   let s = `${f.vdesc || '車輛'} ${f.plate || '（車牌）'} ${temp ? '臨時停車' : '停放'}於${locText(c) || '（地點）'}之${r.place_word}上，${driver}占用${r.place_word}妨礙行人通行。`;
   if (c.photos.length) {
     const iv = intervalMinutes(c);
-    s += c.photos.map((p, i) => p.role === 'interval' && iv != null ? `照片${i + 1}為${iv}分鐘後同一位置` : `照片${i + 1}為${{ overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '補拍', other: '現場' }[p.role]}`).join('、') + '。';
+    s += c.photos.map((p, i) => p.role === 'interval' && iv != null ? `照片${i + 1}為${iv}分鐘後同一位置` : `照片${i + 1}為${{ overview: '全景', plate: '車牌', driver_seat: '駕駛座', interval: '補拍', landmark: '門牌', other: '現場' }[p.role]}`).join('、') + '。';
   }
   const max = (jurOf(c) || {}).description_max_length || 200;
   return s.length > max ? s.slice(0, max) : s;
@@ -676,7 +678,7 @@ function evidenceAuto(c = S.cur) {
     context: !!ev.violation_context_visible,
     driver_seat: !!ev.driver_seat_visible || c.photos.some(p => p.role === 'driver_seat'),
     interval: iv != null && iv >= 3,
-    landmark: !!ev.landmark_visible,
+    landmark: !!ev.landmark_visible || c.photos.some(p => p.role === 'landmark'),
     stop_and_leave: false
   };
 }
@@ -1210,6 +1212,7 @@ const GPS_FIX = {
   camera: '到 iPhone「設定」→「隱私權與安全性」→「定位服務」→「相機」，選「使用 App 期間」，並打開「精確位置」。',
   check: '想確認照片本身有沒有位置：在「照片」App 打開那張照片往上滑，有看到地圖就是有位置。',
   manual: '這一件可以在檢舉單的「地點」選常用地點、讓 Claude 讀路名牌、貼上地圖位置，或自己輸入。',
+  landmark: '拍一張附近的門牌或路名牌，Claude 會讀出縣市、區、路名和門牌，不用任何設定。',
   shortcut: '在現場按一下「違停定位」捷徑，再到下面的「現場位置」貼上，地點就會填好（設定方法在「我的 → 一鍵定位捷徑」）。'
 };
 function gpsDiagnosis(photos) {
@@ -1217,7 +1220,7 @@ function gpsDiagnosis(photos) {
   if (photos.some(p => p.lat != null)) return { state: 'ok' };
   if (photos.some(p => /ExifReader/.test(p.error || ''))) return { state: 'loader', title: '讀取照片資訊的元件沒有載入', why: '可能是網路不穩。照片本身沒有問題。', fix: ['把 App 關掉再打開（或重新整理），再加入一次照片。', GPS_FIX.manual] };
   const lib = photos.filter(p => p.source !== 'camera');
-  if (!lib.length) return { state: 'camera', title: 'App 相機拍的照片不會有定位', why: '這是手機的限制：從網頁打開的相機，照片不會附上位置，沒辦法用設定改變。', fix: [GPS_FIX.shortcut, '或改用手機內建的「相機」App 拍，再回來按「相簿」選照片（選的時候要打開「位置」）。', GPS_FIX.manual] };
+  if (!lib.length) return { state: 'camera', title: 'App 相機拍的照片不會有定位', why: '這是手機的限制：從網頁打開的相機，照片不會附上位置，沒辦法用設定改變。', fix: [GPS_FIX.landmark, '要精準定位：改用手機內建的「相機」App 拍，再回來按「相簿」選照片（選的時候要打開「位置」）。', GPS_FIX.shortcut] };
   if (lib.every(p => !p.exif)) return { state: 'nometa', title: '照片裡沒有任何拍攝資訊', why: '這幾張照片連拍攝時間、相機型號都沒有。通常是截圖，或從 LINE 等 App 存下來的照片（傳送時會被拿掉），也可能是選照片時被拿掉了。', fix: ['用手機內建「相機」App 拍的原始照片再試一次。', GPS_FIX.picker, '還是一樣的話，到「我的 → 照片定位檢查」檢查，把結果告訴我。'] };
   return { state: 'stripped', title: '照片有拍攝時間，但沒有位置', why: '有兩種可能：選照片時沒有打開「位置」，或拍照時 iPhone 相機本來就沒有記錄位置。', fix: [GPS_FIX.picker, GPS_FIX.check, '如果照片 App 裡也沒有地圖：' + GPS_FIX.camera, GPS_FIX.manual] };
 }
@@ -1230,7 +1233,7 @@ function gpsHelp(d, open) {
 /* ---- 第 2 步：拍照 ---- */
 function byRole(c = S.cur) {
   const slots = {}, extras = [];
-  for (const p of c.photos) { if (ROLE_ORDER.includes(p.role) && !slots[p.role]) slots[p.role] = p; else extras.push(p); }
+  for (const p of c.photos) { if (SLOT_ROLES.includes(p.role) && !slots[p.role]) slots[p.role] = p; else extras.push(p); }
   return { slots, extras };
 }
 const timerLeft = () => S.timer.start ? Math.max(0, 180 - Math.floor((Date.now() - S.timer.start) / 1000)) : null;
@@ -1238,6 +1241,7 @@ const mmss = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 function nextRole(c = S.cur) {
   const have = new Set(c.photos.map(p => p.role));
   for (const r of ['overview', 'plate', 'driver_seat']) if (!have.has(r)) return r;
+  if (!have.has('landmark') && !curGeo(c)) return 'landmark';
   if (have.has('interval')) return 'other';
   const left = timerLeft();
   return left ? 'other' : 'interval';
@@ -1257,13 +1261,23 @@ function step2(v) {
         el('span', { class: 'inner' }, waiting ? el('span', { class: 'cd', id: 'slot-cd', text: mmss(left) }) : icon(r === 'interval' ? 'clock' : 'camera', 30), waiting ? '時間到再拍' : '拍' + ROLES[r])),
       el('div', { class: 'cap' }, ROLES[r], ' ', el('small', { text: ROLE_WHY[r] })));
   })));
+  const g = curGeo(c);
+  if (!g || slots.landmark) {
+    const p = slots.landmark;
+    v.append(el('div', { class: 'slot' },
+      p ? el('button', { class: 'frame filled', type: 'button', style: 'height:110px', 'aria-label': '查看門牌或路名牌照片', onclick: () => { S.ui.photo = S.ui.photo === p.id ? null : p.id; render(); } },
+          p.thumb ? el('img', { src: p.thumb, alt: '' }) : el('span', { text: '無法預覽' }), el('span', { class: 'badge' }, icon('check', 16, 3)))
+        : el('button', { class: 'frame' + (next === 'landmark' ? ' next' : ''), type: 'button', style: 'height:96px', 'aria-label': '拍門牌或路名牌', onclick: () => openCamera('landmark') },
+          el('span', { class: 'inner' }, icon('pin', 26), '拍門牌或路名牌（選拍）')),
+      el('div', { class: 'cap' }, '門牌或路名牌 ', el('small', { text: p ? 'Claude 會從這張讀出地址' : '照片沒有定位時很有用：Claude 會讀出縣市、區、路名和門牌。等 3 分鐘時剛好可以拍。' }))));
+  }
   if (extras.length) v.append(el('div', { class: 'stack' }, el('span', { class: 'hint', text: '其他照片（點一下可以改用途或刪除）' }),
     el('div', { class: 'extras' }, extras.map(p => el('button', { type: 'button', 'aria-label': '查看照片', onclick: () => { S.ui.photo = S.ui.photo === p.id ? null : p.id; render(); } }, p.thumb ? el('img', { src: p.thumb, alt: '' }) : null, el('span', { text: ROLES[p.role] }))))));
   const open = c.photos.find(p => p.id === S.ui.photo);
   if (open) v.append(photoPanel(open));
   v.append(timerCard());
 
-  const g = curGeo(c), first = c.photos.find(p => p.takenAt), gd = g ? null : gpsDiagnosis(c.photos);
+  const first = c.photos.find(p => p.takenAt), gd = g ? null : gpsDiagnosis(c.photos);
   const it = (ic, text, kind) => el('div', { class: 'it' }, el('span', { style: `color:var(--${kind || 'muted'})` }, icon(ic, 18)), el('span', { text }));
   v.append(el('div', { class: 'infolist' },
     it('pin', g ? (g.source === 'paste' ? `已取得現場位置：${locText() || '（只有座標）'}` : `已從照片讀到定位${c.form.town ? '：' + c.form.county + c.form.town : ''}`) : !gd ? (S.settings.libGpsOk ? '拍完照會自動帶出時間；地點在下一步確認。' : '從相簿選照片時，點上方「選項」把「位置」打開，地點就會自動帶出來。') : gd.title + '（說明在下面）', g ? 'ok' : gd ? 'warn' : null),
@@ -1271,10 +1285,10 @@ function step2(v) {
     c.photos.some(p => p.source === 'library' && p.stored) ? it('image', '從相簿選的照片已經存進 App。送出、也存到雲端之後，可以到「照片」App 刪掉原本那幾張。') : null,
     c.photos.length ? it('folder', S.photoDb ? '照片存在 App 裡，不會出現在手機相簿。送出時可以一鍵存到「檔案」或雲端。' : '這個畫面不能儲存照片原檔，關掉 App 後要重新加入。', S.photoDb ? 'ok' : 'warn') : null,
     S.sample && S.sampleImgMax ? it('spark', '下一步會請 Claude 看照片，讀車牌和路名牌。') : null));
-  if (!g) v.append(el('div', { class: 'card' }, el('h3', {}, icon('pin', 20), '現場位置'),
-    el('p', { class: 'hint', text: '在現場按一下「違停定位」捷徑，再回來貼上，縣市、區、路名和門牌就會自動填好。' }),
+  if (!g) v.append(el('details', { open: !!S.settings.locPasteOk }, el('summary', {}, '用「違停定位」捷徑貼上現場位置'), el('div', {},
+    el('p', { class: 'hint', style: 'margin:0', text: '在現場按一下捷徑，再回來貼上，縣市、區、路名和門牌就會自動填好。' }),
     pasteLocBox('paste-loc2'),
-    S.settings.locPasteOk ? null : el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: 'shortcut' }) }, '還沒設定？一步一步設定捷徑'))));
+    S.settings.locPasteOk ? null : el('div', { class: 'row' }, el('button', { class: 'btn small ghost', type: 'button', onclick: () => go('me', { sub: 'shortcut' }) }, '還沒設定？一步一步設定捷徑')))));
   if (gd && gd.state !== 'ok') v.append(gpsHelp(gd, gd.state !== 'camera'));
 
   const camLabel = next === 'interval' ? '拍 3 分鐘後' : next === 'other' ? (left ? '多拍一張' : '再拍一張') : '拍' + ROLES[next];
@@ -1283,7 +1297,16 @@ function step2(v) {
     el('button', { class: 'btn primary', type: 'button', id: 'cam-main', onclick: () => openCamera(next) }, icon('camera', 20), camLabel),
     el('button', { class: 'btn dark side', type: 'button', onclick: goStep3 }, c.photos.length ? '下一步' : '跳過', icon('arrow', 18))));
 }
+/* 沒有定位、也還沒填縣市時，先沿用上一件的縣市和區（畫面會提醒核對） */
+function defaultArea(c = S.cur) {
+  const f = c.form;
+  if (f.county || curGeo(c)) return;
+  const last = S.cases.find(x => x.id !== c.id && x.form.county);
+  if (!last) return;
+  f.county = last.form.county; f.town = last.form.town; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'last';
+}
 function goStep3() {
+  defaultArea(); save();
   toStep(3);
   if (needsAi()) runAi();
 }
@@ -1307,7 +1330,7 @@ function photoPanel(p) {
 }
 function setRole(p, role) {
   const c = S.cur;
-  if (ROLE_ORDER.includes(role)) for (const x of c.photos) if (x !== p && x.role === role) { x.role = 'other'; x.roleManual = true; }
+  if (SLOT_ROLES.includes(role)) for (const x of c.photos) if (x !== p && x.role === role) { x.role = 'other'; x.roleManual = true; }
   p.role = role; p.roleManual = true; save(); render();
 }
 function timerCard() {
@@ -1324,7 +1347,7 @@ function timerCard() {
       el('div', { class: 'face' }, el('b', { id: 'timer-clock', text: mmss(left) }), el('small', { text: left ? '補拍倒數' : '時間到' }))),
     el('div', { class: 'stack', style: 'gap:4px' },
       el('b', { text: left ? '時間到後，從同一角度再拍一張' : '可以拍「3 分鐘後」了' }),
-      el('span', { class: 'hint', text: left ? '時間到會響三聲。這段時間可以先拍車牌和駕駛座。' : '站回拍全景的位置，用同一個角度拍。' }),
+      el('span', { class: 'hint', text: left ? '時間到會響三聲。這段時間可以先拍車牌、駕駛座和門牌。' : '站回拍全景的位置，用同一個角度拍。' }),
       el('div', { class: 'row' }, el('button', { class: 'btn small', type: 'button', onclick: () => { S.timer = { start: null, fired: false }; render(); } }, left ? '取消計時' : '重新計時')))));
   return box;
 }
@@ -1360,7 +1383,7 @@ async function addFiles(fileList, source, role) {
     const [meta, thumb] = await Promise.all([readMeta(f), makeThumb(f)]);
     const p = { id, name: f.name || 'photo.jpg', type: f.type || '', size: f.size, thumb, role: 'other', roleManual: false, source, stored: false, ...meta };
     if (role && files.length === 1) {
-      if (ROLE_ORDER.includes(role)) for (const x of c.photos) if (x.role === role) { x.role = 'other'; x.roleManual = true; }
+      if (SLOT_ROLES.includes(role)) for (const x of c.photos) if (x.role === role) { x.role = 'other'; x.roleManual = true; }
       p.role = role; p.roleManual = true;
     } else fresh.push(p);
     c.photos.push(p);
@@ -1410,7 +1433,8 @@ function aiPrompt(n) {
 
 台灣車牌格式：新式為 3 個英文字母加 4 個數字（例如 ABC-1234，英文不會出現 I 和 O）；舊式有 AB-1234、1234-AB、ABC-123、123-ABC 等。請用大寫並保留連字號。
 
-每張照片的 role 請從這些選一個：overview（全景，看得出停放位置）、plate（車牌特寫）、driver_seat（看得到駕駛座）、other。
+每張照片的 role 請從這些選一個：overview（全景，看得出停放位置）、plate（車牌特寫）、driver_seat（看得到駕駛座）、landmark（門牌、路名牌或路口標誌特寫）、other。
+地址請仔細看門牌（台灣的門牌常同時寫著區、里、路名和號碼）、路名牌和店家招牌。
 retake 請列出還在現場的話建議補拍什麼（每項一句，最多 3 項；證據已足夠就給空陣列）。
 
 只回覆一個 JSON 物件：
@@ -1424,6 +1448,8 @@ retake 請列出還在現場的話建議補拍什麼（每項一句，最多 3 �
   "driver_present": "yes | no | unknown",
   "road_text": "路名牌上的路名，例如：忠孝東路四段；沒有就空字串",
   "house_number_text": "看得到的門牌號碼，例如：100號；沒有就空字串",
+  "county_text": "門牌、路名牌或招牌上看得到的縣市，例如：臺北市；看不到就空字串",
+  "town_text": "門牌、路名牌或招牌上看得到的鄉鎮市區，例如：大安區；看不到就空字串",
   "evidence": {"plate_visible": true, "violation_context_visible": true, "driver_seat_visible": false, "landmark_visible": false},
   "retake": ["例如：靠近車頭再拍一張車牌，避開反光"],
   "notes": "一到兩句繁體中文總結"
@@ -1431,7 +1457,13 @@ retake 請列出還在現場的話建議補拍什麼（每項一句，最多 3 �
 plate_candidates 最多 3 個，依可能性排序；confidence 介於 0 到 1。`;
 }
 const canAi = () => !!S.sample && S.sampleImgMax > 0;
-const usablePhotos = (c = S.cur) => c.photos.filter(p => S.files[p.id]).slice(0, Math.min(S.sampleImgMax || 4, 4));
+const AI_PRIORITY = { overview: 0, plate: 1, driver_seat: 2, landmark: 3, interval: 4, other: 5 };
+/* 送給 Claude 的照片最多 4 張：超過時優先挑全景、車牌、駕駛座、門牌，再依拍攝順序排回去 */
+function usablePhotos(c = S.cur) {
+  const ps = c.photos.filter(p => S.files[p.id]), max = Math.min(S.sampleImgMax || 4, 4);
+  if (ps.length <= max) return ps;
+  return ps.slice().sort((a, b) => AI_PRIORITY[a.role] - AI_PRIORITY[b.role]).slice(0, max).sort((a, b) => c.photos.indexOf(a) - c.photos.indexOf(b));
+}
 const aiSig = ps => ps.map(p => p.id).join(',');
 function needsAi(c = S.cur) { const ps = usablePhotos(c); return canAi() && !S.aiCtl && !S.isSample && ps.length > 0 && aiSig(ps) !== c.aiSig; }
 async function runAi() {
@@ -1461,7 +1493,7 @@ function applyAi(r, used) {
   if (Array.isArray(r.photos)) {
     for (const ph of r.photos) {
       const p = used[Number(ph.index) - 1];
-      if (p && !p.roleManual && ['overview', 'plate', 'driver_seat'].includes(ph.role)) p.role = ph.role;
+      if (p && !p.roleManual && ['overview', 'plate', 'driver_seat', 'landmark'].includes(ph.role)) p.role = ph.role;
     }
     const overviews = c.photos.filter(p => p.role === 'overview' && p.takenAt);
     if (overviews.length >= 2) { const last = overviews[overviews.length - 1]; if (minutesBetween(overviews[0].takenAt, last.takenAt) >= 2 && !last.roleManual) last.role = 'interval'; }
@@ -1470,6 +1502,12 @@ function applyAi(r, used) {
   if (cands.length && !f.plate) f.plate = normPlate(String(cands[0].plate));
   const desc = [r.color, r.vehicle_desc].filter(x => x && x !== 'unknown').join('');
   if (desc && !f.vdesc) f.vdesc = desc;
+  if (!curGeo(c)) {
+    const ct = String(r.county_text || '').replace(/台(?=[北中南東])/g, '臺').trim(), tt = String(r.town_text || '').trim();
+    const replaceable = !f.county || f.locSource === 'last';
+    if (replaceable && COUNTIES.includes(ct)) { f.county = ct; f.town = /[區鄉鎮市]$/.test(tt) ? tt : ''; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'ai'; }
+    else if (replaceable && f.county && /[區鄉鎮市]$/.test(tt)) { f.town = tt; f.districtLabel = defaultDistrict(f.county, f.town); f.locSource = 'ai'; }
+  }
   if (r.road_text && !f.road) { f.road = String(r.road_text); f.locSource = 'ai'; }
   if (r.house_number_text && !f.detail) f.detail = String(r.house_number_text).replace(/前$/, '') + '前';
 }
@@ -1537,9 +1575,9 @@ function rowValue(key) {
     case 'plate': { const pc = checkPlate(f.plate); return [el('div', {}, plateChip(f.plate, '')), small(f.plate ? pc.msg : '請填車牌', !f.plate || pc.ok === false)]; }
     case 'vehicle': return [el('b', { text: f.vdesc || '（可不填）' })];
     case 'place': {
-      const src = { gps: '縣市、區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的現場位置', ai: '路名取自 Claude 讀到的路名牌，請核對' }[f.locSource] || '';
+      const src = { gps: '縣市、區依照片定位判斷', history: '路名取自附近的舊案件，請核對', place: '取自常用地點', paste: '取自貼上的現場位置', ai: '取自 Claude 讀到的門牌或路名牌，請核對', last: '沿用上一件的縣市和區，請核對' }[f.locSource] || '';
       const miss = !f.county ? '請選縣市' : !f.road ? '請填路段' : '';
-      return [el('b', { text: locText() || '還沒有地點' }), small(miss || src, !!miss)];
+      return [el('b', { text: locText() || '還沒有地點' }), small(miss || src, !!miss || f.locSource === 'last')];
     }
     case 'time': return [el('b', { text: f.date ? `${fmtDate(f.date)} ${f.time || ''}` : '還沒有時間' }), small(!f.date || !f.time ? '請填日期和時間' : { exif: '取自照片拍攝時間', file: '取自檔案時間，請核對' }[f.timeSource] || '', !f.date || !f.time)];
     case 'rule': {
@@ -2128,6 +2166,7 @@ function meGuide(v) {
     ['crosswalk', '全景', '退後幾步，讓畫面同時有車子和人行道或斑馬線。最好拍到路名牌、門牌或明顯的店家招牌。'],
     ['plate', '車牌', '靠近拍，車牌要佔畫面三分之一以上，避開反光。前車牌或後車牌都可以。'],
     ['seat', '駕駛座', '從車窗拍駕駛座，看得出有沒有人。這張決定是「停車」還是「臨時停車」。'],
+    ['pin', '門牌或路名牌', '照片沒有定位時（例如用 App 相機拍），拍一張附近的門牌或路名牌，Claude 會讀出縣市、區、路名和門牌。等 3 分鐘補拍時剛好可以拍。'],
     ['clock', '隔 3 分鐘再拍', '同一個角度，隔 3 分鐘以上再拍一張，證明車子一直停著。用 App 相機拍第一張時，計時會自動開始。'],
     ['x', '不要做的事', '不要修圖、加濾鏡、裁切；不要用網路上別人的照片；不要拍到路人的臉特寫。']
   ];
